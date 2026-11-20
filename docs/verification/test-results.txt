@@ -1,0 +1,38 @@
+Verification commands and results (2026-11-08 America/New_York)
+
+uv run --frozen pytest -q -m 'not live_models and not paper_broker and not gui'
+1799 passed, 8 deselected in 303.90s
+
+uv run --frozen pytest tests/integration/sessions -q --tb=short
+12 passed, 4 warnings in 15.84s (after final report-cutoff fix; 11 overlap full suite)
+
+pnpm --dir apps/dashboard test
+6 files, 42 tests passed
+
+pnpm --dir apps/dashboard e2e
+3 passed in 7.8s
+
+pnpm --dir apps/dashboard lint / build / gen:types --check
+Passed; read-only and bundle checks clean; generated contracts current
+
+make test-lean
+84 passed, 0 failed, 0 skipped
+Upstream NU1903 DotNetZip 1.16.0; NU1904 System.Drawing.Common 4.7.0 warnings remain
+
+pnpm --dir apps/mac-agent/browser test
+23 passed, 0 failed, 0 skipped
+
+uv run --frozen ruff check .
+All checks passed
+
+uv run --frozen pyright
+0 errors, 0 warnings, 0 informations
+
+uv run --frozen python -m scripts.smoke_paper
+Real API/MCP processes: session completed 3 cycles after operator disconnected; report fetched after reconnect;
+SSE data received; 29 audit rows verified. No credentials, model calls or external broker.
+
+Actual connected Codex MCP:
+5-cycle autonomous SIMULATED session completed (5 NO_TRADE); separate verification buy/sell filled;
+zero remaining positions/orders; simulated realized P&L -0.45 USD; model API cost 0 USD.
+Public audit endpoint: hash chain OK, 69 rows at evidence capture.

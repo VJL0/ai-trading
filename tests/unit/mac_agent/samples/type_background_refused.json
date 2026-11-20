@@ -1,0 +1,17 @@
+{
+ "success": false,
+ "effect": "refused",
+ "error": {
+  "code": "INVALID_INPUT",
+  "mutation_dispatched": false,
+  "retry_safe": true,
+  "hint": "Use foreground delivery only when the window may take focus.",
+  "message": "Invalid input: Invalid target: Exact-window keyboard focus is not on the target window at dispatch."
+ },
+ "outcome": {
+  "effect": "refused",
+  "mutation_dispatched": false,
+  "state": "refused",
+  "dispatch_state": "none"
+ }
+}

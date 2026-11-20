@@ -1,0 +1,26 @@
+{
+ "success": true,
+ "data": {
+  "permissions": [
+   {
+    "grantInstructions": "System Settings > Privacy & Security > Screen & System Audio Recording",
+    "name": "Screen Recording",
+    "isRequired": true,
+    "isGranted": true
+   },
+   {
+    "grantInstructions": "System Settings > Privacy & Security > Device Control and Data Access",
+    "name": "Accessibility",
+    "isRequired": true,
+    "isGranted": true
+   },
+   {
+    "grantInstructions": "System Settings > Privacy & Security > Device Control and Data Access",
+    "name": "Event Synthesizing",
+    "isRequired": false,
+    "isGranted": true
+   }
+  ],
+  "source": "local"
+ }
+}

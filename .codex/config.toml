@@ -1,0 +1,93 @@
+# Project-scoped Codex configuration for this repository (Codex loads .codex/config.toml only for a project the
+# user has marked as trusted). It registers the local, PAPER-only MCP server. The server holds no broker or model
+# credentials; Codex uses the user's own ChatGPT sign-in and its own usage limits. Managed by
+# scripts/register_mcp.sh -- see docs/runbooks/ai-runtime-mcp.md.
+
+[mcp_servers.local-ai-trader]
+command = "uv"
+args = ["run", "--frozen", "--directory", "/Users/victor/Developer/ai-trading", "python", "-m", "services.mcp_server"]
+cwd = "/Users/victor/Developer/ai-trading"
+env = { LAT_AGENT_NAME = "codex" }
+startup_timeout_sec = 30
+tool_timeout_sec = 90
+# Every tool asks for approval unless listed below. Mutating tools (propose_paper_trade, request_halt,
+# cancel_paper_order, run_quant_cycle, start_paper_session, stop_session, schedule_session, cancel_schedule)
+# deliberately keep "prompt".
+default_tools_approval_mode = "prompt"
+
+# Read-only tools: auto-approved.
+[mcp_servers.local-ai-trader.tools.get_market_snapshot]
+approval_mode = "approve"
+
+[mcp_servers.local-ai-trader.tools.get_bars]
+approval_mode = "approve"
+
+[mcp_servers.local-ai-trader.tools.get_feed_quality]
+approval_mode = "approve"
+
+[mcp_servers.local-ai-trader.tools.get_predictions]
+approval_mode = "approve"
+
+[mcp_servers.local-ai-trader.tools.get_model_report]
+approval_mode = "approve"
+
+[mcp_servers.local-ai-trader.tools.get_signals]
+approval_mode = "approve"
+
+[mcp_servers.local-ai-trader.tools.get_portfolio]
+approval_mode = "approve"
+
+[mcp_servers.local-ai-trader.tools.get_orders]
+approval_mode = "approve"
+
+[mcp_servers.local-ai-trader.tools.get_order]
+approval_mode = "approve"
+
+[mcp_servers.local-ai-trader.tools.get_risk_status]
+approval_mode = "approve"
+
+[mcp_servers.local-ai-trader.tools.get_session_status]
+approval_mode = "approve"
+
+[mcp_servers.local-ai-trader.tools.list_schedules]
+approval_mode = "approve"
+
+[mcp_servers.local-ai-trader.tools.get_session_report]
+approval_mode = "approve"
+
+[mcp_servers.local-ai-trader.tools.explain_decisions]
+approval_mode = "approve"
+
+[mcp_servers.local-ai-trader.tools.get_performance]
+approval_mode = "approve"
+
+[mcp_servers.local-ai-trader.tools.get_activity]
+approval_mode = "approve"
+
+[mcp_servers.local-ai-trader.tools.get_system_health]
+approval_mode = "approve"
+
+# Mutating tools: explicit "prompt" (same as the default; listed so the intent is reviewable).
+[mcp_servers.local-ai-trader.tools.propose_paper_trade]
+approval_mode = "prompt"
+
+[mcp_servers.local-ai-trader.tools.request_halt]
+approval_mode = "prompt"
+
+[mcp_servers.local-ai-trader.tools.cancel_paper_order]
+approval_mode = "prompt"
+
+[mcp_servers.local-ai-trader.tools.run_quant_cycle]
+approval_mode = "prompt"
+
+[mcp_servers.local-ai-trader.tools.start_paper_session]
+approval_mode = "prompt"
+
+[mcp_servers.local-ai-trader.tools.stop_session]
+approval_mode = "prompt"
+
+[mcp_servers.local-ai-trader.tools.schedule_session]
+approval_mode = "prompt"
+
+[mcp_servers.local-ai-trader.tools.cancel_schedule]
+approval_mode = "prompt"

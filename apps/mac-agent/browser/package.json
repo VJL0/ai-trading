@@ -1,0 +1,23 @@
+{
+  "name": "lat-mac-agent-browser",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Allowlisted Playwright browser control for the local-ai-trader mac-agent (PAPER/SIMULATED surfaces only)",
+  "type": "module",
+  "license": "UNLICENSED",
+  "engines": {
+    "node": ">=24"
+  },
+  "packageManager": "pnpm@12.11.2",
+  "scripts": {
+    "test": "node --test test/*.test.mjs",
+    "verify": "node src/verify-fixture.mjs",
+    "mcp-smoke": "node src/mcp-smoke.mjs"
+  },
+  "dependencies": {
+    "playwright": "1.64.1"
+  },
+  "devDependencies": {
+    "@playwright/mcp": "0.0.84"
+  }
+}

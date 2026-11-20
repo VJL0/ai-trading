@@ -1,0 +1,71 @@
+{
+  "status": "ok",
+  "mode": "PAPER",
+  "execution_label": "SIMULATED",
+  "version": "0.1.0",
+  "time": "2026-11-02T18:34:30Z",
+  "overall": "OK",
+  "components": [
+    {
+      "name": "market_data",
+      "status": "OK",
+      "detail": "OK SIMULATED replay:ds_1c99c07583eae908",
+      "last_ok": "2026-11-02T18:34:25Z"
+    },
+    {
+      "name": "broker",
+      "status": "OK",
+      "detail": "FAKE: ok",
+      "last_ok": null
+    },
+    {
+      "name": "reconciliation",
+      "status": "OK",
+      "detail": "CLEAN",
+      "last_ok": "2026-11-02T18:29:00Z"
+    },
+    {
+      "name": "models",
+      "status": "OK",
+      "detail": "registry mreg_20261108T035222Z_73806d805978",
+      "last_ok": null
+    },
+    {
+      "name": "gpt_runtime",
+      "status": "DISABLED",
+      "detail": "mode NONE",
+      "last_ok": null
+    },
+    {
+      "name": "event_stream",
+      "status": "OK",
+      "detail": "0 subscribers",
+      "last_ok": null
+    },
+    {
+      "name": "database",
+      "status": "OK",
+      "detail": "SQLite WAL ledger.sqlite: quick_check ok",
+      "last_ok": null
+    },
+    {
+      "name": "agent",
+      "status": "OK",
+      "detail": "last tool call 2026-11-09T00:17:04.160305Z by agent:codex-5fda00",
+      "last_ok": "2026-11-09T00:17:04.160305Z"
+    },
+    {
+      "name": "engine",
+      "status": "OK",
+      "detail": "in-process deterministic fake broker (SIMULATED)",
+      "last_ok": null
+    },
+    {
+      "name": "scheduler",
+      "status": "OK",
+      "detail": "session scheduler running; startup recovery complete",
+      "last_ok": null
+    }
+  ],
+  "asof": "2026-11-09T00:17:14.669953Z"
+}

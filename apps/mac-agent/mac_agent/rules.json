@@ -1,0 +1,453 @@
+{
+  "version": "mac-agent-policy-v3",
+  "description": "Single source of truth for the GUI agent allow/deny rules. Loaded by mac_agent.policy (Python) and browser/src/rules.mjs (Node). Regexes use only the syntax subset shared by Python re and JavaScript RegExp and are matched case-insensitively.",
+  "native_apps": [
+    {
+      "key": "calculator",
+      "names": [
+        "Calculator"
+      ],
+      "bundle_ids": [
+        "com.apple.calculator"
+      ],
+      "capabilities": [
+        "list",
+        "inspect",
+        "screenshot",
+        "click",
+        "type",
+        "press",
+        "launch",
+        "focus"
+      ],
+      "type_charset": "^[0-9+*/=.,()%\\- ]*$",
+      "keys": [
+        "0",
+        "1",
+        "2",
+        "3",
+        "4",
+        "5",
+        "6",
+        "7",
+        "8",
+        "9",
+        "return",
+        "enter",
+        "escape",
+        "equal",
+        "=",
+        "+",
+        "-",
+        "*",
+        "/",
+        "shift+=",
+        "shift+8",
+        "period",
+        "."
+      ]
+    },
+    {
+      "key": "notes",
+      "names": [
+        "Notes"
+      ],
+      "bundle_ids": [
+        "com.apple.Notes"
+      ],
+      "capabilities": [
+        "list",
+        "inspect",
+        "screenshot",
+        "click",
+        "type",
+        "press",
+        "launch",
+        "focus"
+      ],
+      "type_charset": null,
+      "keys": [
+        "return",
+        "tab",
+        "escape",
+        "up",
+        "down",
+        "left",
+        "right",
+        "cmd+n"
+      ]
+    },
+    {
+      "key": "textedit",
+      "names": [
+        "TextEdit"
+      ],
+      "bundle_ids": [
+        "com.apple.TextEdit"
+      ],
+      "capabilities": [
+        "list",
+        "inspect",
+        "screenshot",
+        "click",
+        "type",
+        "press",
+        "launch",
+        "focus"
+      ],
+      "type_charset": null,
+      "keys": [
+        "return",
+        "tab",
+        "escape",
+        "up",
+        "down",
+        "left",
+        "right",
+        "cmd+n"
+      ]
+    },
+    {
+      "key": "finder",
+      "names": [
+        "Finder"
+      ],
+      "bundle_ids": [
+        "com.apple.finder"
+      ],
+      "capabilities": [
+        "list",
+        "inspect",
+        "screenshot",
+        "click",
+        "launch",
+        "focus"
+      ],
+      "type_charset": null,
+      "keys": []
+    },
+    {
+      "key": "terminal",
+      "names": [
+        "Terminal",
+        "iTerm2",
+        "iTerm"
+      ],
+      "bundle_ids": [
+        "com.apple.Terminal",
+        "com.googlecode.iterm2"
+      ],
+      "capabilities": [
+        "list",
+        "inspect"
+      ],
+      "type_charset": null,
+      "keys": [],
+      "note": "Read-only accessibility inspection with redaction. Typing, key presses, clicks and screenshots are denied (terminals can display secrets).",
+      "redact_values": true
+    },
+    {
+      "key": "ide",
+      "names": [
+        "Code",
+        "Visual Studio Code",
+        "Cursor",
+        "Xcode",
+        "Zed"
+      ],
+      "bundle_ids": [
+        "com.microsoft.VSCode",
+        "com.todesktop.230313mzl4w4u92",
+        "com.apple.dt.Xcode",
+        "dev.zed.Zed"
+      ],
+      "capabilities": [
+        "list",
+        "inspect",
+        "screenshot"
+      ],
+      "type_charset": null,
+      "keys": [],
+      "note": "Read-only inspection/screenshot; screenshots are denied when the window title looks sensitive.",
+      "redact_values": true,
+      "screenshot_precheck": true
+    }
+  ],
+  "browser_apps": [
+    {
+      "key": "playwright_chromium",
+      "names": [
+        "Google Chrome for Testing",
+        "Chromium"
+      ],
+      "bundle_ids": [
+        "com.google.chrome.for.testing",
+        "org.chromium.Chromium"
+      ],
+      "capabilities": [
+        "list",
+        "inspect",
+        "screenshot",
+        "click",
+        "type",
+        "focus"
+      ],
+      "keys": [
+        "return",
+        "tab",
+        "escape",
+        "up",
+        "down",
+        "left",
+        "right"
+      ],
+      "note": "Only the Playwright-launched browser (route-level URL allowlist + host-resolver lockdown) may be driven by Peekaboo, only while its window title identifies an allowlisted surface bound by our own Playwright process, and only inside the page's AXWebArea (never the address bar, tabs or menus). Key presses through Peekaboo are not allowed for browsers (focus could be in the address bar); Playwright presses keys on a located element. The user's everyday Chrome/Safari profiles are not allowlisted for native control."
+    }
+  ],
+  "allowed_surface_titles": [
+    "^LAT Operator Dashboard\\b",
+    "^local-ai-trader\\b",
+    "^Local AI Trader\\b"
+  ],
+  "fixture_surface_titles": [
+    "^FAKE PAPER DASHBOARD [—-] SIMULATED\\b"
+  ],
+  "deny_app_patterns": [
+    "alpaca",
+    "broker",
+    "trade",
+    "trading",
+    "robinhood",
+    "schwab",
+    "fidelity",
+    "ibkr",
+    "interactive ?brokers",
+    "trader workstation",
+    "\\btws\\b",
+    "e\\*?trade",
+    "webull",
+    "thinkorswim",
+    "tastytrade",
+    "tastyworks",
+    "tradestation",
+    "firstrade",
+    "vanguard",
+    "merrill",
+    "sofi",
+    "coinbase",
+    "binance",
+    "kraken",
+    "metatrader",
+    "ninjatrader",
+    "tradingview",
+    "\\bbank",
+    "paypal",
+    "venmo",
+    "zelle",
+    "cash app",
+    "system settings",
+    "system preferences",
+    "com\\.apple\\.systempreferences",
+    "com\\.apple\\.settings",
+    "privacy",
+    "security",
+    "keychain",
+    "\\bpasswords?\\b",
+    "com\\.apple\\.passwords",
+    "1password",
+    "bitwarden",
+    "lastpass",
+    "dashlane",
+    "keeper",
+    "enpass",
+    "securityagent",
+    "coreautha",
+    "^mail$",
+    "com\\.apple\\.mail",
+    "^messages$",
+    "com\\.apple\\.mobilesms",
+    "facetime",
+    "slack",
+    "whatsapp",
+    "telegram",
+    "signal",
+    "discord",
+    "microsoft teams",
+    "outlook",
+    "script editor",
+    "automator",
+    "shortcuts",
+    "installer",
+    "activity monitor",
+    "disk utility",
+    "migration assistant"
+  ],
+  "deny_host_patterns": [
+    "alpaca",
+    "broker",
+    "trade",
+    "trading",
+    "robinhood",
+    "schwab",
+    "fidelity",
+    "ibkr",
+    "interactivebrokers",
+    "etrade",
+    "webull",
+    "tdameritrade",
+    "thinkorswim",
+    "tastytrade",
+    "tastyworks",
+    "tradestation",
+    "firstrade",
+    "vanguard",
+    "merrill",
+    "sofi",
+    "coinbase",
+    "binance",
+    "kraken",
+    "paypal",
+    "venmo",
+    "zelle",
+    "bank"
+  ],
+  "loopback_hosts": [
+    "127.0.0.1",
+    "localhost",
+    "[::1]",
+    "::1"
+  ],
+  "loopback_allowed_methods": [
+    "GET",
+    "HEAD"
+  ],
+  "loopback_path_deny_patterns": [
+    "^/api/v1/control(/|$)",
+    "^/api/v1/pipeline(/|$)",
+    "^/api/v1/risk/policy(/|$)",
+    "^/api/v1/orders/[^/]+/cancel(/|$)",
+    "^/api/v1/engine(/|$)",
+    "^/api/v1/approvals?(/|$)",
+    "token",
+    "secret",
+    "/keys(/|$)",
+    "^/api/v1/ai/chatgpt(/|$)",
+    "^/api/v1/agent(/|$)",
+    "^/auth(/|$)",
+    "callback"
+  ],
+  "fixture_dir": "apps/mac-agent/fixtures",
+  "element_deny_patterns": [
+    "\\bplace\\b.*\\borders?\\b",
+    "\\bsubmit\\b.*\\borders?\\b",
+    "\\bsend\\b.*\\borders?\\b",
+    "\\b(cancel|modify|replace|amend)\\b.*\\borders?\\b",
+    "\\b(market|limit|stop)[ -]orders?\\b",
+    "\\bconfirm\\b.*\\b(trade|order|purchase|sale|transfer)s?\\b",
+    "\\bbuy\\b",
+    "\\bsell\\b",
+    "\\bshort\\b",
+    "\\blive\\b",
+    "\\bexecute\\b",
+    "\\bexecute\\b.*\\btrades?\\b",
+    "^\\W*trade\\W*$",
+    "\\btrade now\\b",
+    "\\btransfers?\\b",
+    "\\bwithdraw(al|als)?\\b",
+    "\\bdeposits?\\b",
+    "\\bfund(ing)?\\b.*\\baccount\\b",
+    "\\bwire\\b",
+    "\\bliquidate\\b",
+    "\\bclose\\b.*\\bpositions?\\b",
+    "\\bflatten\\b",
+    "\\bapprove\\b",
+    "\\brelease\\b.*\\block\\b",
+    "\\bresume\\b.*\\btrading\\b",
+    "\\bdelete\\b",
+    "\\berase\\b",
+    "\\bmove to (the )?(trash|bin)\\b",
+    "\\bempty (the )?(trash|bin)\\b",
+    "\\bremove\\b",
+    "\\bshare\\b",
+    "\\bsend\\b",
+    "\\bforward\\b",
+    "\\breply\\b",
+    "\\binvite\\b",
+    "\\bsign ?(in|up)\\b",
+    "\\blog ?in\\b",
+    "\\bpassword\\b",
+    "\\bunlock\\b",
+    "\\bpurchase\\b",
+    "\\bcheckout\\b",
+    "\\bpay\\b"
+  ],
+  "type_target_deny_patterns": [
+    "\\b(qty|quantity|shares|notional|amount)\\b",
+    "\\b(limit|stop) price\\b",
+    "\\bsymbol\\b",
+    "\\bticker\\b",
+    "\\bpassword\\b",
+    "\\bpasscode\\b",
+    "\\bapi ?key\\b",
+    "\\bsecret\\b",
+    "\\btoken\\b",
+    "\\b(otp|2fa|mfa)\\b",
+    "\\bverification code\\b",
+    "\\baccount number\\b",
+    "\\brouting number\\b",
+    "\\bcard number\\b",
+    "\\bssn\\b",
+    "\\baddress (and search )?bar\\b",
+    "\\bomnibox\\b",
+    "\\bsearch or type\\b"
+  ],
+  "secure_roles": [
+    "AXSecureTextField",
+    "secureTextField",
+    "secure_text_field"
+  ],
+  "live_surface_patterns": [
+    "\\b(trading[_ ]mode|execution[_ ]label|execution|environment|account|mode)\\s*[:=]\\s*(live|live_approval|bounded_live)\\b",
+    "\\blive[ _-](mode|trading|account|environment)\\b",
+    "\\breal[- ]money (mode|trading|account)\\b",
+    "\\blive_approval\\b",
+    "\\bbounded_live\\b"
+  ],
+  "sensitive_title_patterns": [
+    "\\.env\\b",
+    "\\.pem\\b",
+    "\\.key\\b",
+    "\\bsecrets?\\b",
+    "\\btokens?\\b",
+    "\\bkeychain\\b",
+    "\\bpasswords?\\b",
+    "\\bcredentials?\\b",
+    "\\bapi[ _-]?keys?\\b",
+    "operator\\.token",
+    "engine\\.token",
+    "id_rsa",
+    "id_ed25519"
+  ],
+  "secret_text_patterns": [
+    "sk-ant-[A-Za-z0-9_-]{8,}",
+    "sk-[A-Za-z0-9_-]{16,}",
+    "\\b(PK|AK|CK)[A-Z0-9]{14,}\\b",
+    "-----BEGIN [A-Z ]*PRIVATE KEY-----",
+    "\\b(ghp|gho|ghs|github_pat)_[A-Za-z0-9_]{16,}",
+    "\\bxox[abprs]-[A-Za-z0-9-]{10,}",
+    "\\bAKIA[0-9A-Z]{16}\\b",
+    "(api[_-]?key|secret|token|password|passwd|authorization)\\s*[=:]\\s*\\S{6,}",
+    "\\b[A-Za-z0-9+/_-]{40,}={0,2}"
+  ],
+  "audit_redact_patterns": [
+    "sk-ant-[A-Za-z0-9_-]{8,}",
+    "sk-[A-Za-z0-9_-]{16,}",
+    "\\b(PK|AK|CK)[A-Z0-9]{14,}\\b",
+    "-----BEGIN [A-Z ]*PRIVATE KEY-----[\\s\\S]*?(-----END [A-Z ]*PRIVATE KEY-----|$)",
+    "\\b(ghp|gho|ghs|github_pat)_[A-Za-z0-9_]{16,}",
+    "\\bxox[abprs]-[A-Za-z0-9-]{10,}",
+    "\\bAKIA[0-9A-Z]{16}\\b",
+    "\\b[A-Za-z0-9+/_-]{40,}={0,2}"
+  ],
+  "max_text_length": 2000
+}

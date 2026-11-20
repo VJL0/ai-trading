@@ -1,0 +1,53 @@
+.mycelium { margin: 22px 0 28px; border: 1px solid #28403e; border-radius: 18px; overflow: hidden; background: #080f14; color: #d9eee7; }
+.myc-heading { padding: 30px 32px 25px; display: flex; justify-content: space-between; align-items: center; gap: 20px; background: linear-gradient(110deg,#10221f55,transparent); }
+.myc-eyebrow { font: 10px var(--mono); letter-spacing: .2em; text-transform: uppercase; color: #91ada2; }
+.myc-heading h2 { font-size: clamp(28px,3vw,44px); font-weight: 400; letter-spacing: -.045em; margin-top: 9px; }
+.myc-heading h2 em { font-family: Georgia, serif; color: #a9e3c9; font-weight: 400; }
+.myc-heading p { margin: 9px 0 0; color: #88a49a; font-size: 12px; }
+.myc-status { text-align: right; font: 10px var(--mono); letter-spacing: .12em; white-space: nowrap; }
+.myc-status small { display: block; margin-top: 9px; color: #91a69c; letter-spacing: 0; }
+.myc-dot { display: inline-block; width: 6px; height: 6px; border-radius: 50%; background: #a2e7bd; box-shadow: 0 0 12px #8fe9b6; margin-right: 8px; }
+.myc-dot.offline { background: #db9f68; box-shadow: none; }
+.myc-body { display: grid; grid-template-columns: minmax(0,1fr) 290px; border-top: 1px solid #20342f; }
+.myc-world { min-width: 0; }
+.myc-surface { height: clamp(460px,50vw,680px); position: relative; overflow: hidden; container-type: size; touch-action: none; background: radial-gradient(ellipse at center,#102528,#070e13 70%); }
+.myc-surface canvas { width: 100%; height: 100%; display: block; cursor: grab; }
+.myc-surface canvas:active { cursor: grabbing; }
+.myc-coordinate { position: absolute; top: 23px; left: 25px; font: 9px var(--mono); letter-spacing: .17em; pointer-events: none; color: #77958b; }
+.myc-coordinate span { display: block; margin-top: 8px; letter-spacing: .03em; color: #59776b; }
+.mycelium button,.mycelium select { color: #c4dfd3; background: #11231fe8; border: 1px solid #355247; border-radius: 5px; font: 11px var(--font); padding: 7px 11px; cursor: pointer; }
+.mycelium button:hover,.mycelium button[aria-pressed=true] { background: #214337; border-color: #82bba0; }
+.mycelium button:disabled { opacity: .5; cursor: default; }
+.mycelium .myc-colony { position: absolute; width: 170px; background: #09151bcc; border: 1px solid #324c4455; font: 9px var(--mono); letter-spacing: .07em; max-width: 170px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.mycelium .myc-colony.chosen { color: #fff; border-color: #b4e9d3; }
+.myc-empty { position: absolute; top: 50%; left: 50%; transform: translate(-50%,-50%); text-align: center; width: min(85%,400px); }
+.myc-empty h3 { font: italic 27px Georgia,serif; color: #adc5bc; }
+.myc-empty p { color: #8ba89d; font-size: 12px; line-height: 1.7; }
+.myc-view-controls { position: absolute; bottom: 52px; left: 22px; display: flex; gap: 5px; }
+.myc-legend { position: absolute; bottom: 23px; left: 25px; right: 16px; display: flex; flex-wrap: wrap; gap: 14px; font: 9px var(--mono); text-transform: uppercase; letter-spacing: .05em; }
+.myc-legend span:before { content: ''; display: inline-block; width: 4px; height: 4px; margin: 0 6px 2px 0; background: currentColor; border-radius: 50%; }
+.myc-kind-market { color: #64d7bb; }.myc-kind-prediction { color: #b89af6; }.myc-kind-risk { color: #edbd71; }.myc-kind-order { color: #7bbcf1; }.myc-kind-outcome { color: #c0e8d0; }.myc-kind-error { color: #fa8c84; }
+.myc-transport { display: flex; align-items: center; gap: 8px; padding: 13px 17px; border-top: 1px solid #23372f; flex-wrap: wrap; min-height: 61px; }
+.myc-transport input { flex: 1; min-width: 80px; accent-color: #abddc5; }
+.myc-transport time { font: 9px var(--mono); color: #90aa9e; margin-left: auto; }
+.myc-transport-note { font-size: 10px; color: #7e9a8f; }
+.myc-inspector { border-left: 1px solid #23372f; padding: 23px 18px 12px; min-width: 0; background: #0b1519; }
+.myc-inspector-title { display: flex; justify-content: space-between; gap: 8px; align-items: center; }
+.myc-inspector-note { font-size: 10px; color: #829b90; }
+.myc-events { overflow-y: auto; max-height: 602px; scrollbar-width: thin; }
+.mycelium .myc-event { background: none; display: block; border: 0; border-bottom: 1px solid #24392f; border-radius: 0; text-align: left; width: 100%; padding: 14px 0; }
+.mycelium .myc-event:hover { background: #19352b; }
+.myc-event time { font: 9px var(--mono); opacity: .65; }
+.myc-event strong { display: block; color: #d4e2d9; font-size: 11px; font-weight: 450; margin: 5px 0; overflow-wrap: anywhere; }
+.myc-event small { color: #829b90; font-size: 9px; }
+.myc-detail { overflow-y: auto; max-height: 610px; font-size: 11px; overflow-wrap: anywhere; }
+.myc-detail > span { display: block; font: 10px var(--mono); text-transform: uppercase; margin: 18px 0 12px; }
+.myc-detail h3 { font-size: 18px; line-height: 1.4; font-weight: 450; }
+.myc-detail p,.myc-detail time { color: #93aca0; line-height: 1.6; }
+.myc-detail pre { font: 10px/1.7 var(--mono); white-space: pre-wrap; color: #9eb6aa; }
+.mycelium .myc-back { margin-top: 15px; }
+.myc-foot { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding: 12px 22px; border-top: 1px solid #23372f; color: #8aa397; font: 9px var(--mono); }
+.myc-key { padding: 0 22px 14px; font-size: 10px; color: #8aa397; }
+.myc-key summary { cursor: pointer; }.myc-key p { max-width: 1100px; line-height: 1.8; }
+@media(max-width:1000px) { .myc-body { grid-template-columns: minmax(0,1fr) 240px; }.myc-heading { padding: 22px; } }
+@media(max-width:700px) { .myc-body { grid-template-columns: minmax(0,1fr); }.myc-heading { align-items: start; flex-direction: column; }.myc-status { text-align: left; }.myc-surface { height: 440px; }.myc-inspector { border-left: 0; border-top: 1px solid #23372f; }.myc-events,.myc-detail { max-height: 260px; }.myc-legend { gap: 8px; font-size: 8px; }.myc-coordinate { font-size: 8px; }.myc-transport-note { display: none; } }

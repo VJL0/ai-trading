@@ -1,0 +1,60 @@
+{
+ "success": true,
+ "target_receipt": {
+  "process_start_identity_decimal": "1794162489131845",
+  "window_id": 34661,
+  "process_start_identity": 1794162489131845,
+  "pid": 72247
+ },
+ "data": {
+  "clickedElement": "Button: All Clear",
+  "clickLocation": {
+   "y": 670,
+   "x": 502
+  },
+  "targetPoint": {
+   "elementId": "elem_8",
+   "snapshotId": "ps1_29257a91b9149916d304d23103315e81",
+   "resolved": {
+    "y": 670,
+    "x": 502
+   },
+   "windowAdjustment": {
+    "status": "unchanged"
+   },
+   "original": {
+    "y": 670,
+    "x": 502
+   },
+   "source": "element"
+  },
+  "targetWindowId": 34661,
+  "waitTime": 0,
+  "executionTime": 0.08912396430969238,
+  "targetApp": "Calculator",
+  "clickType": "single",
+  "deliveryMode": "background"
+ },
+ "target_identity": {
+  "pid": 72247,
+  "process_start_identity_decimal": "1794162489131845",
+  "window_id": 34661,
+  "kind": "window"
+ },
+ "outcome": {
+  "dispatch_state": "dispatched",
+  "evidence": "delivery_accepted",
+  "delivery_mode": "background",
+  "dispatched_unit_count": 1,
+  "escalation": "observe_before_retry",
+  "retry_safe": false,
+  "mutation_dispatched": true,
+  "effect": "unverifiable",
+  "route": "local",
+  "requires_fresh_observation": true,
+  "delivery_mechanism": "accessibility_action",
+  "state": "dispatched_unverified",
+  "retry_safety": "unsafe"
+ },
+ "effect": "unverifiable"
+}

@@ -1,0 +1,172 @@
+{
+  "verified_at_et": "2026-11-19T22:53:15.655053-05:00",
+  "execution_label": "SIMULATED",
+  "gateway": "FAKE",
+  "live_trading_enabled": false,
+  "memory_path": "/Users/victor/Developer/ai-trading/var/paper/memory.sqlite3",
+  "memory_counts": [
+    {
+      "kind": "episodic",
+      "status": "OBSERVED",
+      "count": 4209
+    },
+    {
+      "kind": "reflection",
+      "status": "HYPOTHESIS",
+      "count": 166
+    },
+    {
+      "kind": "research",
+      "status": "DEVELOPMENT_EVIDENCE",
+      "count": 230
+    }
+  ],
+  "capture": "transactional append-only SQLite outbox; idempotent bounded projection",
+  "retrieval": "FTS5 eligibility matching, point-in-time candidate BM25, hash vectors, numerical state, rank fusion",
+  "embedding_model": "hash-word-bigram-256-v1; lexical baseline, not pretrained semantic embeddings",
+  "latency_smoke_ms": [
+    48.05,
+    36.68,
+    37.32
+  ],
+  "evidence_status": "Reflections remain hypotheses. Independent confirmation receipts require verified model artifacts.",
+  "comparison": {
+    "dataset": "a6bd4f1d27ffbf4bbe2a8f26627c1605ff2cbb4b6f3059cb1f8c4c77463153b6",
+    "total_attempts": 148,
+    "validation": "DEVELOPMENT_ONLY",
+    "execution_authority": false,
+    "comparisons": [
+      {
+        "mode": "numeric",
+        "decision": "REJECTED",
+        "alpha": 0.00016891891891891893,
+        "sessions": 193,
+        "paired_mean_bps": 0.0,
+        "p_incremental": 1.0,
+        "sharpe_delta": null,
+        "drawdown_delta": 0.0,
+        "baseline_job": "2343c6d387eeae916d63ed453d8be42b48d59e3afa7ba41ded8565f0388d5d44",
+        "challenger_job": "07d81b2689e7588f27ac8d10991b8123f3a530dd4fe3006575cfce854c47925f"
+      },
+      {
+        "mode": "keyword",
+        "decision": "REJECTED",
+        "alpha": 0.00016891891891891893,
+        "sessions": 193,
+        "paired_mean_bps": 0.0,
+        "p_incremental": 1.0,
+        "sharpe_delta": null,
+        "drawdown_delta": 0.0,
+        "baseline_job": "2343c6d387eeae916d63ed453d8be42b48d59e3afa7ba41ded8565f0388d5d44",
+        "challenger_job": "95420b72fd6783fb2d8f203a3b7ced1ed1e33fbfcd11fe804dc122761cd7f9da"
+      },
+      {
+        "mode": "vector",
+        "decision": "REJECTED",
+        "alpha": 0.00016891891891891893,
+        "sessions": 193,
+        "paired_mean_bps": 0.0,
+        "p_incremental": 1.0,
+        "sharpe_delta": null,
+        "drawdown_delta": 0.0,
+        "baseline_job": "2343c6d387eeae916d63ed453d8be42b48d59e3afa7ba41ded8565f0388d5d44",
+        "challenger_job": "dfb282549af3fd29e7bb725915a39a8b104b232de6d52e2771e17962e01c35e7"
+      },
+      {
+        "mode": "hybrid",
+        "decision": "REJECTED",
+        "alpha": 0.00016891891891891893,
+        "sessions": 193,
+        "paired_mean_bps": 0.0,
+        "p_incremental": 1.0,
+        "sharpe_delta": null,
+        "drawdown_delta": 0.0,
+        "baseline_job": "2343c6d387eeae916d63ed453d8be42b48d59e3afa7ba41ded8565f0388d5d44",
+        "challenger_job": "5b9ff2af63a1d1b474b2d323635c10fff49880d30480b33d59050e0c622b360e"
+      },
+      {
+        "mode": "reflection",
+        "decision": "REJECTED",
+        "alpha": 0.00016891891891891893,
+        "sessions": 193,
+        "paired_mean_bps": 0.0,
+        "p_incremental": 1.0,
+        "sharpe_delta": null,
+        "drawdown_delta": 0.0,
+        "baseline_job": "2343c6d387eeae916d63ed453d8be42b48d59e3afa7ba41ded8565f0388d5d44",
+        "challenger_job": "3c97f64309931a4f5f0a0828a021536427d04f39e4729c1f7ecfe4416aa7c624"
+      }
+    ]
+  },
+  "baseline_metrics": {
+    "covered_sessions": 159.75641025641025,
+    "exposure": 0.0009630045742717278,
+    "hit_rate": 0.0,
+    "mean_net_bps": -165.74438468228007,
+    "n_test": 243220,
+    "n_trades": 1,
+    "net_return": -0.01657443846822801,
+    "net_sharpe": null,
+    "p_value": 1.0,
+    "t_stat": null,
+    "turnover": 0.006259529732766231
+  },
+  "evaluation_code_hash": "59fce1d698f0281be0a0733c80a5d9010655ef94c3a19504ab1681c14cac59a8",
+  "protected_confirmation_count": 0,
+  "memory_strategies_promoted": 0,
+  "research_job_counts_at_verification": [
+    {
+      "state": "COMPLETED",
+      "count": 151
+    },
+    {
+      "state": "FAILED",
+      "count": 7
+    },
+    {
+      "state": "QUEUED",
+      "count": 10
+    },
+    {
+      "state": "RUNNING",
+      "count": 4
+    }
+  ],
+  "tests": {
+    "broad_regression": {
+      "passed": 1868,
+      "skipped": 6,
+      "initial_failures": 2,
+      "repairs": "Both repaired and rerun successfully (22 checks)."
+    },
+    "focused_integration": {
+      "passed": 422
+    },
+    "final_memory": {
+      "passed": 15
+    },
+    "isolated_ml": {
+      "advanced_models": 8,
+      "cpu_and_kronos": 16
+    },
+    "static_checks": "Ruff clean; Pyright zero errors; git diff --check clean",
+    "note": "Counts overlap; these are separate runs, not an inflated aggregate. Mixed native tests were isolated after a hang."
+  },
+  "source_sha256": {
+    "services/memory/__init__.py": "bf8200e945da8db362c4139cfbe295aea160a57893af94e67aeb8b7d5458a4d3",
+    "services/memory/ablation.py": "4572505282b794fc447d744c6ceb36b53def4797dabbf685c61305acd71631cb",
+    "services/memory/benchmark.py": "bf5bd435c2268a6cf7d2412c14ba6cf9e4630120a7a94dd1c4950d9330474793",
+    "services/memory/comparison.py": "c93e35e51735dd85e641ef5867289ea012967f27ed99eb80300c2e12ba238216",
+    "services/memory/migrations/0700_memory.sql": "98c4bb4040769eb840b5c4100f6a30ed23fa523e6a2e5e2c89e7c6cb6857b9ef",
+    "services/memory/outcomes.py": "5e518e6fc73dda0d60fda8f63f2f5f8b6f5f46a432ce3dbed470a027679b5465",
+    "services/memory/store.py": "694e91c32a4b648d5bc9606b1615d73e2fbe5696841d9c25bd749463af0435d5",
+    "services/memory/worker.py": "ebb4b6c8dd742f753a58411fb732092ae3aba4efeac4bbd73b4555201011bfca"
+  },
+  "limitations": [
+    "No demonstrated return improvement: every memory challenger matched the single losing baseline trade.",
+    "Market-state text retrieval was tested; free-form LLM RAG and learned semantic embeddings were not.",
+    "Memory challengers remain research-only; a future passing result needs a paired independent confirmation implementation.",
+    "Observed snapshot returns are counterfactual diagnostics, not executed P&L; absent endpoints remain unresolved.",
+    "Retrieval and outcome scans are bounded; documentation describes recall and resolution limits."
+  ]
+}

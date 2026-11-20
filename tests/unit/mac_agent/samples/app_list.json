@@ -1,0 +1,87 @@
+{
+ "success": true,
+ "data": {
+  "schema_capabilities": [
+   "processStartIdentityDecimal"
+  ],
+  "count": 8,
+  "apps": [
+   {
+    "process_start_identity_decimal": "1792706489003811",
+    "bundle_id": "com.apple.finder",
+    "process_start_identity": 1792706489003811,
+    "pid": 624,
+    "name": "Finder",
+    "is_hidden": false,
+    "is_active": false
+   },
+   {
+    "process_start_identity_decimal": "1794162302028504",
+    "bundle_id": "com.apple.Terminal",
+    "process_start_identity": 1794162302028504,
+    "pid": 70204,
+    "name": "Terminal",
+    "is_hidden": false,
+    "is_active": false
+   },
+   {
+    "process_start_identity_decimal": "1792706489003811",
+    "bundle_id": "com.apple.calculator",
+    "process_start_identity": 1792706489003811,
+    "pid": 72247,
+    "name": "Calculator",
+    "is_hidden": false,
+    "is_active": false
+   },
+   {
+    "process_start_identity_decimal": "1792706489003811",
+    "bundle_id": "com.apple.Notes",
+    "process_start_identity": 1792706489003811,
+    "pid": 72301,
+    "name": "Notes",
+    "is_hidden": false,
+    "is_active": false
+   },
+   {
+    "process_start_identity_decimal": "1792706489003811",
+    "bundle_id": "markets.alpaca.desktop",
+    "process_start_identity": 1792706489003811,
+    "pid": 70001,
+    "name": "Alpaca Trader",
+    "is_hidden": false,
+    "is_active": false
+   },
+   {
+    "process_start_identity_decimal": "1792706489003811",
+    "bundle_id": "com.apple.keychainaccess",
+    "process_start_identity": 1792706489003811,
+    "pid": 70002,
+    "name": "Keychain Access",
+    "is_hidden": false,
+    "is_active": false
+   },
+   {
+    "process_start_identity_decimal": "1792706489003811",
+    "bundle_id": "com.robinhood.mac",
+    "process_start_identity": 1792706489003811,
+    "pid": 70003,
+    "name": "Robinhood",
+    "is_hidden": false,
+    "is_active": false
+   },
+   {
+    "process_start_identity_decimal": "1792706489003811",
+    "bundle_id": "com.apple.mail",
+    "process_start_identity": 1792706489003811,
+    "pid": 70004,
+    "name": "Mail",
+    "is_hidden": false,
+    "is_active": false
+   }
+  ],
+  "warnings": [
+   "Process-generation identity was unavailable for PID 527",
+   "Process-generation identity was unavailable for PID 678"
+  ]
+ }
+}

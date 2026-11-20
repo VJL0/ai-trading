@@ -1,0 +1,96 @@
+{
+ "events": [
+  {
+   "seq": 6,
+   "event_id": "aud_00000000000000000000000006",
+   "ts": "2026-11-05T14:10:00.557000Z",
+   "event_type": "DECISION_CYCLE",
+   "causal_id": "cz_01JBDASHFIXTURE0000000002",
+   "source": "pipeline",
+   "mode": "PAPER",
+   "policy_version": "pol_1fcc24ed0ec6e7c7",
+   "payload": {
+    "candidate_symbol": "AAPL",
+    "causal_id": "cz_01JBDASHFIXTURE0000000002",
+    "outcome": "REJECTED",
+    "reason": "spread",
+    "session_id": "sess_01JBDASHFIXTURE00000001"
+   }
+  },
+  {
+   "seq": 5,
+   "event_id": "aud_00000000000000000000000005",
+   "ts": "2026-11-05T14:10:00.527000Z",
+   "event_type": "RISK_DECISION_RECORDED",
+   "causal_id": "cz_01JBDASHFIXTURE0000000002",
+   "source": "order_ledger",
+   "mode": "PAPER",
+   "policy_version": "pol_1fcc24ed0ec6e7c7",
+   "payload": {
+    "decision_id": "rd_01JBDASHFIXTURE0000000002"
+   }
+  },
+  {
+   "seq": 4,
+   "event_id": "aud_00000000000000000000000004",
+   "ts": "2026-11-05T14:10:00.515000Z",
+   "event_type": "PROPOSAL_RECORDED",
+   "causal_id": "cz_01JBDASHFIXTURE0000000002",
+   "source": "order_ledger",
+   "mode": "PAPER",
+   "policy_version": "pol_1fcc24ed0ec6e7c7",
+   "payload": {
+    "proposal_id": "tp_01JBDASHFIXTURE0000000002"
+   }
+  },
+  {
+   "seq": 3,
+   "event_id": "aud_00000000000000000000000003",
+   "ts": "2026-11-05T14:05:00Z",
+   "event_type": "AGENT_TOOL_CALL",
+   "causal_id": null,
+   "source": "agent:claude-code",
+   "mode": "PAPER",
+   "policy_version": "pol_1fcc24ed0ec6e7c7",
+   "payload": {
+    "mutating": true,
+    "outcome": "ok",
+    "tool": "start_paper_session"
+   }
+  },
+  {
+   "seq": 2,
+   "event_id": "aud_00000000000000000000000002",
+   "ts": "2026-11-05T12:55:00Z",
+   "event_type": "STARTUP_RECOVERY",
+   "causal_id": null,
+   "source": "reconciler",
+   "mode": "PAPER",
+   "policy_version": "pol_1fcc24ed0ec6e7c7",
+   "payload": {
+    "in_doubt": {},
+    "note": "SUBMITTING treated as UNKNOWN; nothing resubmitted"
+   }
+  },
+  {
+   "seq": 1,
+   "event_id": "aud_00000000000000000000000001",
+   "ts": "2026-11-05T12:55:00Z",
+   "event_type": "RUNTIME_STARTED",
+   "causal_id": null,
+   "source": "api",
+   "mode": "PAPER",
+   "policy_version": "pol_1fcc24ed0ec6e7c7",
+   "payload": {
+    "execution_label": "SIMULATED",
+    "gateway": "FAKE",
+    "mode": "PAPER"
+   }
+  }
+ ],
+ "chain": {
+  "ok": true,
+  "rows": 6,
+  "detail": "ok"
+ }
+}

@@ -1,0 +1,20 @@
+{
+  "mcpServers": {
+    "local-ai-trader": {
+      "type": "stdio",
+      "command": "uv",
+      "args": [
+        "run",
+        "--frozen",
+        "--directory",
+        "/Users/victor/Developer/ai-trading",
+        "python",
+        "-m",
+        "services.mcp_server"
+      ],
+      "env": {
+        "LAT_AGENT_NAME": "claude-code"
+      }
+    }
+  }
+}

@@ -1,0 +1,60 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    Source build of the official QuantConnect Alpaca brokerage plugin (pinned in trading/PINS.json)
+    against the PINNED LEAN SOURCE projects instead of the floating NuGet packages
+    QuantConnect.Brokerages 2.5.* / QuantConnect.Lean.Engine 2.5.* used by the upstream csproj.
+
+    Why: the runtime must load exactly one QuantConnect.Common / QuantConnect.Brokerages /
+    QuantConnect.Lean.Engine - the ones built from the pinned LEAN commit that the Launcher runs.
+    Compiling the plugin against NuGet 2.5.x and dropping it next to a source-built Launcher would
+    bind it to whatever NuGet build was resolved, not to the pinned engine source.
+
+    No upstream file is modified: the .cs files are compiled in place via Compile Include.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
+    <AssemblyName>QuantConnect.Brokerages.Alpaca</AssemblyName>
+    <RootNamespace>QuantConnect.Brokerages.Alpaca</RootNamespace>
+    <OutputType>Library</OutputType>
+    <OutputPath>bin\$(Configuration)\</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <EnableDefaultCompileItems>false</EnableDefaultCompileItems>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <NoWarn>$(NoWarn);NU1605;CS1591;CS0618;SYSLIB0021;SYSLIB0022</NoWarn>
+    <Nullable>disable</Nullable>
+    <Deterministic>true</Deterministic>
+    <PluginSrc>..\Lean.Brokerages.Alpaca\QuantConnect.AlpacaBrokerage</PluginSrc>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="$(PluginSrc)\*.cs" />
+    <Compile Include="..\..\lean\Lean\Common\Properties\SharedAssemblyInfo.cs" Link="Properties\SharedAssemblyInfo.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Same third-party versions as the upstream plugin csproj (exact, not floating). -->
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.2" />
+    <PackageReference Include="Polly" Version="8.6.3" />
+    <PackageReference Include="MessagePack" Version="3.1.7" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- Pinned LEAN source; Private=false: the Launcher output provides these assemblies at runtime. -->
+    <ProjectReference Include="..\..\lean\Lean\Brokerages\QuantConnect.Brokerages.csproj" Private="false" />
+    <ProjectReference Include="..\..\lean\Lean\Engine\QuantConnect.Lean.Engine.csproj" Private="false" />
+    <ProjectReference Include="..\..\lean\Lean\Common\QuantConnect.csproj" Private="false" />
+    <ProjectReference Include="..\..\lean\Lean\Configuration\QuantConnect.Configuration.csproj" Private="false" />
+    <ProjectReference Include="..\..\lean\Lean\Logging\QuantConnect.Logging.csproj" Private="false" />
+    <ProjectReference Include="..\..\lean\Lean\Api\QuantConnect.Api.csproj" Private="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Alpaca.Markets">
+      <HintPath>$(PluginSrc)\Alpaca.Markets.dll</HintPath>
+      <Private>true</Private>
+    </Reference>
+  </ItemGroup>
+</Project>

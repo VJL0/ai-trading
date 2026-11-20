@@ -1,0 +1,6 @@
+Third-party software bundled in this dashboard:
+
+React and React DOM: MIT License, Copyright (c) Meta Platforms, Inc. and affiliates.
+
+The equity sparkline is an inline SVG drawn by this project; TradingView Lightweight Charts is no
+longer bundled (if it is ever re-added, its Apache-2.0 NOTICE and attribution link must be shown).

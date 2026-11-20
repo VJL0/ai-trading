@@ -1,0 +1,400 @@
+{
+  "dataset": "ds_6f37a2401444b6ea",
+  "campaign": "d08678d3c4d6425981367e68b9f716b1385323b92baff1f55157c3a1b7920eaa",
+  "note": "Recorded development benchmarks, not portfolio returns or evidence of tradable edge. Source changed afterward only to add history selection; the new source version is being evaluated separately.",
+  "models": [
+    {
+      "job": "238711138b954050348b9cd7552a24dfcebf0eed37fb4fad2bb1caad48407c9c",
+      "family": "ridge",
+      "state": "COMPLETED",
+      "is_simulated": false,
+      "code_hash": "c1bf6c2a7dcd7f5a570e64f1cbcc8efa4b87629209ff75edbb07731c7b85e313",
+      "metrics": {
+        "covered_sessions": 159.75641025641025,
+        "exposure": 0.0009630045742717278,
+        "hit_rate": 0.0,
+        "mean_net_bps": -165.74438468228007,
+        "n_test": 243220,
+        "n_trades": 1,
+        "net_return": -0.01657443846822801,
+        "net_sharpe": null,
+        "p_value": 1.0,
+        "t_stat": null,
+        "turnover": 0.006259529732766231
+      },
+      "screen": {
+        "eligible_for_independent_validation": false,
+        "reasons": [
+          "fewer than 100 development trades",
+          "p_positive fails all-trial correction",
+          "nonpositive return at double modeled costs",
+          "fewer than three profitable development folds"
+        ],
+        "alpha_per_test": 0.00029069767441860465,
+        "total_trials": 86,
+        "execution_authority": false
+      }
+    },
+    {
+      "job": "5727b87cce8e9e7b836118dd6838fb8cb24ca08366db6513d917a81721864e21",
+      "family": "bayesian",
+      "state": "COMPLETED",
+      "is_simulated": false,
+      "code_hash": "c1bf6c2a7dcd7f5a570e64f1cbcc8efa4b87629209ff75edbb07731c7b85e313",
+      "metrics": {
+        "covered_sessions": 159.75641025641025,
+        "exposure": 0.0009630045742717278,
+        "hit_rate": 0.0,
+        "mean_net_bps": -165.74438468228007,
+        "n_test": 243220,
+        "n_trades": 1,
+        "net_return": -0.01657443846822801,
+        "net_sharpe": null,
+        "p_value": 1.0,
+        "t_stat": null,
+        "turnover": 0.006259529732766231
+      },
+      "screen": {
+        "eligible_for_independent_validation": false,
+        "reasons": [
+          "fewer than 100 development trades",
+          "p_positive fails all-trial correction",
+          "nonpositive return at double modeled costs",
+          "fewer than three profitable development folds"
+        ],
+        "alpha_per_test": 0.00029069767441860465,
+        "total_trials": 86,
+        "execution_authority": false
+      }
+    },
+    {
+      "job": "92e07bcc104240a24d6f0d4ae43440437c21e6225b659bae5f22bada153e7f7c",
+      "family": "extra_trees",
+      "state": "COMPLETED",
+      "is_simulated": false,
+      "code_hash": "c1bf6c2a7dcd7f5a570e64f1cbcc8efa4b87629209ff75edbb07731c7b85e313",
+      "metrics": {
+        "covered_sessions": 159.75641025641025,
+        "exposure": 0.0346681646737822,
+        "hit_rate": 0.4166666666666667,
+        "mean_net_bps": -1.0247190208098207,
+        "n_test": 243220,
+        "n_trades": 36,
+        "net_return": -0.0036889884749153547,
+        "net_sharpe": -0.11863299984998786,
+        "p_value": 0.5373576004165151,
+        "t_stat": -0.09445705234655034,
+        "trades_per_year": 56.78645373565524,
+        "turnover": 0.22534307037958431
+      },
+      "screen": {
+        "eligible_for_independent_validation": false,
+        "reasons": [
+          "fewer than 100 development trades",
+          "p_positive fails all-trial correction",
+          "nonpositive return at double modeled costs",
+          "fewer than three profitable development folds"
+        ],
+        "alpha_per_test": 0.00029069767441860465,
+        "total_trials": 86,
+        "execution_authority": false
+      }
+    },
+    {
+      "job": "72f04926c2d9af690677ba4d36da783e20a6316768c9e3ada1afdabc129dbccb",
+      "family": "lightgbm",
+      "state": "COMPLETED",
+      "is_simulated": false,
+      "code_hash": "c1bf6c2a7dcd7f5a570e64f1cbcc8efa4b87629209ff75edbb07731c7b85e313",
+      "metrics": {
+        "covered_sessions": 159.75641025641025,
+        "exposure": 0.02214910520824974,
+        "hit_rate": 0.6086956521739131,
+        "mean_net_bps": 7.134284145871065,
+        "n_test": 243220,
+        "n_trades": 23,
+        "net_return": 0.016408853535503448,
+        "net_sharpe": 0.5523223961892928,
+        "p_value": 0.3321982557423291,
+        "t_stat": 0.43976587926626115,
+        "trades_per_year": 36.28023433111307,
+        "turnover": 0.1439691838536233
+      },
+      "screen": {
+        "eligible_for_independent_validation": false,
+        "reasons": [
+          "fewer than 100 development trades",
+          "p_positive fails all-trial correction",
+          "nonpositive return at double modeled costs",
+          "fewer than three profitable development folds"
+        ],
+        "alpha_per_test": 0.00029069767441860465,
+        "total_trials": 86,
+        "execution_authority": false
+      }
+    },
+    {
+      "job": "afccc380094b61c22094d781de1ce9e6a5aa30662fceb4d6db59b9523f76730c",
+      "family": "catboost",
+      "state": "COMPLETED",
+      "is_simulated": false,
+      "code_hash": "c1bf6c2a7dcd7f5a570e64f1cbcc8efa4b87629209ff75edbb07731c7b85e313",
+      "metrics": {
+        "covered_sessions": 159.75641025641025,
+        "exposure": 0.007704036594173822,
+        "hit_rate": 0.5,
+        "mean_net_bps": 11.89908599678985,
+        "n_test": 243220,
+        "n_trades": 8,
+        "net_return": 0.00951926879743188,
+        "net_sharpe": 0.9176916592931903,
+        "p_value": 0.24435240969117744,
+        "t_stat": 0.7306773765264304,
+        "trades_per_year": 12.61921194125672,
+        "turnover": 0.05007623786212985
+      },
+      "screen": {
+        "eligible_for_independent_validation": false,
+        "reasons": [
+          "fewer than 100 development trades",
+          "p_positive fails all-trial correction",
+          "fewer than three profitable development folds"
+        ],
+        "alpha_per_test": 0.00029069767441860465,
+        "total_trials": 86,
+        "execution_authority": false
+      }
+    },
+    {
+      "job": "162ea788ce1b9f22dea9a8ab3740bb41ed5dad214014e3b5bccef7bb019dc1d4",
+      "family": "xgboost",
+      "state": "COMPLETED",
+      "is_simulated": false,
+      "code_hash": "c1bf6c2a7dcd7f5a570e64f1cbcc8efa4b87629209ff75edbb07731c7b85e313",
+      "metrics": {
+        "covered_sessions": 159.75641025641025,
+        "exposure": 0.06837332477329268,
+        "hit_rate": 0.5492957746478874,
+        "mean_net_bps": -1.3156057558687455,
+        "n_test": 243220,
+        "n_trades": 71,
+        "net_return": -0.009340800866668093,
+        "net_sharpe": -0.1905834100972903,
+        "p_value": 0.5600876624162855,
+        "t_stat": -0.1517448531749799,
+        "trades_per_year": 111.9955059786534,
+        "turnover": 0.4444266110264024
+      },
+      "screen": {
+        "eligible_for_independent_validation": false,
+        "reasons": [
+          "fewer than 100 development trades",
+          "p_positive fails all-trial correction",
+          "nonpositive return at double modeled costs",
+          "fewer than three profitable development folds"
+        ],
+        "alpha_per_test": 0.00029069767441860465,
+        "total_trials": 86,
+        "execution_authority": false
+      }
+    },
+    {
+      "job": "2458687f733d2af62eb64258ef963850292f0d30e70d5fcd9e5d52292c418587",
+      "family": "online",
+      "state": "COMPLETED",
+      "is_simulated": false,
+      "code_hash": "c1bf6c2a7dcd7f5a570e64f1cbcc8efa4b87629209ff75edbb07731c7b85e313",
+      "metrics": {
+        "covered_sessions": 159.75641025641025,
+        "exposure": 0.003852018297086911,
+        "hit_rate": 0.5,
+        "mean_net_bps": -32.4027249236424,
+        "n_test": 243220,
+        "n_trades": 4,
+        "net_return": -0.012961089969456961,
+        "net_sharpe": -0.7760510615037325,
+        "p_value": 0.70981104425244,
+        "t_stat": -0.6179013919630012,
+        "trades_per_year": 6.30960597062836,
+        "turnover": 0.025038118931064925
+      },
+      "screen": {
+        "eligible_for_independent_validation": false,
+        "reasons": [
+          "fewer than 100 development trades",
+          "p_positive fails all-trial correction",
+          "nonpositive return at double modeled costs",
+          "fewer than three profitable development folds"
+        ],
+        "alpha_per_test": 0.00029069767441860465,
+        "total_trials": 86,
+        "execution_authority": false
+      }
+    },
+    {
+      "job": "a58ab6100c5cbcccd297ebec495c5595e38266020f3635bd644939325cd8b16c",
+      "family": "regime",
+      "state": "COMPLETED",
+      "is_simulated": false,
+      "code_hash": "c1bf6c2a7dcd7f5a570e64f1cbcc8efa4b87629209ff75edbb07731c7b85e313",
+      "metrics": {
+        "covered_sessions": 159.75641025641025,
+        "exposure": 0.003852018297086911,
+        "hit_rate": 0.5,
+        "mean_net_bps": -8.496878743165084,
+        "n_test": 243220,
+        "n_trades": 4,
+        "net_return": -0.0033987514972660337,
+        "net_sharpe": -1.4153708621689771,
+        "p_value": 0.8291152582313533,
+        "t_stat": -1.126935673773159,
+        "trades_per_year": 6.30960597062836,
+        "turnover": 0.025038118931064925
+      },
+      "screen": {
+        "eligible_for_independent_validation": false,
+        "reasons": [
+          "fewer than 100 development trades",
+          "p_positive fails all-trial correction",
+          "nonpositive return at double modeled costs",
+          "fewer than three profitable development folds"
+        ],
+        "alpha_per_test": 0.00029069767441860465,
+        "total_trials": 86,
+        "execution_authority": false
+      }
+    },
+    {
+      "job": "bb5235ec0c42cd39ccc598dbc980f43b956be52d447a69524fce6c12dfae85e6",
+      "family": "pca",
+      "state": "COMPLETED",
+      "is_simulated": false,
+      "code_hash": "c1bf6c2a7dcd7f5a570e64f1cbcc8efa4b87629209ff75edbb07731c7b85e313",
+      "metrics": {
+        "covered_sessions": 159.75641025641025,
+        "exposure": 0.0009630045742717278,
+        "hit_rate": 0.0,
+        "mean_net_bps": -165.74438468228007,
+        "n_test": 243220,
+        "n_trades": 1,
+        "net_return": -0.01657443846822801,
+        "net_sharpe": null,
+        "p_value": 1.0,
+        "t_stat": null,
+        "turnover": 0.006259529732766231
+      },
+      "screen": {
+        "eligible_for_independent_validation": false,
+        "reasons": [
+          "fewer than 100 development trades",
+          "p_positive fails all-trial correction",
+          "nonpositive return at double modeled costs",
+          "fewer than three profitable development folds"
+        ],
+        "alpha_per_test": 0.00029069767441860465,
+        "total_trials": 86,
+        "execution_authority": false
+      }
+    },
+    {
+      "job": "1a25e283f3c10f785e035b916ebe317fefc3685d133506cef0d78a60120b0944",
+      "family": "torch_mlp",
+      "state": "COMPLETED",
+      "is_simulated": false,
+      "code_hash": "c1bf6c2a7dcd7f5a570e64f1cbcc8efa4b87629209ff75edbb07731c7b85e313",
+      "metrics": {
+        "covered_sessions": 159.75641025641025,
+        "exposure": 0.02503811893106492,
+        "hit_rate": 0.46153846153846156,
+        "mean_net_bps": -8.31025289481634,
+        "n_test": 243220,
+        "n_trades": 26,
+        "net_return": -0.021606657526522487,
+        "net_sharpe": -0.5055995404183671,
+        "p_value": 0.6546549006174511,
+        "t_stat": -0.4025645673301616,
+        "trades_per_year": 41.012438809084344,
+        "turnover": 0.162747773051922
+      },
+      "screen": {
+        "eligible_for_independent_validation": false,
+        "reasons": [
+          "fewer than 100 development trades",
+          "p_positive fails all-trial correction",
+          "nonpositive return at double modeled costs",
+          "fewer than three profitable development folds"
+        ],
+        "alpha_per_test": 0.00029069767441860465,
+        "total_trials": 86,
+        "execution_authority": false
+      }
+    },
+    {
+      "job": "1642e97b4a27ff8cf0c635bf397fc6c22166d795a19b9120a2fb5bf2bc158a38",
+      "family": "torch_masked",
+      "state": "COMPLETED",
+      "is_simulated": false,
+      "code_hash": "c1bf6c2a7dcd7f5a570e64f1cbcc8efa4b87629209ff75edbb07731c7b85e313",
+      "metrics": {
+        "covered_sessions": 159.75641025641025,
+        "exposure": 0.03563116924805393,
+        "hit_rate": 0.43243243243243246,
+        "mean_net_bps": -9.972509318299391,
+        "n_test": 243220,
+        "n_trades": 37,
+        "net_return": -0.036898284477707745,
+        "net_sharpe": -0.8789091282164802,
+        "p_value": 0.7557245038793454,
+        "t_stat": -0.6997982486895148,
+        "trades_per_year": 58.36385522831233,
+        "turnover": 0.23160260011235054
+      },
+      "screen": {
+        "eligible_for_independent_validation": false,
+        "reasons": [
+          "fewer than 100 development trades",
+          "p_positive fails all-trial correction",
+          "nonpositive return at double modeled costs",
+          "fewer than three profitable development folds"
+        ],
+        "alpha_per_test": 0.00029069767441860465,
+        "total_trials": 86,
+        "execution_authority": false
+      }
+    },
+    {
+      "job": "b7778e337cfd1aac1ceb7a5cad14f1642a03851aa3cb86907126d67f010a4ea2",
+      "family": "torch_transformer",
+      "state": "COMPLETED",
+      "is_simulated": false,
+      "code_hash": "c1bf6c2a7dcd7f5a570e64f1cbcc8efa4b87629209ff75edbb07731c7b85e313",
+      "metrics": {
+        "covered_sessions": 159.75641025641025,
+        "exposure": 0.08185538881309687,
+        "hit_rate": 0.4117647058823529,
+        "mean_net_bps": -15.307434204960781,
+        "n_test": 243220,
+        "n_trades": 85,
+        "net_return": -0.13011319074216665,
+        "net_sharpe": -2.2147201024685814,
+        "p_value": 0.9592641793228526,
+        "t_stat": -1.7633873620018174,
+        "trades_per_year": 134.07912687585267,
+        "turnover": 0.5320600272851296
+      },
+      "screen": {
+        "eligible_for_independent_validation": false,
+        "reasons": [
+          "fewer than 100 development trades",
+          "p_positive fails all-trial correction",
+          "nonpositive return at double modeled costs",
+          "fewer than three profitable development folds",
+          "development drawdown exceeds research threshold"
+        ],
+        "alpha_per_test": 0.00029069767441860465,
+        "total_trials": 86,
+        "execution_authority": false
+      }
+    }
+  ]
+}

@@ -1,0 +1,1596 @@
+{
+ "data": {
+  "interactable_count": 17,
+  "element_count": 84,
+  "ui_map": "/Users/tester/.peekaboo/snapshots/ps1_4af9b42a355362a826edca73306213f7/snapshot.json",
+  "screenshot_raw": "",
+  "capture_mode": "window",
+  "application_name": "Google Chrome for Testing",
+  "snapshot_id": "ps1_4af9b42a355362a826edca73306213f7",
+  "mutation_targeting_available": true,
+  "execution_time": 0.18290603160858154,
+  "focused_element": {
+   "title": "FAKE PAPER DASHBOARD — SIMULATED",
+   "processIdentifier": 86033,
+   "role": "AXWebArea",
+   "frame": [
+    [
+     22,
+     143
+    ],
+    [
+     1100,
+     900
+    ]
+   ],
+   "windowID": 34829
+  },
+  "semantic_scope": "exact_or_requested",
+  "snapshot_reusable": true,
+  "window_title": "FAKE PAPER DASHBOARD — SIMULATED - Google Chrome for Testing",
+  "ui_elements": [
+   {
+    "role_description": "button",
+    "id": "elem_7",
+    "label": "Back",
+    "role": "button",
+    "title": "Back",
+    "ax_role": "AXButton",
+    "value": "",
+    "description": "Back",
+    "bounds": {
+     "width": 34,
+     "height": 34,
+     "x": 28,
+     "y": 102
+    },
+    "is_enabled": true,
+    "is_selected": false,
+    "is_actionable": true
+   },
+   {
+    "role_description": "button",
+    "id": "elem_8",
+    "label": "Forward",
+    "role": "button",
+    "title": "Forward",
+    "ax_role": "AXButton",
+    "value": "",
+    "description": "Forward",
+    "bounds": {
+     "width": 34,
+     "height": 34,
+     "x": 64,
+     "y": 102
+    },
+    "is_enabled": false,
+    "is_selected": false,
+    "is_actionable": false
+   },
+   {
+    "role_description": "button",
+    "id": "elem_9",
+    "label": "Reload",
+    "role": "button",
+    "title": "Reload",
+    "ax_role": "AXButton",
+    "value": "",
+    "description": "Reload",
+    "bounds": {
+     "width": 34,
+     "height": 34,
+     "x": 100,
+     "y": 102
+    },
+    "is_enabled": true,
+    "is_selected": false,
+    "is_actionable": true
+   },
+   {
+    "ax_role": "AXPopUpButton",
+    "is_selected": false,
+    "role": "button",
+    "description": "View site information",
+    "label": "View site information",
+    "is_actionable": true,
+    "is_enabled": true,
+    "value": "",
+    "is_value_settable": true,
+    "bounds": {
+     "width": 24,
+     "height": 24,
+     "x": 148,
+     "y": 107
+    },
+    "role_description": "pop up button",
+    "id": "elem_11",
+    "title": "View site information"
+   },
+   {
+    "role_description": "button",
+    "id": "elem_14",
+    "label": "Bookmark this tab",
+    "role": "button",
+    "title": "Bookmark this tab",
+    "ax_role": "AXButton",
+    "value": "",
+    "description": "Bookmark this tab",
+    "bounds": {
+     "width": 24,
+     "height": 24,
+     "x": 1039,
+     "y": 107
+    },
+    "is_enabled": true,
+    "is_selected": false,
+    "is_actionable": true
+   },
+   {
+    "ax_role": "AXPopUpButton",
+    "is_selected": false,
+    "role": "button",
+    "description": "Chromium",
+    "label": "Chromium",
+    "is_actionable": true,
+    "is_enabled": true,
+    "value": "",
+    "is_value_settable": true,
+    "bounds": {
+     "width": 34,
+     "height": 34,
+     "x": 1084,
+     "y": 102
+    },
+    "role_description": "pop up button",
+    "id": "elem_15",
+    "title": "Chromium"
+   },
+   {
+    "role_description": "button",
+    "id": "elem_48",
+    "label": "Save note",
+    "role": "button",
+    "title": "Save note",
+    "ax_role": "AXButton",
+    "value": "",
+    "description": "",
+    "bounds": {
+     "width": 98,
+     "height": 41,
+     "x": 245,
+     "y": 580
+    },
+    "is_enabled": true,
+    "is_selected": false,
+    "is_actionable": true
+   },
+   {
+    "role_description": "button",
+    "id": "elem_57",
+    "label": "Place LIVE order",
+    "role": "button",
+    "title": "Place LIVE order",
+    "ax_role": "AXButton",
+    "value": "",
+    "description": "",
+    "bounds": {
+     "width": 143,
+     "height": 40,
+     "x": 245,
+     "y": 866
+    },
+    "is_enabled": true,
+    "is_selected": false,
+    "is_actionable": true
+   },
+   {
+    "ax_role": "AXPopUpButton",
+    "is_selected": false,
+    "role": "button",
+    "description": "Tab search",
+    "label": "Tab search",
+    "is_actionable": true,
+    "is_enabled": true,
+    "value": "",
+    "is_value_settable": true,
+    "bounds": {
+     "width": 28,
+     "height": 28,
+     "x": 114,
+     "y": 62
+    },
+    "role_description": "pop up button",
+    "id": "elem_60",
+    "title": "Tab search"
+   },
+   {
+    "role_description": "button",
+    "id": "elem_64",
+    "label": "Close",
+    "role": "button",
+    "title": "Close",
+    "ax_role": "AXButton",
+    "value": "",
+    "description": "Close",
+    "bounds": {
+     "width": 28,
+     "height": 28,
+     "x": 350,
+     "y": 62
+    },
+    "is_enabled": true,
+    "is_selected": false,
+    "is_actionable": true
+   },
+   {
+    "role_description": "button",
+    "id": "elem_66",
+    "label": "New Tab",
+    "role": "button",
+    "title": "New Tab",
+    "ax_role": "AXButton",
+    "value": "",
+    "description": "New Tab",
+    "bounds": {
+     "width": 28,
+     "height": 41,
+     "x": 386,
+     "y": 56
+    },
+    "is_enabled": true,
+    "is_selected": false,
+    "is_actionable": true
+   },
+   {
+    "role_description": "close button",
+    "id": "elem_68",
+    "label": "close button",
+    "role": "button",
+    "ax_role": "AXButton",
+    "bounds": {
+     "width": 16,
+     "height": 16,
+     "x": 34,
+     "y": 68.5
+    },
+    "is_enabled": true,
+    "is_actionable": true
+   },
+   {
+    "role_description": "full screen button",
+    "id": "elem_69",
+    "label": "full screen button",
+    "role": "button",
+    "ax_role": "AXButton",
+    "bounds": {
+     "width": 16,
+     "height": 16,
+     "x": 80,
+     "y": 68.5
+    },
+    "is_enabled": true,
+    "help": "this button also has an action to zoom the window",
+    "is_actionable": true
+   },
+   {
+    "role_description": "minimize button",
+    "id": "elem_71",
+    "label": "minimize button",
+    "role": "button",
+    "ax_role": "AXButton",
+    "bounds": {
+     "width": 16,
+     "height": 16,
+     "x": 57,
+     "y": 68.5
+    },
+    "is_enabled": true,
+    "is_actionable": true
+   },
+   {
+    "ax_role": "AXTextField",
+    "is_selected": false,
+    "role": "textField",
+    "description": "Address and search bar",
+    "label": "Address and search bar",
+    "is_actionable": true,
+    "is_enabled": true,
+    "value": "127.0.0.1:58982/fake_paper_dashboard.html",
+    "is_value_settable": true,
+    "bounds": {
+     "width": 851,
+     "height": 24,
+     "x": 180,
+     "y": 107
+    },
+    "role_description": "text field",
+    "id": "elem_12",
+    "title": "Address and search bar"
+   },
+   {
+    "ax_role": "AXTextArea",
+    "is_selected": false,
+    "role": "textField",
+    "description": "",
+    "label": "Paper note",
+    "is_actionable": true,
+    "is_enabled": true,
+    "value": "",
+    "is_value_settable": true,
+    "bounds": {
+     "width": 654,
+     "height": 91,
+     "x": 245,
+     "y": 477
+    },
+    "role_description": "text entry area",
+    "id": "elem_47",
+    "title": "Paper note"
+   },
+   {
+    "role_description": "group",
+    "id": "elem_1",
+    "label": "FAKE PAPER DASHBOARD — SIMULATED - Google Chrome for Testing",
+    "role": "group",
+    "title": "FAKE PAPER DASHBOARD — SIMULATED - Google Chrome for Testing",
+    "ax_role": "AXGroup",
+    "value": "",
+    "description": "",
+    "bounds": {
+     "width": 1102,
+     "height": 980,
+     "x": 22,
+     "y": 56
+    },
+    "is_enabled": true,
+    "is_selected": false,
+    "is_actionable": false
+   },
+   {
+    "role_description": "group",
+    "id": "elem_2",
+    "label": "group",
+    "role": "group",
+    "title": "",
+    "ax_role": "AXGroup",
+    "value": "",
+    "description": "",
+    "bounds": {
+     "width": 1102,
+     "height": 980,
+     "x": 22,
+     "y": 56
+    },
+    "is_enabled": true,
+    "is_selected": false,
+    "is_actionable": false
+   },
+   {
+    "role_description": "group",
+    "id": "elem_3",
+    "label": "group",
+    "role": "group",
+    "title": "",
+    "ax_role": "AXGroup",
+    "value": "",
+    "description": "",
+    "bounds": {
+     "width": 1102,
+     "height": 980,
+     "x": 22,
+     "y": 56
+    },
+    "is_enabled": true,
+    "is_selected": false,
+    "is_actionable": false
+   },
+   {
+    "role_description": "group",
+    "id": "elem_4",
+    "label": "group",
+    "role": "group",
+    "title": "",
+    "ax_role": "AXGroup",
+    "value": "",
+    "description": "",
+    "bounds": {
+     "width": 1102,
+     "height": 980,
+     "x": 22,
+     "y": 56
+    },
+    "is_enabled": true,
+    "is_selected": false,
+    "is_actionable": false
+   },
+   {
+    "role_description": "group",
+    "id": "elem_5",
+    "label": "group",
+    "role": "group",
+    "title": "",
+    "ax_role": "AXGroup",
+    "value": "",
+    "description": "",
+    "bounds": {
+     "width": 1102,
+     "height": 46,
+     "x": 22,
+     "y": 96
+    },
+    "is_enabled": true,
+    "is_selected": false,
+    "is_actionable": false
+   },
+   {
+    "role_description": "group",
+    "id": "elem_10",
+    "label": "group",
+    "role": "group",
+    "title": "",
+    "ax_role": "AXGroup",
+    "value": "",
+    "description": "",
+    "bounds": {
+     "width": 932,
+     "height": 34,
+     "x": 143,
+     "y": 102
+    },
+    "is_enabled": true,
+    "is_selected": false,
+    "is_actionable": false
+   },
+   {
+    "role_description": "group",
+    "id": "elem_13",
+    "label": "group",
+    "role": "group",
+    "title": "",
+    "ax_role": "AXGroup",
+    "value": "",
+    "description": "",
+    "bounds": {
+     "width": 24,
+     "height": 24,
+     "x": 1039,
+     "y": 107
+    },
+    "is_enabled": true,
+    "is_selected": false,
+    "is_actionable": false
+   },
+   {
+    "role_description": "group",
+    "id": "elem_16",
+    "label": "group",
+    "role": "group",
+    "title": "",
+    "ax_role": "AXGroup",
+    "value": "",
+    "description": "",
+    "bounds": {
+     "width": 1102,
+     "height": 894,
+     "x": 22,
+     "y": 142
+    },
+    "is_enabled": true,
+    "is_selected": false,
+    "is_actionable": false
+   },
+   {
+    "role_description": "group",
+    "id": "elem_17",
+    "label": "group",
+    "role": "group",
+    "title": "",
+    "ax_role": "AXGroup",
+    "value": "",
+    "description": "",
+    "bounds": {
+     "width": 1102,
+     "height": 893,
+     "x": 22,
+     "y": 143
+    },
+    "is_enabled": true,
+    "is_selected": false,
+    "is_actionable": false
+   },
+   {
+    "role_description": "banner",
+    "id": "elem_20",
+    "label": "banner",
+    "role": "group",
+    "title": "",
+    "ax_role": "AXGroup",
+    "value": "",
+    "description": "",
+    "bounds": {
+     "width": 1100,
+     "height": 88,
+     "x": 22,
+     "y": 143
+    },
+    "is_enabled": true,
+    "is_selected": false,
+    "is_actionable": false
+   },
+   {
+    "id": "elem_23",
+    "label": "group",
+    "title": "",
+    "role": "group",
+    "ax_role": "AXGroup",
+    "description": "",
+    "value": "",
+    "role_description": "group",
+    "bounds": {
+     "width": 1068,
+     "height": 22,
+     "x": 38,
+     "y": 192
+    },
+    "is_actionable": false,
+    "is_enabled": true,
+    "is_selected": false
+   },
+   {
+    "id": "elem_25",
+    "label": "main",
+    "title": "",
+    "role": "group",
+    "ax_role": "AXGroup",
+    "description": "",
+    "value": "",
+    "role_description": "main",
+    "bounds": {
+     "width": 720,
+     "height": 723,
+     "x": 212,
+     "y": 231
+    },
+    "is_actionable": false,
+    "is_enabled": true,
+    "is_selected": false
+   },
+   {
+    "id": "elem_26",
+    "label": "Status",
+    "title": "Status",
+    "role": "group",
+    "ax_role": "AXGroup",
+    "description": "",
+    "value": "",
+    "role_description": "region",
+    "bounds": {
+     "width": 688,
+     "height": 139,
+     "x": 228,
+     "y": 247
+    },
+    "is_actionable": false,
+    "is_enabled": true,
+    "is_selected": false
+   },
+   {
+    "id": "elem_30",
+    "label": "Trading mode",
+    "title": "Trading mode",
+    "role": "group",
+    "ax_role": "AXGroup",
+    "description": "",
+    "value": "",
+    "role_description": "term",
+    "bounds": {
+     "width": 126,
+     "height": 22,
+     "x": 245,
+     "y": 295
+    },
+    "is_actionable": false,
+    "is_enabled": true,
+    "is_selected": false
+   },
+   {
+    "id": "elem_32",
+    "label": "definition",
+    "title": "",
+    "role": "group",
+    "ax_role": "AXGroup",
+    "description": "",
+    "value": "",
+    "role_description": "definition",
+    "bounds": {
+     "width": 477,
+     "height": 22,
+     "x": 422,
+     "y": 295
+    },
+    "is_actionable": false,
+    "is_enabled": true,
+    "is_selected": false
+   },
+   {
+    "id": "elem_34",
+    "label": "Execution label",
+    "title": "Execution label",
+    "role": "group",
+    "ax_role": "AXGroup",
+    "description": "",
+    "value": "",
+    "role_description": "term",
+    "bounds": {
+     "width": 126,
+     "height": 22,
+     "x": 245,
+     "y": 321
+    },
+    "is_actionable": false,
+    "is_enabled": true,
+    "is_selected": false
+   },
+   {
+    "id": "elem_36",
+    "label": "definition",
+    "title": "",
+    "role": "group",
+    "ax_role": "AXGroup",
+    "description": "",
+    "value": "",
+    "role_description": "definition",
+    "bounds": {
+     "width": 477,
+     "height": 22,
+     "x": 422,
+     "y": 321
+    },
+    "is_actionable": false,
+    "is_enabled": true,
+    "is_selected": false
+   },
+   {
+    "id": "elem_38",
+    "label": "Broker connection",
+    "title": "Broker connection",
+    "role": "group",
+    "ax_role": "AXGroup",
+    "description": "",
+    "value": "",
+    "role_description": "term",
+    "bounds": {
+     "width": 126,
+     "height": 23,
+     "x": 245,
+     "y": 346
+    },
+    "is_actionable": false,
+    "is_enabled": true,
+    "is_selected": false
+   },
+   {
+    "label": "definition",
+    "ax_role": "AXGroup",
+    "title": "",
+    "role": "group",
+    "id": "elem_40",
+    "description": "",
+    "value": "",
+    "role_description": "definition",
+    "bounds": {
+     "width": 477,
+     "height": 23,
+     "x": 422,
+     "y": 346
+    },
+    "is_actionable": false,
+    "is_enabled": true,
+    "is_selected": false
+   },
+   {
+    "label": "Operator note",
+    "ax_role": "AXGroup",
+    "title": "Operator note",
+    "role": "group",
+    "id": "elem_42",
+    "description": "",
+    "value": "",
+    "role_description": "region",
+    "bounds": {
+     "width": 688,
+     "height": 327,
+     "x": 228,
+     "y": 401
+    },
+    "is_actionable": false,
+    "is_enabled": true,
+    "is_selected": false
+   },
+   {
+    "label": "group",
+    "ax_role": "AXGroup",
+    "title": "",
+    "role": "group",
+    "id": "elem_45",
+    "description": "",
+    "value": "",
+    "role_description": "group",
+    "bounds": {
+     "width": 654,
+     "height": 23,
+     "x": 245,
+     "y": 449
+    },
+    "is_actionable": false,
+    "is_enabled": true,
+    "is_selected": false
+   },
+   {
+    "label": "group",
+    "ax_role": "AXGroup",
+    "title": "",
+    "role": "group",
+    "id": "elem_51",
+    "description": "",
+    "value": "",
+    "role_description": "group",
+    "bounds": {
+     "width": 654,
+     "height": 23,
+     "x": 245,
+     "y": 673
+    },
+    "is_actionable": false,
+    "is_enabled": true,
+    "is_selected": false
+   },
+   {
+    "label": "Orders (fake)",
+    "ax_role": "AXGroup",
+    "title": "Orders (fake)",
+    "role": "group",
+    "id": "elem_52",
+    "description": "",
+    "value": "",
+    "role_description": "region",
+    "bounds": {
+     "width": 688,
+     "height": 194,
+     "x": 228,
+     "y": 744
+    },
+    "is_actionable": false,
+    "is_enabled": true,
+    "is_selected": false
+   },
+   {
+    "label": "group",
+    "ax_role": "AXGroup",
+    "title": "",
+    "role": "group",
+    "id": "elem_55",
+    "description": "",
+    "value": "",
+    "role_description": "group",
+    "bounds": {
+     "width": 654,
+     "height": 44,
+     "x": 245,
+     "y": 799
+    },
+    "is_actionable": false,
+    "is_enabled": true,
+    "is_selected": false
+   },
+   {
+    "label": "group",
+    "ax_role": "AXGroup",
+    "title": "",
+    "role": "group",
+    "id": "elem_58",
+    "description": "",
+    "value": "",
+    "role_description": "group",
+    "bounds": {
+     "width": 1016,
+     "height": 41,
+     "x": 108,
+     "y": 56
+    },
+    "is_actionable": false,
+    "is_enabled": true,
+    "is_selected": false
+   },
+   {
+    "label": "group",
+    "ax_role": "AXGroup",
+    "title": "",
+    "role": "group",
+    "id": "elem_59",
+    "description": "",
+    "value": "",
+    "role_description": "group",
+    "bounds": {
+     "width": 28,
+     "height": 41,
+     "x": 114,
+     "y": 56
+    },
+    "is_actionable": false,
+    "is_enabled": true,
+    "is_selected": false
+   },
+   {
+    "label": "group",
+    "ax_role": "AXGroup",
+    "title": "",
+    "role": "group",
+    "id": "elem_61",
+    "description": "",
+    "value": "",
+    "role_description": "group",
+    "bounds": {
+     "width": 256,
+     "height": 41,
+     "x": 136,
+     "y": 56
+    },
+    "is_actionable": false,
+    "is_enabled": true,
+    "is_selected": false
+   },
+   {
+    "label": "group",
+    "ax_role": "AXGroup",
+    "title": "",
+    "role": "group",
+    "id": "elem_65",
+    "description": "",
+    "value": "",
+    "role_description": "group",
+    "bounds": {
+     "width": 256,
+     "height": 41,
+     "x": 136,
+     "y": 56
+    },
+    "is_actionable": false,
+    "is_enabled": true,
+    "is_selected": false
+   },
+   {
+    "label": "group",
+    "ax_role": "AXGroup",
+    "title": "",
+    "role": "group",
+    "id": "elem_67",
+    "description": "",
+    "value": "",
+    "role_description": "group",
+    "bounds": {
+     "width": 698,
+     "height": 41,
+     "x": 426,
+     "y": 56
+    },
+    "is_actionable": false,
+    "is_enabled": true,
+    "is_selected": false
+   },
+   {
+    "label": "group",
+    "bounds": {
+     "width": 14,
+     "y": 69.5,
+     "x": 81,
+     "height": 14
+    },
+    "ax_role": "AXGroup",
+    "role": "group",
+    "id": "elem_70",
+    "is_actionable": false,
+    "role_description": "group"
+   },
+   {
+    "title": "FAKE PAPER DASHBOARD — SIMULATED - Memory usage - 36.3 MB",
+    "is_selected": true,
+    "role": "checkbox",
+    "description": "FAKE PAPER DASHBOARD — SIMULATED - Memory usage - 36.3 MB",
+    "label": "FAKE PAPER DASHBOARD — SIMULATED - Memory usage - 36.3 MB",
+    "is_actionable": true,
+    "is_enabled": true,
+    "value": "true",
+    "is_value_settable": true,
+    "bounds": {
+     "width": 256,
+     "height": 41,
+     "x": 136,
+     "y": 56
+    },
+    "role_description": "tab",
+    "id": "elem_63",
+    "ax_role": "AXRadioButton"
+   },
+   {
+    "label": "menu bar",
+    "bounds": {
+     "x": 0,
+     "width": 1728,
+     "height": 33,
+     "y": 0
+    },
+    "ax_role": "AXMenuBar",
+    "role": "menu",
+    "id": "menuitem_72",
+    "is_actionable": true,
+    "is_enabled": true,
+    "role_description": "menu bar",
+    "is_selected": false
+   },
+   {
+    "label": "FAKE PAPER DASHBOARD — SIMULATED - Google Chrome for Testing",
+    "bounds": {
+     "x": 22,
+     "width": 1102,
+     "height": 980,
+     "y": 56
+    },
+    "id": "elem_0",
+    "is_actionable": false,
+    "role_description": "standard window",
+    "ax_role": "AXWindow",
+    "role": "other",
+    "title": "FAKE PAPER DASHBOARD — SIMULATED - Google Chrome for Testing"
+   },
+   {
+    "is_selected": false,
+    "label": "toolbar",
+    "bounds": {
+     "width": 1102,
+     "height": 46,
+     "x": 22,
+     "y": 96
+    },
+    "id": "elem_6",
+    "is_actionable": false,
+    "role_description": "toolbar",
+    "value": "",
+    "ax_role": "AXToolbar",
+    "role": "other",
+    "is_enabled": true,
+    "title": "",
+    "description": ""
+   },
+   {
+    "label": "scroll area",
+    "bounds": {
+     "x": 22,
+     "height": 900,
+     "width": 1100,
+     "y": 143
+    },
+    "id": "elem_18",
+    "is_actionable": false,
+    "role_description": "scroll area",
+    "ax_role": "AXScrollArea",
+    "role": "other"
+   },
+   {
+    "is_selected": false,
+    "label": "FAKE PAPER DASHBOARD — SIMULATED",
+    "bounds": {
+     "width": 1100,
+     "height": 900,
+     "x": 22,
+     "y": 143
+    },
+    "id": "elem_19",
+    "is_actionable": false,
+    "role_description": "HTML content",
+    "value": "",
+    "ax_role": "AXWebArea",
+    "role": "other",
+    "is_enabled": true,
+    "title": "FAKE PAPER DASHBOARD — SIMULATED",
+    "description": ""
+   },
+   {
+    "is_selected": false,
+    "label": "FAKE PAPER DASHBOARD — SIMULATED",
+    "bounds": {
+     "width": 1068,
+     "height": 29,
+     "x": 38,
+     "y": 159
+    },
+    "id": "elem_21",
+    "is_actionable": false,
+    "role_description": "heading",
+    "value": "1",
+    "ax_role": "AXHeading",
+    "role": "other",
+    "is_enabled": true,
+    "title": "FAKE PAPER DASHBOARD — SIMULATED",
+    "description": ""
+   },
+   {
+    "is_selected": false,
+    "label": "FAKE PAPER DASHBOARD — SIMULATED",
+    "bounds": {
+     "width": 399,
+     "height": 23,
+     "x": 38,
+     "y": 162
+    },
+    "id": "elem_22",
+    "is_actionable": false,
+    "role_description": "text",
+    "value": "FAKE PAPER DASHBOARD — SIMULATED",
+    "ax_role": "AXStaticText",
+    "role": "other",
+    "is_enabled": true,
+    "title": "",
+    "description": ""
+   },
+   {
+    "is_selected": false,
+    "label": "Test fixture for the mac-agent GUI verification. Nothing on this page talks to any broker or network.",
+    "bounds": {
+     "width": 676,
+     "height": 18,
+     "x": 38,
+     "y": 194
+    },
+    "id": "elem_24",
+    "is_actionable": false,
+    "role_description": "text",
+    "value": "Test fixture for the mac-agent GUI verification. Nothing on this page talks to any broker or network.",
+    "ax_role": "AXStaticText",
+    "role": "other",
+    "is_enabled": true,
+    "title": "",
+    "description": ""
+   },
+   {
+    "is_selected": false,
+    "label": "Status",
+    "bounds": {
+     "width": 654,
+     "height": 23,
+     "x": 245,
+     "y": 264
+    },
+    "id": "elem_27",
+    "is_actionable": false,
+    "role_description": "heading",
+    "value": "2",
+    "ax_role": "AXHeading",
+    "role": "other",
+    "is_enabled": true,
+    "title": "Status",
+    "description": ""
+   },
+   {
+    "is_selected": false,
+    "label": "Status",
+    "bounds": {
+     "width": 51,
+     "height": 19,
+     "x": 245,
+     "y": 266
+    },
+    "id": "elem_28",
+    "is_actionable": false,
+    "role_description": "text",
+    "value": "Status",
+    "ax_role": "AXStaticText",
+    "role": "other",
+    "is_enabled": true,
+    "title": "",
+    "description": ""
+   },
+   {
+    "is_selected": false,
+    "label": "definition list",
+    "bounds": {
+     "width": 654,
+     "height": 74,
+     "x": 245,
+     "y": 295
+    },
+    "id": "elem_29",
+    "is_actionable": false,
+    "role_description": "definition list",
+    "value": "",
+    "ax_role": "AXList",
+    "role": "other",
+    "is_enabled": true,
+    "title": "",
+    "description": ""
+   },
+   {
+    "is_selected": false,
+    "label": "Trading mode",
+    "bounds": {
+     "width": 95,
+     "height": 18,
+     "x": 245,
+     "y": 297
+    },
+    "id": "elem_31",
+    "is_actionable": false,
+    "role_description": "text",
+    "value": "Trading mode",
+    "ax_role": "AXStaticText",
+    "role": "other",
+    "is_enabled": true,
+    "title": "",
+    "description": ""
+   },
+   {
+    "is_selected": false,
+    "label": "PAPER (SIMULATED)",
+    "bounds": {
+     "width": 144,
+     "height": 18,
+     "x": 422,
+     "y": 297
+    },
+    "id": "elem_33",
+    "is_actionable": false,
+    "role_description": "text",
+    "value": "PAPER (SIMULATED)",
+    "ax_role": "AXStaticText",
+    "role": "other",
+    "is_enabled": true,
+    "title": "",
+    "description": ""
+   },
+   {
+    "is_selected": false,
+    "label": "Execution label",
+    "bounds": {
+     "width": 104,
+     "height": 18,
+     "x": 245,
+     "y": 323
+    },
+    "id": "elem_35",
+    "is_actionable": false,
+    "role_description": "text",
+    "value": "Execution label",
+    "ax_role": "AXStaticText",
+    "role": "other",
+    "is_enabled": true,
+    "title": "",
+    "description": ""
+   },
+   {
+    "is_selected": false,
+    "label": "SIMULATED",
+    "bounds": {
+     "width": 83,
+     "height": 18,
+     "x": 422,
+     "y": 323
+    },
+    "id": "elem_37",
+    "is_actionable": false,
+    "role_description": "text",
+    "value": "SIMULATED",
+    "ax_role": "AXStaticText",
+    "role": "other",
+    "is_enabled": true,
+    "title": "",
+    "description": ""
+   },
+   {
+    "is_selected": false,
+    "label": "Broker connection",
+    "bounds": {
+     "width": 126,
+     "height": 18,
+     "x": 245,
+     "y": 348
+    },
+    "id": "elem_39",
+    "is_actionable": false,
+    "role_description": "text",
+    "value": "Broker connection",
+    "ax_role": "AXStaticText",
+    "role": "other",
+    "is_enabled": true,
+    "title": "",
+    "description": ""
+   },
+   {
+    "is_selected": false,
+    "label": "none (fixture)",
+    "bounds": {
+     "width": 93,
+     "height": 18,
+     "x": 422,
+     "y": 348
+    },
+    "id": "elem_41",
+    "is_actionable": false,
+    "role_description": "text",
+    "value": "none (fixture)",
+    "ax_role": "AXStaticText",
+    "role": "other",
+    "is_enabled": true,
+    "title": "",
+    "description": ""
+   },
+   {
+    "is_selected": false,
+    "label": "Operator note",
+    "bounds": {
+     "width": 654,
+     "height": 24,
+     "x": 245,
+     "y": 418
+    },
+    "id": "elem_43",
+    "is_actionable": false,
+    "role_description": "heading",
+    "value": "2",
+    "ax_role": "AXHeading",
+    "role": "other",
+    "is_enabled": true,
+    "title": "Operator note",
+    "description": ""
+   },
+   {
+    "is_selected": false,
+    "label": "Operator note",
+    "bounds": {
+     "width": 109,
+     "height": 20,
+     "x": 245,
+     "y": 420
+    },
+    "id": "elem_44",
+    "is_actionable": false,
+    "role_description": "text",
+    "value": "Operator note",
+    "ax_role": "AXStaticText",
+    "role": "other",
+    "is_enabled": true,
+    "title": "",
+    "description": ""
+   },
+   {
+    "is_selected": false,
+    "label": "Paper note",
+    "bounds": {
+     "width": 78,
+     "height": 18,
+     "x": 245,
+     "y": 451
+    },
+    "id": "elem_46",
+    "is_actionable": false,
+    "role_description": "text",
+    "value": "Paper note",
+    "ax_role": "AXStaticText",
+    "role": "other",
+    "is_enabled": true,
+    "title": "",
+    "description": ""
+   },
+   {
+    "is_selected": false,
+    "label": "Saved note",
+    "bounds": {
+     "width": 654,
+     "height": 24,
+     "x": 245,
+     "y": 635
+    },
+    "id": "elem_49",
+    "is_actionable": false,
+    "role_description": "heading",
+    "value": "2",
+    "ax_role": "AXHeading",
+    "role": "other",
+    "is_enabled": true,
+    "title": "Saved note",
+    "description": ""
+   },
+   {
+    "is_selected": false,
+    "label": "Saved note",
+    "bounds": {
+     "width": 87,
+     "height": 20,
+     "x": 245,
+     "y": 637
+    },
+    "id": "elem_50",
+    "is_actionable": false,
+    "role_description": "text",
+    "value": "Saved note",
+    "ax_role": "AXStaticText",
+    "role": "other",
+    "is_enabled": true,
+    "title": "",
+    "description": ""
+   },
+   {
+    "description": "",
+    "ax_role": "AXHeading",
+    "title": "Orders (fake)",
+    "value": "2",
+    "is_actionable": false,
+    "role": "other",
+    "id": "elem_53",
+    "is_selected": false,
+    "role_description": "heading",
+    "label": "Orders (fake)",
+    "bounds": {
+     "width": 654,
+     "height": 24,
+     "x": 245,
+     "y": 761
+    },
+    "is_enabled": true
+   },
+   {
+    "description": "",
+    "ax_role": "AXStaticText",
+    "value": "Orders (fake)",
+    "title": "",
+    "is_actionable": false,
+    "role": "other",
+    "id": "elem_54",
+    "is_selected": false,
+    "role_description": "text",
+    "label": "Orders (fake)",
+    "bounds": {
+     "x": 245,
+     "y": 763,
+     "width": 104,
+     "height": 19
+    },
+    "is_enabled": true
+   },
+   {
+    "description": "",
+    "ax_role": "AXStaticText",
+    "value": "This control exists only so the GUI agent can prove that it refuses live-order buttons. It has no effect beyond printing a message.",
+    "title": "",
+    "is_actionable": false,
+    "role": "other",
+    "id": "elem_56",
+    "is_selected": false,
+    "role_description": "text",
+    "label": "This control exists only so the GUI agent can prove that it refuses live-order buttons. It has no effect beyond printing a message.",
+    "bounds": {
+     "x": 245,
+     "y": 801,
+     "width": 640,
+     "height": 40
+    },
+    "is_enabled": true
+   },
+   {
+    "description": "",
+    "ax_role": "AXTabGroup",
+    "value": "",
+    "title": "",
+    "is_actionable": false,
+    "role": "other",
+    "id": "elem_62",
+    "is_selected": false,
+    "role_description": "tab group",
+    "label": "tab group",
+    "bounds": {
+     "x": 136,
+     "y": 56,
+     "width": 256,
+     "height": 41
+    },
+    "is_enabled": true
+   },
+   {
+    "ax_role": "AXMenuBarItem",
+    "title": "Apple",
+    "is_actionable": false,
+    "role": "other",
+    "id": "menuitem_73",
+    "is_selected": false,
+    "role_description": "menu bar item",
+    "label": "Apple",
+    "bounds": {
+     "y": 0,
+     "x": 10,
+     "width": 34,
+     "height": 33
+    },
+    "is_enabled": true
+   },
+   {
+    "ax_role": "AXMenuBarItem",
+    "title": "Google Chrome for Testing",
+    "is_actionable": false,
+    "role": "other",
+    "id": "menuitem_74",
+    "is_selected": false,
+    "role_description": "menu bar item",
+    "label": "Google Chrome for Testing",
+    "bounds": {
+     "y": 0,
+     "x": 43,
+     "width": 193,
+     "height": 33
+    },
+    "is_enabled": true
+   },
+   {
+    "ax_role": "AXMenuBarItem",
+    "title": "File",
+    "is_actionable": false,
+    "role": "other",
+    "id": "menuitem_75",
+    "is_selected": false,
+    "role_description": "menu bar item",
+    "label": "File",
+    "bounds": {
+     "y": 0,
+     "x": 235,
+     "width": 42,
+     "height": 33
+    },
+    "is_enabled": true
+   },
+   {
+    "ax_role": "AXMenuBarItem",
+    "title": "Edit",
+    "is_actionable": false,
+    "role": "other",
+    "id": "menuitem_76",
+    "is_selected": false,
+    "role_description": "menu bar item",
+    "label": "Edit",
+    "bounds": {
+     "y": 0,
+     "x": 276,
+     "width": 45,
+     "height": 33
+    },
+    "is_enabled": true
+   },
+   {
+    "ax_role": "AXMenuBarItem",
+    "title": "View",
+    "is_actionable": false,
+    "role": "other",
+    "id": "menuitem_77",
+    "is_selected": false,
+    "role_description": "menu bar item",
+    "label": "View",
+    "bounds": {
+     "y": 0,
+     "x": 320,
+     "width": 50,
+     "height": 33
+    },
+    "is_enabled": true
+   },
+   {
+    "ax_role": "AXMenuBarItem",
+    "title": "History",
+    "is_actionable": false,
+    "role": "other",
+    "id": "menuitem_78",
+    "is_selected": false,
+    "role_description": "menu bar item",
+    "label": "History",
+    "bounds": {
+     "y": 0,
+     "x": 369,
+     "width": 64,
+     "height": 33
+    },
+    "is_enabled": true
+   },
+   {
+    "ax_role": "AXMenuBarItem",
+    "title": "Bookmarks",
+    "is_actionable": false,
+    "role": "other",
+    "id": "menuitem_79",
+    "is_selected": false,
+    "role_description": "menu bar item",
+    "label": "Bookmarks",
+    "bounds": {
+     "y": 0,
+     "x": 432,
+     "width": 89,
+     "height": 33
+    },
+    "is_enabled": true
+   },
+   {
+    "ax_role": "AXMenuBarItem",
+    "title": "Profiles",
+    "is_actionable": false,
+    "role": "other",
+    "id": "menuitem_80",
+    "is_selected": false,
+    "role_description": "menu bar item",
+    "label": "Profiles",
+    "bounds": {
+     "y": 0,
+     "x": 520,
+     "width": 66,
+     "height": 33
+    },
+    "is_enabled": true
+   },
+   {
+    "ax_role": "AXMenuBarItem",
+    "title": "Tab",
+    "is_actionable": false,
+    "role": "other",
+    "id": "menuitem_81",
+    "is_selected": false,
+    "role_description": "menu bar item",
+    "label": "Tab",
+    "bounds": {
+     "y": 0,
+     "x": 585,
+     "width": 43,
+     "height": 33
+    },
+    "is_enabled": true
+   },
+   {
+    "ax_role": "AXMenuBarItem",
+    "title": "Window",
+    "is_actionable": false,
+    "role": "other",
+    "id": "menuitem_82",
+    "is_selected": false,
+    "role_description": "menu bar item",
+    "label": "Window",
+    "bounds": {
+     "y": 0,
+     "x": 627,
+     "width": 70,
+     "height": 33
+    },
+    "is_enabled": true
+   },
+   {
+    "ax_role": "AXMenuBarItem",
+    "title": "Help",
+    "is_actionable": false,
+    "role": "other",
+    "id": "menuitem_83",
+    "is_selected": false,
+    "role_description": "menu bar item",
+    "label": "Help",
+    "bounds": {
+     "y": 0,
+     "x": 696,
+     "width": 49,
+     "height": 33
+    },
+    "is_enabled": true
+   }
+  ],
+  "used_cache": false,
+  "screenshot_annotated": "",
+  "is_dialog": false
+ },
+ "target_receipt": {
+  "process_start_identity_decimal": "1794164004837066",
+  "pid": 86033,
+  "process_start_identity": 1794164004837066,
+  "window_id": 34829
+ },
+ "success": true
+}

@@ -1,0 +1,191 @@
+{
+ "order": {
+  "client_order_id": "lat-sim-01jbdashfixture00000filled1",
+  "broker_order_id": "fake-ord-000001",
+  "intent_id": "oi_01JBDASHFIXTURE00000001",
+  "symbol": "SPY",
+  "side": "BUY",
+  "quantity": "3",
+  "filled_quantity": "3",
+  "avg_fill_price": "585.44333333",
+  "limit_price": "585.46",
+  "state": "FILLED",
+  "gateway": "FAKE",
+  "execution_label": "SIMULATED",
+  "created_at": "2026-11-05T14:30:02.590000Z",
+  "updated_at": "2026-11-05T14:30:08.650000Z"
+ },
+ "intent": {
+  "schema_version": "1.0.0",
+  "intent_id": "oi_01JBDASHFIXTURE00000001",
+  "client_order_id": "lat-sim-01jbdashfixture00000filled1",
+  "proposal_id": "tp_01JBDASHFIXTURE0000000001",
+  "decision_id": "rd_01JBDASHFIXTURE0000000001",
+  "causal_id": "cz_01JBDASHFIXTURE0000000001",
+  "mode": "PAPER",
+  "gateway": "FAKE",
+  "symbol": "SPY",
+  "side": "BUY",
+  "quantity": "3",
+  "order_type": "LIMIT",
+  "limit_price": "585.46",
+  "time_in_force": "DAY",
+  "extended_hours": false,
+  "policy_version": "pol_1fcc24ed0ec6e7c7",
+  "created_at": "2026-11-05T14:30:02.590000Z",
+  "expires_at": "2026-11-05T14:31:02.590000Z",
+  "requires_human_approval": false,
+  "human_approval_id": null,
+  "key_id": "risk-key-fixture",
+  "signature_alg": "ECDSA_P256_SHA256",
+  "signature": "45a19d627e0e14397d3250a1006e5d9fd279d7acc47a541ed2b5d0bb8fa2495e53f01a846a7e78027384b5a4205831651d22d9b21ea2c5b21fabf6ede208ba19"
+ },
+ "events": [
+  {
+   "broker_exec_id": null,
+   "broker_order_id": "fake-ord-000001",
+   "broker_ts": "2026-11-05T14:30:02.610000Z",
+   "client_order_id": "lat-sim-01jbdashfixture00000filled1",
+   "cum_filled_quantity": "0",
+   "event_id": "gw-submit-lat-sim-01jbdashfixture00000filled1",
+   "event_type": "accepted",
+   "fill_price": null,
+   "fill_quantity": null,
+   "gateway": "FAKE",
+   "raw": {
+    "broker_status": "pending_new"
+   },
+   "reason": "synchronous submit response",
+   "received_ts": "2026-11-05T14:30:02.610000Z",
+   "schema_version": "1.0.0",
+   "sequence": null,
+   "source": "GATEWAY",
+   "state": "SUBMITTED",
+   "applied": true,
+   "apply_note": "SUBMITTING->SUBMITTED"
+  },
+  {
+   "broker_exec_id": null,
+   "broker_order_id": "fake-ord-000001",
+   "broker_ts": "2026-11-05T14:30:03.650000Z",
+   "client_order_id": "lat-sim-01jbdashfixture00000filled1",
+   "cum_filled_quantity": null,
+   "event_id": "oe_illed1_002",
+   "event_type": "accepted",
+   "fill_price": null,
+   "fill_quantity": null,
+   "gateway": "FAKE",
+   "raw": {},
+   "reason": null,
+   "received_ts": "2026-11-05T14:30:03.650000Z",
+   "schema_version": "1.0.0",
+   "sequence": 2,
+   "source": "STREAM",
+   "state": "ACKNOWLEDGED",
+   "applied": true,
+   "apply_note": "SUBMITTED->ACKNOWLEDGED"
+  },
+  {
+   "broker_exec_id": "fx-illed1-3",
+   "broker_order_id": "fake-ord-000001",
+   "broker_ts": "2026-11-05T14:30:05.650000Z",
+   "client_order_id": "lat-sim-01jbdashfixture00000filled1",
+   "cum_filled_quantity": "1",
+   "event_id": "oe_illed1_003",
+   "event_type": "partial_fill",
+   "fill_price": "585.41",
+   "fill_quantity": "1",
+   "gateway": "FAKE",
+   "raw": {},
+   "reason": null,
+   "received_ts": "2026-11-05T14:30:05.650000Z",
+   "schema_version": "1.0.0",
+   "sequence": 3,
+   "source": "STREAM",
+   "state": "PARTIALLY_FILLED",
+   "applied": true,
+   "apply_note": "ACKNOWLEDGED->PARTIALLY_FILLED; booked fill 1 @ 585.41 (fx-illed1-3)"
+  },
+  {
+   "broker_exec_id": "fx-illed1-4",
+   "broker_order_id": "fake-ord-000001",
+   "broker_ts": "2026-11-05T14:30:08.650000Z",
+   "client_order_id": "lat-sim-01jbdashfixture00000filled1",
+   "cum_filled_quantity": "3",
+   "event_id": "oe_illed1_004",
+   "event_type": "fill",
+   "fill_price": "585.46",
+   "fill_quantity": "2",
+   "gateway": "FAKE",
+   "raw": {},
+   "reason": null,
+   "received_ts": "2026-11-05T14:30:08.650000Z",
+   "schema_version": "1.0.0",
+   "sequence": 4,
+   "source": "STREAM",
+   "state": "FILLED",
+   "applied": true,
+   "apply_note": "PARTIALLY_FILLED->FILLED; booked fill 2 @ 585.46 (fx-illed1-4)"
+  }
+ ],
+ "transitions": [
+  {
+   "from_state": null,
+   "to_state": "PROPOSED",
+   "at": "2026-11-05T14:30:02.590000Z",
+   "reason": "proposal tp_01JBDASHFIXTURE0000000001 recorded"
+  },
+  {
+   "from_state": "PROPOSED",
+   "to_state": "RISK_APPROVED",
+   "at": "2026-11-05T14:30:02.590000Z",
+   "reason": "risk decision rd_01JBDASHFIXTURE0000000001 APPROVED; intent oi_01JBDASHFIXTURE00000001 signed"
+  },
+  {
+   "from_state": "RISK_APPROVED",
+   "to_state": "SUBMITTING",
+   "at": "2026-11-05T14:30:02.610000Z",
+   "reason": "claimed for submission by execution-service"
+  },
+  {
+   "from_state": "SUBMITTING",
+   "to_state": "SUBMITTED",
+   "at": "2026-11-05T14:30:02.610000Z",
+   "reason": "GATEWAY accepted: SUBMITTING->SUBMITTED"
+  },
+  {
+   "from_state": "SUBMITTED",
+   "to_state": "ACKNOWLEDGED",
+   "at": "2026-11-05T14:30:03.650000Z",
+   "reason": "STREAM accepted: SUBMITTED->ACKNOWLEDGED"
+  },
+  {
+   "from_state": "ACKNOWLEDGED",
+   "to_state": "PARTIALLY_FILLED",
+   "at": "2026-11-05T14:30:05.650000Z",
+   "reason": "STREAM partial_fill: ACKNOWLEDGED->PARTIALLY_FILLED"
+  },
+  {
+   "from_state": "PARTIALLY_FILLED",
+   "to_state": "FILLED",
+   "at": "2026-11-05T14:30:08.650000Z",
+   "reason": "STREAM fill: PARTIALLY_FILLED->FILLED"
+  }
+ ],
+ "fills": [
+  {
+   "fill_id": "fill_00000000000000000000000014",
+   "quantity": "1",
+   "price": "585.41",
+   "ts": "2026-11-05T14:30:05.650000Z",
+   "broker_exec_id": "fx-illed1-3"
+  },
+  {
+   "fill_id": "fill_00000000000000000000000017",
+   "quantity": "2",
+   "price": "585.46",
+   "ts": "2026-11-05T14:30:08.650000Z",
+   "broker_exec_id": "fx-illed1-4"
+  }
+ ]
+}

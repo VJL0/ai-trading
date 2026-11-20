@@ -1,0 +1,37 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    GatedAlpacaBrokerage: the official QuantConnect Alpaca plugin (compiled from pinned source by
+    trading/alpaca_plugin/source-build) with the LAT IntentGate at PlaceOrder and paper trading hard-coded.
+    Kept out of LatStrategies so the strategies/gate assembly never depends on the broker plugin.
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
+    <AssemblyName>LatAlpacaGate</AssemblyName>
+    <RootNamespace>Lat.Lean.Alpaca</RootNamespace>
+    <OutputType>Library</OutputType>
+    <OutputPath>bin\$(Configuration)\</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <Nullable>disable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <Deterministic>true</Deterministic>
+    <NoWarn>$(NoWarn);CS1591;NU1605;NU1903;NU1904</NoWarn>
+    <Version>0.1.0</Version>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\LatStrategies\LatStrategies.csproj" Private="false" />
+    <ProjectReference Include="..\..\alpaca_plugin\source-build\QuantConnect.Brokerages.Alpaca.SourceBuild.csproj" Private="false" />
+    <ProjectReference Include="..\Lean\Common\QuantConnect.csproj" Private="false" />
+    <ProjectReference Include="..\Lean\Brokerages\QuantConnect.Brokerages.csproj" Private="false" />
+    <ProjectReference Include="..\Lean\Engine\QuantConnect.Lean.Engine.csproj" Private="false" />
+    <ProjectReference Include="..\Lean\Configuration\QuantConnect.Configuration.csproj" Private="false" />
+    <ProjectReference Include="..\Lean\Logging\QuantConnect.Logging.csproj" Private="false" />
+  </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Alpaca.Markets">
+      <HintPath>..\..\alpaca_plugin\Lean.Brokerages.Alpaca\QuantConnect.AlpacaBrokerage\Alpaca.Markets.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+</Project>

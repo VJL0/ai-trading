@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- TEST-ONLY algorithms used by tests/integration/lean to prove the gate holds against a hostile strategy.
+       Never referenced by any production config generator except the explicit rogue test mode. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
+    <AssemblyName>LatTestAlgorithms</AssemblyName>
+    <RootNamespace>Lat.Lean.TestAlgorithms</RootNamespace>
+    <OutputType>Library</OutputType>
+    <OutputPath>bin\$(Configuration)\</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <Nullable>disable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <Deterministic>true</Deterministic>
+    <NoWarn>$(NoWarn);CS1591;NU1605;NU1903;NU1904</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\LatStrategies\LatStrategies.csproj" Private="false" />
+    <ProjectReference Include="..\Lean\Common\QuantConnect.csproj" Private="false" />
+    <ProjectReference Include="..\Lean\Algorithm\QuantConnect.Algorithm.csproj" Private="false" />
+  </ItemGroup>
+</Project>

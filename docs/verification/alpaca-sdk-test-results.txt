@@ -1,0 +1,32 @@
+Verification date: 2026-11-09
+
+Full Python acceptance (actual suites, including real isolated LEAN processes):
+uv run --frozen pytest -q -m 'not live_models and not paper_broker and not gui'
+1828 passed, 8 deselected in 301.87s (0:05:01)
+
+Focused SDK / durable risk pipeline / launch boundary:
+22 passed in 1.73s
+
+bash scripts/lean_build.sh
+Build completed without Alpaca plugin or LatAlpacaGate in bundle.
+84 .NET tests passed, 0 failed, 0 skipped.
+Real-engine plugin-absence assertion rerun: 1 passed in 29.16s.
+Isolated legacy LEAN ledger E2E rerun: 1 passed in 49.04s.
+
+Dashboard:
+pnpm test: 42 passed (6 files)
+pnpm build: passed, bundle scan clean
+pnpm lint: passed (includes TypeScript check)
+pnpm e2e: 3 Chromium tests passed in 7.8s
+
+ruff check .: All checks passed.
+pyright: 0 errors, 0 warnings, 0 informations.
+git diff --check: clean.
+
+make smoke:
+Real subprocess API + MCP stdio session completed 3 simulated cycles after operator disconnect.
+No trades selected. Audit verified: 29 rows. This does not verify hosted Alpaca execution.
+
+Real broker checks (-m paper_broker): 3 skipped because paper credentials are absent.
+make paper: BLOCKED before launch; ALPACA_PAPER_KEY_ID / ALPACA_PAPER_SECRET_KEY required.
+No hosted paper order/fill/cancel verification occurred. No live trading or paid inference enabled.

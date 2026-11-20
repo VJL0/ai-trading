@@ -1,0 +1,111 @@
+{
+  "schema": "lat-lean-pins/v1",
+  "recorded_at": "2026-11-07",
+  "lean": {
+    "repo": "https://github.com/QuantConnect/Lean.git",
+    "commit": "d1c09284c438b70eb965b7dc40f44e7dca69e7b5",
+    "commit_date": "2026-11-05T10:16:35-03:00",
+    "target_framework": "net10.0",
+    "license": "Apache-2.0",
+    "local_patches": [],
+    "assembly_version": "2.5.0.0"
+  },
+  "alpaca_plugin": {
+    "repo": "https://github.com/QuantConnect/Lean.Brokerages.Alpaca.git",
+    "commit": "b92d6ecd391d5a79e91b060668d1ea4fafec9b89",
+    "commit_date": "2026-10-19T20:08:38+03:00",
+    "license": "Apache-2.0",
+    "local_patches": [],
+    "build_mode": "source-build against pinned LEAN ProjectReferences (trading/alpaca_plugin/source-build/QuantConnect.Brokerages.Alpaca.SourceBuild.csproj); the upstream csproj's floating NuGet QuantConnect.Brokerages/QuantConnect.Lean.Engine 2.5.* are NOT used",
+    "vendored_binary": {
+      "file": "QuantConnect.AlpacaBrokerage/Alpaca.Markets.dll",
+      "version": "8.0.0-beta6 (QuantConnect fork, committed in the plugin repo)",
+      "sha256": "92125fd7e8d6f8e4949cf69b29a1acabb0a7dcde6195be6fdfaaf8fe0ecead6f"
+    },
+    "third_party_packages": {
+      "Newtonsoft.Json": "13.0.2",
+      "Polly": "8.6.3",
+      "MessagePack": "3.1.7"
+    },
+    "upstream_floating_nuget_refs_used": false,
+    "upstream_floating_nuget_refs": {
+      "QuantConnect.Brokerages": "2.5.*",
+      "QuantConnect.Lean.Engine": "2.5.*"
+    },
+    "client_order_id_mapping": "plugin never sets Alpaca client_order_id (CreateAlpacaOrder); map client_order_id+intent_id -> LEAN order id -> order.BrokerId (Alpaca order id) reported as broker_order_id",
+    "licence_check": "AlpacaBrokerage.ValidateSubscription(): api.quantconnect.com modules/license/read product 347; Environment.Exit(1) on failure"
+  },
+  "dotnet": {
+    "sdk_version": "10.0.403",
+    "install_dir": ".tools/dotnet"
+  },
+  "lat_projects": {
+    "LatStrategies": {
+      "lock_file": "trading/lean/LatStrategies/packages.lock.json",
+      "direct_packages": {}
+    },
+    "LatAlpacaGate": {
+      "lock_file": "trading/lean/LatAlpacaGate/packages.lock.json",
+      "direct_packages": {}
+    },
+    "LatTestAlgorithms": {
+      "lock_file": "trading/lean/LatTestAlgorithms/packages.lock.json",
+      "direct_packages": {}
+    },
+    "LatStrategies.Tests": {
+      "lock_file": "trading/lean/LatStrategies.Tests/packages.lock.json",
+      "direct_packages": {
+        "Microsoft.NET.Test.Sdk": "17.12.0",
+        "NUnit": "4.2.2",
+        "NUnit3TestAdapter": "4.6.0"
+      }
+    },
+    "alpaca_source_build": {
+      "lock_file": "trading/alpaca_plugin/source-build/packages.lock.json"
+    }
+  },
+  "plugin_discovery": "LEAN Composer loads Launcher dir + config 'plugin-directory' = trading/lean/bin/plugins (assembled by scripts/lean_build.sh)",
+  "runtime_assembly_rule": "exactly one QuantConnect.Common (Launcher output built from the pinned LEAN commit); verified at runtime by LAT-ASSEMBLY-CHECK log lines",
+  "resolved_nuget_packages": {
+    "Accord": "3.6.0",
+    "Accord.Fuzzy": "3.6.0",
+    "Accord.MachineLearning": "3.6.0",
+    "Accord.Math": "3.6.0",
+    "Accord.Statistics": "3.6.0",
+    "CloneExtensions": "1.3.0",
+    "CsvHelper": "19.0.0",
+    "DotNetZip": "1.16.0",
+    "DynamicInterop": "0.9.1",
+    "MathNet.Numerics": "5.0.0",
+    "McMaster.Extensions.CommandLineUtils": "2.6.0",
+    "MessagePack": "3.1.7",
+    "MessagePack.Annotations": "3.1.7",
+    "MessagePackAnalyzer": "3.1.7",
+    "Microsoft.CodeCoverage": "17.12.0",
+    "Microsoft.IO.RecyclableMemoryStream": "3.0.1",
+    "Microsoft.NET.StringTools": "17.11.4",
+    "Microsoft.NET.Test.Sdk": "17.12.0",
+    "Microsoft.NETCore.Platforms": "3.1.0",
+    "Microsoft.TestPlatform.ObjectModel": "17.12.0",
+    "Microsoft.TestPlatform.TestHost": "17.12.0",
+    "Microsoft.Win32.SystemEvents": "4.7.0",
+    "NUnit": "4.2.2",
+    "NUnit3TestAdapter": "4.6.0",
+    "Newtonsoft.Json": "13.0.2",
+    "NodaTime": "3.0.5",
+    "Polly": "8.6.3",
+    "Polly.Core": "8.6.3",
+    "QLNet": "1.13.1",
+    "QuantConnect.pythonnet": "2.0.68",
+    "RestSharp": "106.12.0",
+    "SharpZipLib": "1.3.3",
+    "System.ComponentModel.Annotations": "4.7.0",
+    "System.ComponentModel.Composition": "6.0.0",
+    "System.Drawing.Common": "4.7.0",
+    "System.Security.Permissions": "4.7.0",
+    "System.Windows.Extensions": "4.7.0",
+    "fasterflect": "3.0.0",
+    "protobuf-net": "3.1.33",
+    "protobuf-net.Core": "3.1.33"
+  }
+}

@@ -1,0 +1,100 @@
+{
+  "mode_label": "SIMULATED",
+  "portfolio_value": "99999.55",
+  "cash": "99999.55",
+  "daily_pnl": "-0.45",
+  "total_pnl": "-0.45",
+  "realized_pnl": "-0.45",
+  "unrealized_pnl": "0",
+  "win_rate": "0.0000",
+  "round_trips": 1,
+  "max_drawdown": "0.0000",
+  "current_drawdown": "0.0000",
+  "active_positions": 0,
+  "open_orders": 0,
+  "api_cost_usd": "0",
+  "equity_curve": [
+    {
+      "time": 1793632500,
+      "equity": "100000"
+    },
+    {
+      "time": 1793633130,
+      "equity": "100000"
+    },
+    {
+      "time": 1793633160,
+      "equity": "100000"
+    },
+    {
+      "time": 1793633220,
+      "equity": "100000"
+    },
+    {
+      "time": 1793633280,
+      "equity": "100000"
+    },
+    {
+      "time": 1793633340,
+      "equity": "100000"
+    },
+    {
+      "time": 1793633370,
+      "equity": "100000"
+    },
+    {
+      "time": 1793633400,
+      "equity": "100000"
+    },
+    {
+      "time": 1793634270,
+      "equity": "100000"
+    },
+    {
+      "time": 1793635170,
+      "equity": "100000"
+    },
+    {
+      "time": 1793636070,
+      "equity": "100000.075"
+    },
+    {
+      "time": 1793636970,
+      "equity": "100000.075"
+    },
+    {
+      "time": 1793637870,
+      "equity": "99999.585"
+    },
+    {
+      "time": 1793638740,
+      "equity": "99999.015"
+    },
+    {
+      "time": 1793639640,
+      "equity": "99999.55"
+    },
+    {
+      "time": 1793640540,
+      "equity": "99999.55"
+    },
+    {
+      "time": 1793641440,
+      "equity": "99999.55"
+    },
+    {
+      "time": 1793642340,
+      "equity": "99999.55"
+    },
+    {
+      "time": 1793643240,
+      "equity": "99999.55"
+    },
+    {
+      "time": 1793644140,
+      "equity": "99999.55"
+    }
+  ],
+  "asof": "2026-11-02T18:34:30Z",
+  "is_simulated": true
+}

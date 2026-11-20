@@ -1,0 +1,52 @@
+{
+  "execution_label": "PAPER",
+  "is_simulated": false,
+  "asof": "2026-11-09T20:13:52.587119Z",
+  "session": {
+    "session_id": "sess_01M70Z1PEF2F2DH7EAQRSPSQSX",
+    "state": "COMPLETED",
+    "started_at": "2026-11-09T20:12:29.519741Z",
+    "ends_at": "2026-11-09T20:13:29.519741Z",
+    "ended_at": "2026-11-09T20:13:29.835697Z",
+    "duration_minutes": 1,
+    "symbols": [
+      "SPY"
+    ],
+    "cadence_minutes": 1,
+    "use_ai": false,
+    "requested_by": "agent:codex-5fda00",
+    "cycles_run": 1,
+    "trades": 0,
+    "stop_reason": "planned duration elapsed",
+    "schedule_id": null,
+    "next_cycle_at": null,
+    "last_cycle_at": "2026-11-09T20:12:29.629737Z",
+    "ai_suspended_until": null
+  },
+  "performance": {
+    "mode_label": "PAPER",
+    "realized_pnl": "0",
+    "unrealized_pnl": "0",
+    "total_pnl": "0",
+    "win_rate": null,
+    "round_trips": 0,
+    "max_drawdown": "0.0000",
+    "portfolio_value": "5000.14"
+  },
+  "cycles": 1,
+  "decisions": {
+    "NO_TRADE": 1,
+    "REJECTED": 0,
+    "SUBMITTED": 0
+  },
+  "top_no_trade_reasons": [
+    {
+      "reason": "no point-in-time market data available",
+      "count": 1
+    }
+  ],
+  "top_risk_rejections": [],
+  "trades": [],
+  "api_cost_usd": "0",
+  "narrative": "PAPER paper session sess_01M70Z1PEF2F2DH7EAQRSPSQSX on SPY completed its planned window (from Mon 2026-11-09 15:12 ET to Mon 2026-11-09 15:13 ET). Reason: planned duration elapsed. It ran 1 decision cycle(s): 1 NO_TRADE, 0 rejected by the risk engine, 0 submitted. Most common reason for not trading: \"no point-in-time market data available\" (1x). No orders were placed. Realized P&L 0.00 USD, unrealized 0.00 USD; model API cost 0 USD. Fills are broker paper-trading fills; live trading is impossible in this build."
+}

@@ -1,0 +1,33 @@
+{
+ "data": {
+  "target_application_info": {
+   "app_name": "Calculator",
+   "pid": 72247,
+   "bundle_id": "com.apple.calculator"
+  },
+  "inventory_completeness": "partial",
+  "windows": [
+   {
+    "bounds": {
+     "x": 414,
+     "height": 408,
+     "y": 513,
+     "width": 230
+    },
+    "is_on_screen": true,
+    "layer": 0,
+    "subrole": "AXStandardWindow",
+    "window_index": 0,
+    "observation_capability": "combined_eligible",
+    "is_key": true,
+    "window_title": "Calculator",
+    "window_id": 34661,
+    "is_frontmost": true
+   }
+  ],
+  "inventory_warnings": [
+   "Window list omitted 4 non-renderable or duplicate inventory rows."
+  ]
+ },
+ "success": true
+}

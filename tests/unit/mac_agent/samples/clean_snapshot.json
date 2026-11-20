@@ -1,0 +1,18 @@
+{
+ "success": true,
+ "data": {
+  "snapshotsRemoved": 1,
+  "bytesFreed": 224278,
+  "snapshotDetails": [
+   {
+    "snapshotId": "ps1_4e937daf73b475ac36c685706d1121a1",
+    "modificationDate": 815855506.9498886,
+    "path": "/Users/tester/.peekaboo/snapshots/ps1_4e937daf73b475ac36c685706d1121a1",
+    "creationDate": 815855506.2239196,
+    "size": 224278
+   }
+  ],
+  "dryRun": false,
+  "executionTime": 0.0005290508270263672
+ }
+}

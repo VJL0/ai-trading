@@ -1,0 +1,71 @@
+{
+  "at": "2026-11-19T01:55:09.426Z",
+  "browser": "157.0.8103.79",
+  "platform": "darwin 27.2.0 arm64",
+  "cpu": "Apple M4 Pro",
+  "memoryGB": 48,
+  "synthetic": true,
+  "viewport": {
+    "width": 1512,
+    "height": 1100
+  },
+  "dpr": 2,
+  "cases": [
+    {
+      "requestedRecords": 27,
+      "adapter": "apple / metal-3",
+      "samples": [
+        "60 FPS \u00b7 p95 16.8 ms \u00b7 6,912 samples \u00b7 GPU 0.85 ms\n2286 \u00d7 1313 \u00b7 bounded to 512 memories",
+        "60 FPS \u00b7 p95 16.7 ms \u00b7 6,912 samples \u00b7 GPU 0.92 ms\n2286 \u00d7 1313 \u00b7 bounded to 512 memories",
+        "60 FPS \u00b7 p95 16.8 ms \u00b7 6,912 samples \u00b7 GPU 0.52 ms\n2286 \u00d7 1313 \u00b7 bounded to 512 memories",
+        "60 FPS \u00b7 p95 16.8 ms \u00b7 6,912 samples \u00b7 GPU 0.92 ms\n2286 \u00d7 1313 \u00b7 bounded to 512 memories",
+        "60 FPS \u00b7 p95 16.8 ms \u00b7 6,912 samples \u00b7 GPU 0.52 ms\n2286 \u00d7 1313 \u00b7 bounded to 512 memories",
+        "60 FPS \u00b7 p95 16.8 ms \u00b7 6,912 samples \u00b7 GPU 0.59 ms\n2286 \u00d7 1313 \u00b7 bounded to 512 memories",
+        "60 FPS \u00b7 p95 16.7 ms \u00b7 6,912 samples \u00b7 GPU 0.59 ms\n2286 \u00d7 1313 \u00b7 bounded to 512 memories",
+        "60 FPS \u00b7 p95 16.7 ms \u00b7 6,912 samples \u00b7 GPU 0.59 ms\n2286 \u00d7 1313 \u00b7 bounded to 512 memories",
+        "60 FPS \u00b7 p95 16.7 ms \u00b7 6,912 samples \u00b7 GPU 0.52 ms\n2286 \u00d7 1313 \u00b7 bounded to 512 memories",
+        "60 FPS \u00b7 p95 16.8 ms \u00b7 6,912 samples \u00b7 GPU 0.66 ms\n2286 \u00d7 1313 \u00b7 bounded to 512 memories",
+        "60 FPS \u00b7 p95 16.8 ms \u00b7 6,912 samples \u00b7 GPU 0.59 ms\n2286 \u00d7 1313 \u00b7 bounded to 512 memories",
+        "60 FPS \u00b7 p95 16.8 ms \u00b7 6,912 samples \u00b7 GPU 0.66 ms\n2286 \u00d7 1313 \u00b7 bounded to 512 memories"
+      ],
+      "mainThread": {
+        "longTaskCount": 0,
+        "longestTaskMs": 0,
+        "frameIntervalP95Ms": 16.799999999999272
+      },
+      "errors": []
+    },
+    {
+      "requestedRecords": 512,
+      "adapter": "apple / metal-3",
+      "samples": [
+        "60 FPS \u00b7 p95 16.7 ms \u00b7 131,072 samples \u00b7 GPU 6.29 ms\n2286 \u00d7 1313 \u00b7 bounded to 512 memories",
+        "60 FPS \u00b7 p95 16.8 ms \u00b7 131,072 samples \u00b7 GPU 6.09 ms\n2286 \u00d7 1313 \u00b7 bounded to 512 memories",
+        "60 FPS \u00b7 p95 16.7 ms \u00b7 131,072 samples \u00b7 GPU 6.82 ms\n2286 \u00d7 1313 \u00b7 bounded to 512 memories",
+        "60 FPS \u00b7 p95 16.8 ms \u00b7 131,072 samples \u00b7 GPU 6.29 ms\n2286 \u00d7 1313 \u00b7 bounded to 512 memories",
+        "60 FPS \u00b7 p95 16.7 ms \u00b7 131,072 samples \u00b7 GPU 7.08 ms\n2286 \u00d7 1313 \u00b7 bounded to 512 memories",
+        "60 FPS \u00b7 p95 16.7 ms \u00b7 131,072 samples \u00b7 GPU 6.49 ms\n2286 \u00d7 1313 \u00b7 bounded to 512 memories",
+        "60 FPS \u00b7 p95 16.7 ms \u00b7 131,072 samples \u00b7 GPU 6.16 ms\n2286 \u00d7 1313 \u00b7 bounded to 512 memories",
+        "60 FPS \u00b7 p95 16.7 ms \u00b7 131,072 samples \u00b7 GPU 6.95 ms\n2286 \u00d7 1313 \u00b7 bounded to 512 memories",
+        "60 FPS \u00b7 p95 16.8 ms \u00b7 131,072 samples \u00b7 GPU 6.36 ms\n2286 \u00d7 1313 \u00b7 bounded to 512 memories",
+        "60 FPS \u00b7 p95 16.8 ms \u00b7 131,072 samples \u00b7 GPU 6.29 ms\n2286 \u00d7 1313 \u00b7 bounded to 512 memories",
+        "60 FPS \u00b7 p95 16.7 ms \u00b7 131,072 samples \u00b7 GPU 6.36 ms\n2286 \u00d7 1313 \u00b7 bounded to 512 memories",
+        "60 FPS \u00b7 p95 16.8 ms \u00b7 131,072 samples \u00b7 GPU 6.23 ms\n2286 \u00d7 1313 \u00b7 bounded to 512 memories"
+      ],
+      "mainThread": {
+        "longTaskCount": 0,
+        "longestTaskMs": 0,
+        "frameIntervalP95Ms": 16.700000000000728
+      },
+      "errors": []
+    }
+  ],
+  "deviceRecovery": {
+    "injected": true,
+    "reason": "Memory remains available.\n\nGPU device lost: Device was destroyed.. Retry to rebuild the scene.\n\nRetry WebGPU",
+    "eventsBefore": 27,
+    "eventsAfter": 27,
+    "canvases": 1,
+    "status": "WebGPU online"
+  }
+}

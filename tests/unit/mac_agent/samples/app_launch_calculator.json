@@ -1,0 +1,33 @@
+{
+ "data": {
+  "process_start_identity_decimal": "1794162489131845",
+  "action": "launch",
+  "bundle_id": "com.apple.calculator",
+  "is_ready": true,
+  "process_start_identity": 1794162489131845,
+  "pid": 72247,
+  "new_instance": false,
+  "app_name": "Calculator",
+  "window_ids": [],
+  "window_ready": false,
+  "window_identity": "exact",
+  "window_count": 0
+ },
+ "effect": "confirmed",
+ "success": true,
+ "outcome": {
+  "effect": "confirmed",
+  "retry_safe": false,
+  "delivery_mechanism": "native_framework",
+  "route": "local",
+  "requires_fresh_observation": false,
+  "mutation_dispatched": true,
+  "delivery_mode": "foreground",
+  "escalation": "none",
+  "dispatched_unit_count": 2,
+  "retry_safety": "not_applicable",
+  "state": "confirmed_change",
+  "dispatch_state": "dispatched",
+  "evidence": "verified_change"
+ }
+}

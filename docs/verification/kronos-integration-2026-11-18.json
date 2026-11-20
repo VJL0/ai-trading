@@ -1,0 +1,1081 @@
+{
+  "artifacts_sha256": {
+    "forecast_paths.npz": "b09fc68340e782f9e9e1794c1f0c49c1d7d36d55fc94f69686c62f6c0d874a48",
+    "predictions.json": "a4b4fe2cca0d8a5a99ea277a65367cc02d4beba7bb4e836cd1ae3eb6466e06a2",
+    "result.json": "5a0de5b4ac6df7be68bdc8ba83db4677c2798dbcf8134aec1e03fdad20c851af"
+  },
+  "benchmark": {
+    "benchmarks": {
+      "catboost": {
+        "metrics": {
+          "covered_sessions": 0.08205128205128205,
+          "exposure": 0.0,
+          "hit_rate": null,
+          "mean_net_bps": null,
+          "n_test": 32,
+          "n_trades": 0,
+          "net_return": 0.0,
+          "net_sharpe": 0.0,
+          "p_value": 1.0,
+          "t_stat": null,
+          "turnover": 0.0
+        },
+        "stress_2x_costs": {
+          "covered_sessions": 0.08205128205128205,
+          "exposure": 0.0,
+          "hit_rate": null,
+          "mean_net_bps": null,
+          "n_test": 32,
+          "n_trades": 0,
+          "net_return": 0.0,
+          "net_sharpe": 0.0,
+          "p_value": 1.0,
+          "t_stat": null,
+          "turnover": 0.0
+        }
+      },
+      "kronos_base": {
+        "metrics": {
+          "covered_sessions": 0.08205128205128205,
+          "exposure": 0.0,
+          "hit_rate": null,
+          "mean_net_bps": null,
+          "n_test": 32,
+          "n_trades": 0,
+          "net_return": 0.0,
+          "net_sharpe": 0.0,
+          "p_value": 1.0,
+          "t_stat": null,
+          "turnover": 0.0
+        },
+        "stress_2x_costs": {
+          "covered_sessions": 0.08205128205128205,
+          "exposure": 0.0,
+          "hit_rate": null,
+          "mean_net_bps": null,
+          "n_test": 32,
+          "n_trades": 0,
+          "net_return": 0.0,
+          "net_sharpe": 0.0,
+          "p_value": 1.0,
+          "t_stat": null,
+          "turnover": 0.0
+        }
+      },
+      "lightgbm": {
+        "metrics": {
+          "covered_sessions": 0.08205128205128205,
+          "exposure": 0.0,
+          "hit_rate": null,
+          "mean_net_bps": null,
+          "n_test": 32,
+          "n_trades": 0,
+          "net_return": 0.0,
+          "net_sharpe": 0.0,
+          "p_value": 1.0,
+          "t_stat": null,
+          "turnover": 0.0
+        },
+        "stress_2x_costs": {
+          "covered_sessions": 0.08205128205128205,
+          "exposure": 0.0,
+          "hit_rate": null,
+          "mean_net_bps": null,
+          "n_test": 32,
+          "n_trades": 0,
+          "net_return": 0.0,
+          "net_sharpe": 0.0,
+          "p_value": 1.0,
+          "t_stat": null,
+          "turnover": 0.0
+        }
+      },
+      "ridge": {
+        "metrics": {
+          "covered_sessions": 0.08205128205128205,
+          "exposure": 0.0,
+          "hit_rate": null,
+          "mean_net_bps": null,
+          "n_test": 32,
+          "n_trades": 0,
+          "net_return": 0.0,
+          "net_sharpe": 0.0,
+          "p_value": 1.0,
+          "t_stat": null,
+          "turnover": 0.0
+        },
+        "stress_2x_costs": {
+          "covered_sessions": 0.08205128205128205,
+          "exposure": 0.0,
+          "hit_rate": null,
+          "mean_net_bps": null,
+          "n_test": 32,
+          "n_trades": 0,
+          "net_return": 0.0,
+          "net_sharpe": 0.0,
+          "p_value": 1.0,
+          "t_stat": null,
+          "turnover": 0.0
+        }
+      },
+      "selected_registry": {
+        "metrics": {
+          "covered_sessions": 0.08205128205128205,
+          "exposure": 0.0,
+          "hit_rate": null,
+          "mean_net_bps": null,
+          "n_test": 32,
+          "n_trades": 0,
+          "net_return": 0.0,
+          "net_sharpe": 0.0,
+          "p_value": 1.0,
+          "t_stat": null,
+          "turnover": 0.0
+        },
+        "stress_2x_costs": {
+          "covered_sessions": 0.08205128205128205,
+          "exposure": 0.0,
+          "hit_rate": null,
+          "mean_net_bps": null,
+          "n_test": 32,
+          "n_trades": 0,
+          "net_return": 0.0,
+          "net_sharpe": 0.0,
+          "p_value": 1.0,
+          "t_stat": null,
+          "turnover": 0.0
+        }
+      }
+    },
+    "calendar_aligned_rows": 325946,
+    "calendar_excluded_rows": 177808,
+    "code_hash": "2eef4234ab3a8d2a3acb6549507264e1db51a6eb89ed2b8d0f168e5388699a3a",
+    "comparison_policy": "selected return architectures refitted inside each fold; HAR-RV is a volatility comparator",
+    "dataset_key": "4330386227569ac3499b94387ea023acdcefb66f6e9d1424142352cf0658e25d",
+    "elapsed_seconds": 96.7897161669971,
+    "folds": [
+      {
+        "calibration_rows": [
+          116947,
+          118166,
+          119196,
+          120797,
+          122951,
+          124699,
+          126426,
+          128077,
+          130006,
+          132574,
+          135854,
+          137699,
+          140791,
+          144043,
+          146760,
+          148696,
+          151337,
+          153410,
+          154875,
+          156368
+        ],
+        "covered_sessions": 0.020512820512820513,
+        "exposure": 0.0,
+        "fit": 47215,
+        "fold": 0,
+        "hit_rate": null,
+        "mean_net_bps": null,
+        "models": {
+          "catboost": {
+            "allowance_bps": [
+              34.26128188413752,
+              41.508521663041755,
+              56.57534019465653
+            ],
+            "covered_sessions": 0.020512820512820513,
+            "exposure": 0.0,
+            "hit_rate": null,
+            "mae_bps_by_horizon": [
+              7.89692698150787,
+              7.7892763141902055,
+              19.180647757808785
+            ],
+            "mean_net_bps": null,
+            "n_test": 8,
+            "n_trades": 0,
+            "net_return": 0.0,
+            "net_sharpe": 0.0,
+            "p_value": 1.0,
+            "t_stat": null,
+            "trade_rows": [],
+            "turnover": 0.0
+          },
+          "kronos_base": {
+            "allowance_bps": [
+              25.56679533245087,
+              14.16232483527384,
+              30.44341729655987
+            ],
+            "covered_sessions": 0.020512820512820513,
+            "exposure": 0.0,
+            "hit_rate": null,
+            "mae_bps_by_horizon": [
+              8.14974436720233,
+              9.455272171328625,
+              29.0620559729645
+            ],
+            "mean_net_bps": null,
+            "n_test": 8,
+            "n_trades": 0,
+            "net_return": 0.0,
+            "net_sharpe": 0.0,
+            "p_value": 1.0,
+            "t_stat": null,
+            "trade_rows": [],
+            "turnover": 0.0
+          },
+          "lightgbm": {
+            "allowance_bps": [
+              34.825701835681976,
+              72.52878744147102,
+              57.06796729328882
+            ],
+            "covered_sessions": 0.020512820512820513,
+            "exposure": 0.0,
+            "hit_rate": null,
+            "mae_bps_by_horizon": [
+              8.176679411268054,
+              9.021149102223252,
+              19.284301133222414
+            ],
+            "mean_net_bps": null,
+            "n_test": 8,
+            "n_trades": 0,
+            "net_return": 0.0,
+            "net_sharpe": 0.0,
+            "p_value": 1.0,
+            "t_stat": null,
+            "trade_rows": [],
+            "turnover": 0.0
+          },
+          "ridge": {
+            "allowance_bps": [
+              33.75510296168849,
+              33.05146344159637,
+              53.01187018663562
+            ],
+            "covered_sessions": 0.020512820512820513,
+            "exposure": 0.0,
+            "hit_rate": null,
+            "mae_bps_by_horizon": [
+              7.783249640945374,
+              7.585128471372427,
+              18.290754402360257
+            ],
+            "mean_net_bps": null,
+            "n_test": 8,
+            "n_trades": 0,
+            "net_return": 0.0,
+            "net_sharpe": 0.0,
+            "p_value": 1.0,
+            "t_stat": null,
+            "trade_rows": [],
+            "turnover": 0.0
+          },
+          "selected_registry": {
+            "allowance_bps": [
+              45.517257502935614,
+              45.06706646199207,
+              69.24249513671043
+            ],
+            "covered_sessions": 0.020512820512820513,
+            "exposure": 0.0,
+            "hit_rate": null,
+            "mae_bps_by_horizon": [
+              9.464795825469619,
+              11.77797774869288,
+              26.01510104438342
+            ],
+            "mean_net_bps": null,
+            "n_test": 8,
+            "n_trades": 0,
+            "net_return": 0.0,
+            "net_sharpe": 0.0,
+            "p_value": 1.0,
+            "t_stat": null,
+            "trade_rows": [],
+            "turnover": 0.0
+          }
+        },
+        "n_test": 8,
+        "n_trades": 0,
+        "net_return": 0.0,
+        "net_sharpe": 0.0,
+        "p_value": 1.0,
+        "t_stat": null,
+        "test_rows": [
+          156611,
+          164296,
+          173994,
+          182654,
+          189819,
+          198573,
+          209045,
+          215844
+        ],
+        "trade_rows": [],
+        "turnover": 0.0
+      },
+      {
+        "calibration_rows": [
+          161445,
+          164293,
+          166945,
+          170396,
+          173958,
+          176945,
+          180047,
+          182577,
+          185466,
+          187391,
+          189752,
+          191904,
+          194681,
+          198461,
+          201571,
+          205644,
+          208776,
+          211841,
+          213574,
+          215600
+        ],
+        "covered_sessions": 0.020512820512820513,
+        "exposure": 0.0,
+        "fit": 68320,
+        "fold": 1,
+        "hit_rate": null,
+        "mean_net_bps": null,
+        "models": {
+          "catboost": {
+            "allowance_bps": [
+              11.08112332434539,
+              10.505838972226828,
+              63.00926891892352
+            ],
+            "covered_sessions": 0.020512820512820513,
+            "exposure": 0.0,
+            "hit_rate": null,
+            "mae_bps_by_horizon": [
+              6.66553519805026,
+              14.792621706401011,
+              35.541085849165626
+            ],
+            "mean_net_bps": null,
+            "n_test": 8,
+            "n_trades": 0,
+            "net_return": 0.0,
+            "net_sharpe": 0.0,
+            "p_value": 1.0,
+            "t_stat": null,
+            "trade_rows": [],
+            "turnover": 0.0
+          },
+          "kronos_base": {
+            "allowance_bps": [
+              12.607723623540332,
+              10.818981040052087,
+              52.90558437205712
+            ],
+            "covered_sessions": 0.020512820512820513,
+            "exposure": 0.0,
+            "hit_rate": null,
+            "mae_bps_by_horizon": [
+              9.660005366495936,
+              23.812917147962253,
+              47.1427273743255
+            ],
+            "mean_net_bps": null,
+            "n_test": 8,
+            "n_trades": 0,
+            "net_return": 0.0,
+            "net_sharpe": 0.0,
+            "p_value": 1.0,
+            "t_stat": null,
+            "trade_rows": [],
+            "turnover": 0.0
+          },
+          "lightgbm": {
+            "allowance_bps": [
+              10.801224246024153,
+              9.270235847357881,
+              62.05672846203902
+            ],
+            "covered_sessions": 0.020512820512820513,
+            "exposure": 0.0,
+            "hit_rate": null,
+            "mae_bps_by_horizon": [
+              6.192658015392656,
+              14.227608299703908,
+              33.38926643872935
+            ],
+            "mean_net_bps": null,
+            "n_test": 8,
+            "n_trades": 0,
+            "net_return": 0.0,
+            "net_sharpe": 0.0,
+            "p_value": 1.0,
+            "t_stat": null,
+            "trade_rows": [],
+            "turnover": 0.0
+          },
+          "ridge": {
+            "allowance_bps": [
+              11.507048898983633,
+              10.71365384418943,
+              62.982267133216006
+            ],
+            "covered_sessions": 0.020512820512820513,
+            "exposure": 0.0,
+            "hit_rate": null,
+            "mae_bps_by_horizon": [
+              6.9476338627153,
+              15.56671260397531,
+              35.122581463375404
+            ],
+            "mean_net_bps": null,
+            "n_test": 8,
+            "n_trades": 0,
+            "net_return": 0.0,
+            "net_sharpe": 0.0,
+            "p_value": 1.0,
+            "t_stat": null,
+            "trade_rows": [],
+            "turnover": 0.0
+          },
+          "selected_registry": {
+            "allowance_bps": [
+              21.63885684465256,
+              20.959402207629907,
+              74.98303298443099
+            ],
+            "covered_sessions": 0.020512820512820513,
+            "exposure": 0.0,
+            "hit_rate": null,
+            "mae_bps_by_horizon": [
+              9.678391589320636,
+              18.227824184296438,
+              36.02742622554172
+            ],
+            "mean_net_bps": null,
+            "n_test": 8,
+            "n_trades": 0,
+            "net_return": 0.0,
+            "net_sharpe": 0.0,
+            "p_value": 1.0,
+            "t_stat": null,
+            "trade_rows": [],
+            "turnover": 0.0
+          }
+        },
+        "n_test": 8,
+        "n_trades": 0,
+        "net_return": 0.0,
+        "net_sharpe": 0.0,
+        "p_value": 1.0,
+        "t_stat": null,
+        "test_rows": [
+          215848,
+          226019,
+          235693,
+          243935,
+          251069,
+          258701,
+          266266,
+          276220
+        ],
+        "trade_rows": [],
+        "turnover": 0.0
+      },
+      {
+        "calibration_rows": [
+          205647,
+          210085,
+          213670,
+          217230,
+          221148,
+          226031,
+          230424,
+          233894,
+          238445,
+          241454,
+          245043,
+          247919,
+          251011,
+          254412,
+          257587,
+          260653,
+          263635,
+          267332,
+          271324,
+          275978
+        ],
+        "covered_sessions": 0.020512820512820513,
+        "exposure": 0.0,
+        "fit": 87725,
+        "fold": 2,
+        "hit_rate": null,
+        "mean_net_bps": null,
+        "models": {
+          "catboost": {
+            "allowance_bps": [
+              17.803428258451643,
+              11.076717569124,
+              52.053943908679926
+            ],
+            "covered_sessions": 0.020512820512820513,
+            "exposure": 0.0,
+            "hit_rate": null,
+            "mae_bps_by_horizon": [
+              12.328256838405135,
+              14.13084691988364,
+              29.634947512431648
+            ],
+            "mean_net_bps": null,
+            "n_test": 8,
+            "n_trades": 0,
+            "net_return": 0.0,
+            "net_sharpe": 0.0,
+            "p_value": 1.0,
+            "t_stat": null,
+            "trade_rows": [],
+            "turnover": 0.0
+          },
+          "kronos_base": {
+            "allowance_bps": [
+              19.03960777092437,
+              13.943956194759837,
+              85.23937527153147
+            ],
+            "covered_sessions": 0.020512820512820513,
+            "exposure": 0.0,
+            "hit_rate": null,
+            "mae_bps_by_horizon": [
+              12.952602084996851,
+              19.889793615176163,
+              46.473203611733354
+            ],
+            "mean_net_bps": null,
+            "n_test": 8,
+            "n_trades": 0,
+            "net_return": 0.0,
+            "net_sharpe": 0.0,
+            "p_value": 1.0,
+            "t_stat": null,
+            "trade_rows": [],
+            "turnover": 0.0
+          },
+          "lightgbm": {
+            "allowance_bps": [
+              17.625281914204614,
+              11.159562218898705,
+              56.64026395294803
+            ],
+            "covered_sessions": 0.020512820512820513,
+            "exposure": 0.0,
+            "hit_rate": null,
+            "mae_bps_by_horizon": [
+              12.261833497457857,
+              13.235411022507238,
+              26.958120068799587
+            ],
+            "mean_net_bps": null,
+            "n_test": 8,
+            "n_trades": 0,
+            "net_return": 0.0,
+            "net_sharpe": 0.0,
+            "p_value": 1.0,
+            "t_stat": null,
+            "trade_rows": [],
+            "turnover": 0.0
+          },
+          "ridge": {
+            "allowance_bps": [
+              16.78260369518996,
+              11.486020597371349,
+              50.79727718315102
+            ],
+            "covered_sessions": 0.020512820512820513,
+            "exposure": 0.0,
+            "hit_rate": null,
+            "mae_bps_by_horizon": [
+              12.550917799522448,
+              14.491730792459984,
+              30.847558234337072
+            ],
+            "mean_net_bps": null,
+            "n_test": 8,
+            "n_trades": 0,
+            "net_return": 0.0,
+            "net_sharpe": 0.0,
+            "p_value": 1.0,
+            "t_stat": null,
+            "trade_rows": [],
+            "turnover": 0.0
+          },
+          "selected_registry": {
+            "allowance_bps": [
+              28.102743711420175,
+              21.664980571598452,
+              63.895388569566116
+            ],
+            "covered_sessions": 0.020512820512820513,
+            "exposure": 0.0,
+            "hit_rate": null,
+            "mae_bps_by_horizon": [
+              13.747290991058858,
+              15.059646825779911,
+              33.69008649623575
+            ],
+            "mean_net_bps": null,
+            "n_test": 8,
+            "n_trades": 0,
+            "net_return": 0.0,
+            "net_sharpe": 0.0,
+            "p_value": 1.0,
+            "t_stat": null,
+            "trade_rows": [],
+            "turnover": 0.0
+          }
+        },
+        "n_test": 8,
+        "n_trades": 0,
+        "net_return": 0.0,
+        "net_sharpe": 0.0,
+        "p_value": 1.0,
+        "t_stat": null,
+        "test_rows": [
+          276221,
+          288327,
+          297656,
+          305080,
+          312984,
+          320532,
+          329601,
+          337821
+        ],
+        "trade_rows": [],
+        "turnover": 0.0
+      },
+      {
+        "calibration_rows": [
+          250857,
+          256335,
+          261658,
+          267420,
+          274468,
+          280958,
+          286615,
+          291725,
+          296087,
+          299583,
+          303003,
+          306706,
+          310564,
+          314045,
+          317465,
+          321225,
+          325698,
+          329776,
+          333740,
+          337573
+        ],
+        "covered_sessions": 0.020512820512820513,
+        "exposure": 0.0,
+        "fit": 111284,
+        "fold": 3,
+        "hit_rate": null,
+        "mean_net_bps": null,
+        "models": {
+          "catboost": {
+            "allowance_bps": [
+              16.130208026607168,
+              14.106939220176475,
+              22.576933079694033
+            ],
+            "covered_sessions": 0.020512820512820513,
+            "exposure": 0.0,
+            "hit_rate": null,
+            "mae_bps_by_horizon": [
+              9.04858445593616,
+              14.814847247670237,
+              33.04198466896137
+            ],
+            "mean_net_bps": null,
+            "n_test": 8,
+            "n_trades": 0,
+            "net_return": 0.0,
+            "net_sharpe": 0.0,
+            "p_value": 1.0,
+            "t_stat": null,
+            "trade_rows": [],
+            "turnover": 0.0
+          },
+          "kronos_base": {
+            "allowance_bps": [
+              11.391240854587636,
+              20.989867336261177,
+              58.796587023567604
+            ],
+            "covered_sessions": 0.020512820512820513,
+            "exposure": 0.0,
+            "hit_rate": null,
+            "mae_bps_by_horizon": [
+              9.967694716740997,
+              16.088948596403963,
+              32.87184682783723
+            ],
+            "mean_net_bps": null,
+            "n_test": 8,
+            "n_trades": 0,
+            "net_return": 0.0,
+            "net_sharpe": 0.0,
+            "p_value": 1.0,
+            "t_stat": null,
+            "trade_rows": [],
+            "turnover": 0.0
+          },
+          "lightgbm": {
+            "allowance_bps": [
+              16.304392474400206,
+              13.46344733126975,
+              21.311875515814528
+            ],
+            "covered_sessions": 0.020512820512820513,
+            "exposure": 0.0,
+            "hit_rate": null,
+            "mae_bps_by_horizon": [
+              9.03727384145111,
+              14.634691085019586,
+              33.01930540451422
+            ],
+            "mean_net_bps": null,
+            "n_test": 8,
+            "n_trades": 0,
+            "net_return": 0.0,
+            "net_sharpe": 0.0,
+            "p_value": 1.0,
+            "t_stat": null,
+            "trade_rows": [],
+            "turnover": 0.0
+          },
+          "ridge": {
+            "allowance_bps": [
+              16.347201119603124,
+              13.735778665717358,
+              24.212675193051957
+            ],
+            "covered_sessions": 0.020512820512820513,
+            "exposure": 0.0,
+            "hit_rate": null,
+            "mae_bps_by_horizon": [
+              8.90065820952064,
+              14.2926171479771,
+              31.186796014954446
+            ],
+            "mean_net_bps": null,
+            "n_test": 8,
+            "n_trades": 0,
+            "net_return": 0.0,
+            "net_sharpe": 0.0,
+            "p_value": 1.0,
+            "t_stat": null,
+            "trade_rows": [],
+            "turnover": 0.0
+          },
+          "selected_registry": {
+            "allowance_bps": [
+              26.54560353311546,
+              25.073412162768754,
+              32.816955111101485
+            ],
+            "covered_sessions": 0.020512820512820513,
+            "exposure": 0.0,
+            "hit_rate": null,
+            "mae_bps_by_horizon": [
+              13.214565537127644,
+              17.097067789336066,
+              38.996494608878464
+            ],
+            "mean_net_bps": null,
+            "n_test": 8,
+            "n_trades": 0,
+            "net_return": 0.0,
+            "net_sharpe": 0.0,
+            "p_value": 1.0,
+            "t_stat": null,
+            "trade_rows": [],
+            "turnover": 0.0
+          }
+        },
+        "n_test": 8,
+        "n_trades": 0,
+        "net_return": 0.0,
+        "net_sharpe": 0.0,
+        "p_value": 1.0,
+        "t_stat": null,
+        "test_rows": [
+          337822,
+          349456,
+          357996,
+          366572,
+          374982,
+          382982,
+          391373,
+          399833
+        ],
+        "trade_rows": [],
+        "turnover": 0.0
+      }
+    ],
+    "horizons_minutes": [
+      5,
+      15,
+      60
+    ],
+    "is_simulated": false,
+    "metrics": {
+      "covered_sessions": 0.08205128205128205,
+      "exposure": 0.0,
+      "hit_rate": null,
+      "mean_net_bps": null,
+      "n_test": 32,
+      "n_trades": 0,
+      "net_return": 0.0,
+      "net_sharpe": 0.0,
+      "p_value": 1.0,
+      "t_stat": null,
+      "turnover": 0.0
+    },
+    "no_edge_note": "Development research only; sampling quantiles are not calibrated probabilities.",
+    "objective": -1000000000.0,
+    "p_incremental": 1.0,
+    "p_positive": 1.0,
+    "paired_comparisons": {
+      "catboost": {
+        "alpha": 1.7182130584192442e-05,
+        "credible": false,
+        "delta_session_sharpe": 0.0,
+        "method": "paired five-session circular block bootstrap; all-trial correction",
+        "p_incremental_net": 1.0,
+        "sharpe_difference_lower_bound": null
+      },
+      "lightgbm": {
+        "alpha": 1.7182130584192442e-05,
+        "credible": false,
+        "delta_session_sharpe": 0.0,
+        "method": "paired five-session circular block bootstrap; all-trial correction",
+        "p_incremental_net": 1.0,
+        "sharpe_difference_lower_bound": null
+      },
+      "ridge": {
+        "alpha": 1.7182130584192442e-05,
+        "credible": false,
+        "delta_session_sharpe": 0.0,
+        "method": "paired five-session circular block bootstrap; all-trial correction",
+        "p_incremental_net": 1.0,
+        "sharpe_difference_lower_bound": null
+      },
+      "selected_registry": {
+        "alpha": 1.7182130584192442e-05,
+        "credible": false,
+        "delta_session_sharpe": 0.0,
+        "method": "paired five-session circular block bootstrap; all-trial correction",
+        "p_incremental_net": 1.0,
+        "sharpe_difference_lower_bound": null
+      }
+    },
+    "paths_sha256": "b09fc68340e782f9e9e1794c1f0c49c1d7d36d55fc94f69686c62f6c0d874a48",
+    "prediction_sha256": "a4b4fe2cca0d8a5a99ea277a65367cc02d4beba7bb4e836cd1ae3eb6466e06a2",
+    "promotion_blockers": [
+      "pretraining data overlap unknown; require independently timestamped post-checkpoint evidence",
+      "sequence challenger has not passed independent confirmation and LEAN parity",
+      "incremental net risk-adjusted value not established against every comparator"
+    ],
+    "promotion_eligible": false,
+    "risk": {
+      "max_drawdown": 0.0,
+      "sortino_per_trade": null,
+      "tail_mean_5pct": 0.0
+    },
+    "row_budget_per_fold": 8,
+    "sampling": {
+      "config": {
+        "context": 64,
+        "device": "auto",
+        "samples": 2,
+        "seed": 42,
+        "temperature": 1.0,
+        "top_p": 0.9,
+        "variant": "base"
+      },
+      "cpu_fallback": null,
+      "device": "mps",
+      "invalid_candle_fraction": 0.23770491803278687,
+      "last_close": 683.8400268554688,
+      "parameter_count": 102310592,
+      "seed": 399875,
+      "torch_version": "2.15.0",
+      "weights": {
+        "models": {
+          "base": {
+            "files": {
+              "config.json": "77ebc3038b647709b92be002f801d72e1a385f4c8c2c5aa1cc6cf21fcfe44eb2",
+              "model.safetensors": "abff193acab6db1a0368e9773e75799d11403b6d054ee6d5f0a11aeabc5f4b83"
+            },
+            "repo": "NeoQuasar/Kronos-base",
+            "revision": "2b554741eca47781b64468546e77fef3e85130e6"
+          },
+          "tokenizer": {
+            "files": {
+              "config.json": "2366e7ccfec76cbc19cf3c4c1b9c5d901be336ca1e83f2d2292c9bff381b77a2",
+              "model.safetensors": "59d85f6af76a2c3b8240ea06cb21db4213b4eeca053f246b23e29cf832fc6bee"
+            },
+            "repo": "NeoQuasar/Kronos-Tokenizer-base",
+            "revision": "0e0117387f39004a9016484a186a908917e22426"
+          }
+        },
+        "pretraining_cutoff": null,
+        "pretraining_overlap": "UNKNOWN; historical OOS is not proven pretraining-independent",
+        "upstream_commit": "67b630e67f6a18c9e9be918d9b4337c960db1e9a"
+      }
+    },
+    "selected_registry": "5ad238f02665b96f053b932f1e3d70111f17b3b71c31211935f0fbb96d3ba916",
+    "sessions": 29,
+    "stress_2x_costs": {
+      "covered_sessions": 0.08205128205128205,
+      "exposure": 0.0,
+      "hit_rate": null,
+      "mean_net_bps": null,
+      "n_test": 32,
+      "n_trades": 0,
+      "net_return": 0.0,
+      "net_sharpe": 0.0,
+      "p_value": 1.0,
+      "t_stat": null,
+      "turnover": 0.0
+    },
+    "tuning": [],
+    "validation": "DEVELOPMENT_ONLY",
+    "volatility": {
+      "har_base_reason": "literal HAR: base period = one regular session (390 trading minutes), daily/weekly/monthly = 1/5/22 sessions",
+      "har_rv": {
+        "n_test": 32,
+        "qlike": 0.5384627335487576,
+        "vol_rmse_bps": 21.90127814716971
+      },
+      "kronos": {
+        "n_test": 32,
+        "qlike": 0.27804145737317987,
+        "vol_rmse_bps": 9.410200466266053
+      }
+    }
+  },
+  "checkpoint_commit": "7112918",
+  "dataset": "ds_6f37a2401444b6ea",
+  "date": "2026-11-18",
+  "forecast_quality": {
+    "aggregate_invalid_candle_or_volume_fraction": 0.28048155737704916,
+    "note": "Raw sampled candle geometry/negative volume checks; raw paths retained and not repaired. Prices were finite and positive.",
+    "oos_paths_shape": [
+      32,
+      2,
+      61,
+      6
+    ]
+  },
+  "job": "9fa371c51dce43f5e7f8ab0163cf7562c7d717a3060de884be82d615f21a633b",
+  "lean": {
+    "kronos-iex-diagnostic": {
+      "result_sha256": "cd1d3e9305595f2c954c4b51067a15012354399da03f1a102de8b8885599ea60",
+      "statistics": {
+        "Alpha": "0",
+        "Annual Standard Deviation": "0",
+        "Annual Variance": "0",
+        "Average Loss": "0%",
+        "Average Win": "0%",
+        "Beta": "0",
+        "Compounding Annual Return": "0%",
+        "Drawdown": "0%",
+        "Drawdown Recovery": "0",
+        "End Equity": "100000",
+        "Estimated Strategy Capacity": "$0",
+        "Expectancy": "0",
+        "Information Ratio": "0",
+        "Loss Rate": "0%",
+        "Lowest Capacity Asset": "",
+        "Net Profit": "0%",
+        "Portfolio Turnover": "0%",
+        "Probabilistic Sharpe Ratio": "0%",
+        "Profit-Loss Ratio": "0",
+        "Sharpe Ratio": "0",
+        "Sortino Ratio": "0",
+        "Start Equity": "100000",
+        "Total Fees": "$0.00",
+        "Total Orders": "0",
+        "Tracking Error": "0",
+        "Treynor Ratio": "0",
+        "Win Rate": "0%"
+      }
+    },
+    "kronos-replay-smoke": {
+      "result_sha256": "989fd80abd7829f15902a1286f43fff973361205c47ce7347627afabe16030bd",
+      "statistics": {
+        "Alpha": "0",
+        "Annual Standard Deviation": "0",
+        "Annual Variance": "0",
+        "Average Loss": "0%",
+        "Average Win": "0%",
+        "Beta": "0",
+        "Compounding Annual Return": "0%",
+        "Drawdown": "0%",
+        "Drawdown Recovery": "0",
+        "End Equity": "100232.68",
+        "Estimated Strategy Capacity": "$19000000.00",
+        "Expectancy": "0",
+        "Information Ratio": "0",
+        "Loss Rate": "0%",
+        "Lowest Capacity Asset": "SPY R735QTJ8XC9X",
+        "Net Profit": "0%",
+        "Portfolio Turnover": "189.51%",
+        "Probabilistic Sharpe Ratio": "0%",
+        "Profit-Loss Ratio": "0",
+        "Sharpe Ratio": "0",
+        "Sortino Ratio": "0",
+        "Start Equity": "100000",
+        "Total Fees": "$2.76",
+        "Total Orders": "2",
+        "Tracking Error": "0",
+        "Treynor Ratio": "0",
+        "Win Rate": "0%"
+      }
+    }
+  },
+  "limitations": [
+    "32 OOS decisions and two paths per forecast are diagnostic, not statistical promotion evidence",
+    "All return models produced zero trades after conservative uncertainty allowances; no incremental net value established",
+    "Pretraining overlap remains unknown; outer holdout untouched",
+    "Independent sequence confirmation/runtime promotion is not enabled; research-only blocker is explicit",
+    "Actual LEAN forecast replay was a no-trade run; deterministic positive-score fixture separately verified fills and fees",
+    "Complete-case minute-grid windows exclude 177808 development rows; conclusions do not cover data gaps"
+  ],
+  "source_hash": "2eef4234ab3a8d2a3acb6549507264e1db51a6eb89ed2b8d0f168e5388699a3a",
+  "validation": {
+    "execution": "research files tested in separate interpreters to avoid macOS torch/LightGBM OpenMP collision",
+    "final_recheck": "12 Kronos + 36 autonomous tests passed after calendar alignment changes",
+    "fine_tuning": "Tiny-model test verified head weights change, backbone stays fixed, boundary overlap rejected; no real-data tuning authorized by results",
+    "lean_build": "0 errors; existing upstream/package warnings",
+    "pyright_targeted": "0 errors",
+    "ruff": "passed",
+    "support_module": "test_research_models_support.py is a fixture helper with no tests",
+    "test_files_with_tests": 19,
+    "unit_tests_passed": 220
+  }
+}

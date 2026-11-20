@@ -1,0 +1,7 @@
+FinCast decoder from https://github.com/vincent05r/FinCast-fts
+Apache-2.0; original file copyright/license header retained.
+Copied solely to avoid CUDA-only wrapper and unrelated TensorFlow/JAX dependencies.
+488b19d1d85fa2b3d4b93469530cefdcf1cc97a4
+FinCast's modified st_moe_pytorch/moe.py and distributed.py are also retained from that commit.
+Their upstream ST-MoE PyTorch MIT license is included as ST-MOE-LICENSE.
+Only import paths were changed to relative local imports.

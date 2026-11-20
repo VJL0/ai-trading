@@ -1,0 +1,68 @@
+# --- secrets (never commit) ---
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+**/secrets/**
+
+# --- local runtime state ---
+var/
+.tools/
+.venv/
+.venv-*/
+__pycache__/
+*.pyc
+.pytest_cache/
+.ruff_cache/
+.hypothesis/
+.coverage
+htmlcov/
+
+# --- datasets (Parquet etc.), only manifests are versioned ---
+datasets/raw/**
+!datasets/raw/.gitkeep
+datasets/processed/**
+!datasets/processed/.gitkeep
+!datasets/processed/manifests/
+!datasets/processed/manifests/**
+datasets/fixtures/generated/
+
+# --- LEAN / .NET build output and upstream clones (pinned via docs/sources/source-manifest.json) ---
+trading/lean/Lean/
+trading/alpaca_plugin/Lean.Brokerages.Alpaca/
+trading/alpaca_plugin/Lean
+trading/**/bin/
+trading/**/obj/
+trading/lean/runs/
+trading/lean/data-local/
+
+# --- node ---
+node_modules/
+apps/dashboard/dist/
+apps/dashboard/test-results/
+apps/dashboard/playwright-report/
+apps/mac-agent/artifacts/
+
+# --- OS ---
+.DS_Store
+
+# Mutable analytics cache; checkpoint retains the original, local data stays on disk.
+datasets/*.duckdb
+datasets/*.duckdb.wal
+
+# Autonomous research runtime checkpoints, numeric caches and worker logs
+experiments/autonomous/
+
+experiments/autonomous-validation.sqlite3*
+experiments/autonomous-artifacts/
+
+# Research-only registry entries reference local autonomous artifacts
+experiments/models/challengers/
+
+# Local ML tournament evidence and RD-Agent template debug caches
+experiments/advanced/
+log/
+
+# Keep generated research runs and protected evaluation outputs local.
+experiments/

@@ -1,0 +1,78 @@
+{
+ "success": true,
+ "data": {
+  "target_application_info": {
+   "pid": 86033,
+   "app_name": "Google Chrome for Testing",
+   "bundle_id": "com.google.chrome.for.testing"
+  },
+  "windows": [
+   {
+    "window_title": "",
+    "is_on_screen": false,
+    "observation_capability_reason": "no_matching_accessibility_window",
+    "layer": 0,
+    "window_index": 1,
+    "observation_capability": "pixels_only",
+    "window_id": 34831,
+    "bounds": {
+     "y": 81,
+     "x": 121,
+     "width": 976,
+     "height": 89
+    }
+   },
+   {
+    "window_title": "",
+    "is_on_screen": false,
+    "observation_capability_reason": "no_matching_accessibility_window",
+    "layer": 0,
+    "window_index": 2,
+    "observation_capability": "pixels_only",
+    "window_id": 34830,
+    "bounds": {
+     "y": 81,
+     "x": 121,
+     "width": 976,
+     "height": 107
+    }
+   },
+   {
+    "window_title": "FAKE PAPER DASHBOARD — SIMULATED",
+    "is_on_screen": true,
+    "subrole": "AXStandardWindow",
+    "is_key": true,
+    "layer": 0,
+    "window_index": 3,
+    "observation_capability": "combined_eligible",
+    "window_id": 34829,
+    "is_frontmost": true,
+    "bounds": {
+     "y": 56,
+     "x": 22,
+     "width": 1102,
+     "height": 980
+    }
+   },
+   {
+    "window_title": "",
+    "is_on_screen": false,
+    "observation_capability_reason": "no_matching_accessibility_window",
+    "layer": 0,
+    "window_index": 7,
+    "observation_capability": "pixels_only",
+    "window_id": 34838,
+    "bounds": {
+     "y": 617,
+     "x": 0,
+     "width": 500,
+     "height": 500
+    }
+   }
+  ],
+  "inventory_warnings": [
+   "Window list omitted 6 non-renderable or duplicate inventory rows."
+  ],
+  "inventory_completeness": "partial"
+ }
+}

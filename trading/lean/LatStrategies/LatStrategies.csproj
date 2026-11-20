@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    LAT (local-ai-trader) LEAN extensions, compiled against the PINNED LEAN SOURCE (trading/PINS.json):
+      * LatBaselineAlgorithm      - deterministic non-ML SMA baseline (backtest)
+      * LatIntentBridgeAlgorithm  - live-mode bridge: signed intents in, order events out; never originates orders
+      * GatedBrokerageModel       - ECDSA P-256 signed-intent gate at the LEAN brokerage-model boundary
+      * GatedPaperBrokerage       - PaperBrokerage subclass that re-verifies the gate at PlaceOrder (final boundary)
+      * LatFeeModel / LatSpreadSlippageModel - cost models shared by backtest and live paths
+      * LatSimulatedDataQueue     - deterministic, explicitly SIMULATED live data queue handler
+    LEAN assemblies are Private=false: at runtime they come from the Launcher output (one copy only).
+  -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Configuration Condition=" '$(Configuration)' == '' ">Release</Configuration>
+    <AssemblyName>LatStrategies</AssemblyName>
+    <RootNamespace>Lat.Lean</RootNamespace>
+    <OutputType>Library</OutputType>
+    <OutputPath>bin\$(Configuration)\</OutputPath>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
+    <Nullable>disable</Nullable>
+    <LangVersion>latest</LangVersion>
+    <Deterministic>true</Deterministic>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <NoWarn>$(NoWarn);CS1591;NU1605</NoWarn>
+    <Version>0.1.0</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Lean\Common\QuantConnect.csproj" Private="false" />
+    <ProjectReference Include="..\Lean\Algorithm\QuantConnect.Algorithm.csproj" Private="false" />
+    <ProjectReference Include="..\Lean\Indicators\QuantConnect.Indicators.csproj" Private="false" />
+    <ProjectReference Include="..\Lean\Brokerages\QuantConnect.Brokerages.csproj" Private="false" />
+    <ProjectReference Include="..\Lean\Engine\QuantConnect.Lean.Engine.csproj" Private="false" />
+    <ProjectReference Include="..\Lean\Configuration\QuantConnect.Configuration.csproj" Private="false" />
+    <ProjectReference Include="..\Lean\Logging\QuantConnect.Logging.csproj" Private="false" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="LatStrategies.Tests" />
+  </ItemGroup>
+</Project>

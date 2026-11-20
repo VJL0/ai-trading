@@ -1,0 +1,54 @@
+{
+ "mode": "PAPER",
+ "execution_label": "SIMULATED",
+ "gateway": "FAKE",
+ "live_execution_compiled": false,
+ "entries_locked": false,
+ "lock_reasons": [],
+ "halts": [],
+ "startup": {
+  "phase": "READY",
+  "started_at": "2026-11-05T12:55:00Z",
+  "detail": "startup reconciliation CLEAN: fake broker"
+ },
+ "feed": {
+  "feed_mode": "SIMULATED",
+  "provider": "replay:synthetic-fixture-v1",
+  "is_simulated": true,
+  "last_bar_ts": "2026-11-05T14:30:00Z",
+  "last_quote_ts": "2026-11-05T14:29:57Z",
+  "staleness_s": "3.0",
+  "status": "OK",
+  "limitations": [
+   "SIMULATED feed: deterministic synthetic bars from a fixture, not market prices",
+   "Fills come from the deterministic fake broker; no market impact, queue position or latency"
+  ],
+  "simulated_time": "2026-11-05T14:30:00Z",
+  "dataset_version": "synthetic-fixture-v1"
+ },
+ "engine": {
+  "kind": "FAKE",
+  "status": "UP",
+  "last_heartbeat": "2026-11-05T14:29:59Z",
+  "detail": "in-process deterministic fake broker"
+ },
+ "broker": {
+  "kind": "FAKE",
+  "is_paper": true,
+  "connected": true,
+  "last_reconciled_at": "2026-11-05T14:29:00Z",
+  "reconciliation_status": "CLEAN"
+ },
+ "credentials": {
+  "alpaca_paper": false,
+  "anthropic": false,
+  "openai": false
+ },
+ "ai": {
+  "transport": "FAKE",
+  "claude_model": "claude-opus-5-5",
+  "sol_model": "gpt-6.1-sol"
+ },
+ "policy_version": "pol_1fcc24ed0ec6e7c7",
+ "server_time": "2026-11-05T14:30:00Z"
+}

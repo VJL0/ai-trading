@@ -1,0 +1,44 @@
+{
+ "mode_label": "SIMULATED",
+ "portfolio_value": "100000.23",
+ "cash": "98243.67",
+ "daily_pnl": "0.23",
+ "total_pnl": "0.23",
+ "realized_pnl": "0.00",
+ "unrealized_pnl": "0.23",
+ "win_rate": null,
+ "round_trips": 0,
+ "max_drawdown": "0.0000310",
+ "current_drawdown": "0",
+ "active_positions": 1,
+ "open_orders": 0,
+ "api_cost_usd": "0.0412",
+ "equity_curve": [
+  {
+   "time": 1793887500,
+   "equity": "100000.00"
+  },
+  {
+   "time": 1793887800,
+   "equity": "100000.00"
+  },
+  {
+   "time": 1793888100,
+   "equity": "99996.90"
+  },
+  {
+   "time": 1793888400,
+   "equity": "100001.25"
+  },
+  {
+   "time": 1793888700,
+   "equity": "100000.40"
+  },
+  {
+   "time": 1793889012,
+   "equity": "100000.23"
+  }
+ ],
+ "asof": "2026-11-05T14:30:12Z",
+ "is_simulated": true
+}

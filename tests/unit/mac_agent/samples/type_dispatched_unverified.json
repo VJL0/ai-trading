@@ -1,0 +1,22 @@
+{
+ "success": false,
+ "effect": "unverifiable",
+ "error": {
+  "code": "INTERACTION_FAILED",
+  "message": "Typing failed after foreground setup may have changed focus.",
+  "mutation_dispatched": true,
+  "retry_safe": false,
+  "hint": "Observe the target before deciding whether to retry typing."
+ },
+ "outcome": {
+  "route": "local",
+  "mutation_dispatched": true,
+  "retry_safety": "unsafe",
+  "retry_safe": false,
+  "dispatch_state": "may_have_dispatched",
+  "requires_fresh_observation": true,
+  "state": "indeterminate",
+  "delivery_mode": "foreground",
+  "effect": "unverifiable"
+ }
+}

@@ -1,0 +1,143 @@
+{
+  "buy": {
+    "execution_label": "PAPER",
+    "is_simulated": false,
+    "asof": "2026-11-09T20:11:55.276420Z",
+    "order": {
+      "client_order_id": "lat-paper-01m70z0fyr80pwwfdx0nfkn1sq",
+      "symbol": "SPY",
+      "side": "BUY",
+      "quantity": "1",
+      "filled_quantity": "1",
+      "avg_fill_price": "754.27000000",
+      "limit_price": "754.27",
+      "state": "FILLED",
+      "gateway": "ALPACA_PAPER",
+      "execution_label": "PAPER",
+      "created_at": "2026-11-09T20:11:50.106012Z",
+      "updated_at": "2026-11-09T20:11:52.556581Z"
+    },
+    "intent": {
+      "intent_id": "intent_01M70Z0FYR80PWWFDX0NFKN1SP",
+      "proposal_id": "prop_01M70Z0FW77RFR98S92H7ZEREW",
+      "policy_version": "pol_1fcc24ed0ec6e7c7",
+      "expires_at": "2026-11-09T20:12:50.104062Z",
+      "requires_human_approval": false
+    },
+    "transitions": [
+      {
+        "from_state": null,
+        "to_state": "PROPOSED",
+        "at": "2026-11-09T20:11:50.106012Z",
+        "reason": "proposal prop_01M70Z0FW77RFR98S92H7ZEREW recorded"
+      },
+      {
+        "from_state": "PROPOSED",
+        "to_state": "RISK_APPROVED",
+        "at": "2026-11-09T20:11:50.106012Z",
+        "reason": "risk decision rdec_01M70Z0FYQ7W5CCJZQRJG8QX69 APPROVED; intent intent_01M70Z0FYR80PWWFDX0NFKN1SP signed"
+      },
+      {
+        "from_state": "RISK_APPROVED",
+        "to_state": "SUBMITTING",
+        "at": "2026-11-09T20:11:50.151857Z",
+        "reason": "claimed for submission by execution:ALPACA_PAPER"
+      },
+      {
+        "from_state": "SUBMITTING",
+        "to_state": "SUBMITTED",
+        "at": "2026-11-09T20:11:50.212403Z",
+        "reason": "GATEWAY accepted: SUBMITTING->SUBMITTED"
+      },
+      {
+        "from_state": "SUBMITTED",
+        "to_state": "ACKNOWLEDGED",
+        "at": "2026-11-09T20:11:50.519474Z",
+        "reason": "RECONCILE new: SUBMITTED->ACKNOWLEDGED"
+      },
+      {
+        "from_state": "ACKNOWLEDGED",
+        "to_state": "FILLED",
+        "at": "2026-11-09T20:11:52.556581Z",
+        "reason": "RECONCILE fill: ACKNOWLEDGED->FILLED"
+      }
+    ],
+    "fills": [
+      {
+        "fill_id": "fill_01M70Z0JBC1GRRHX1QVXRYFT9V",
+        "quantity": "1",
+        "price": "754.27000000",
+        "ts": "2026-11-09T20:11:51.354880Z"
+      }
+    ],
+    "n_events": 3
+  },
+  "sell": {
+    "execution_label": "PAPER",
+    "is_simulated": false,
+    "asof": "2026-11-09T20:12:12.634495Z",
+    "order": {
+      "client_order_id": "lat-paper-01m70z0wf6ehhdsqpea55ah6e7",
+      "symbol": "SPY",
+      "side": "SELL",
+      "quantity": "1",
+      "filled_quantity": "1",
+      "avg_fill_price": "754.41000000",
+      "limit_price": "754.31",
+      "state": "FILLED",
+      "gateway": "ALPACA_PAPER",
+      "execution_label": "PAPER",
+      "created_at": "2026-11-09T20:12:02.918513Z",
+      "updated_at": "2026-11-09T20:12:04.745115Z"
+    },
+    "intent": {
+      "intent_id": "intent_01M70Z0WF6EHHDSQPEA55AH6E6",
+      "proposal_id": "prop_01M70Z0WB62X3P2QVMFRZY7ABF",
+      "policy_version": "pol_1fcc24ed0ec6e7c7",
+      "expires_at": "2026-11-09T20:13:02.918353Z",
+      "requires_human_approval": false
+    },
+    "transitions": [
+      {
+        "from_state": null,
+        "to_state": "PROPOSED",
+        "at": "2026-11-09T20:12:02.918513Z",
+        "reason": "proposal prop_01M70Z0WB62X3P2QVMFRZY7ABF recorded"
+      },
+      {
+        "from_state": "PROPOSED",
+        "to_state": "RISK_APPROVED",
+        "at": "2026-11-09T20:12:02.918513Z",
+        "reason": "risk decision rdec_01M70Z0WF5CF0DF87GB40GF72F APPROVED; intent intent_01M70Z0WF6EHHDSQPEA55AH6E6 signed"
+      },
+      {
+        "from_state": "RISK_APPROVED",
+        "to_state": "SUBMITTING",
+        "at": "2026-11-09T20:12:02.946840Z",
+        "reason": "claimed for submission by execution:ALPACA_PAPER"
+      },
+      {
+        "from_state": "SUBMITTING",
+        "to_state": "SUBMITTED",
+        "at": "2026-11-09T20:12:02.998636Z",
+        "reason": "GATEWAY accepted: SUBMITTING->SUBMITTED"
+      },
+      {
+        "from_state": "SUBMITTED",
+        "to_state": "FILLED",
+        "at": "2026-11-09T20:12:04.745115Z",
+        "reason": "RECONCILE fill: SUBMITTED->FILLED"
+      }
+    ],
+    "fills": [
+      {
+        "fill_id": "fill_01M70Z0Y890NY6TAGEF3HPPYYG",
+        "quantity": "1",
+        "price": "754.41000000",
+        "ts": "2026-11-09T20:12:04.314926Z"
+      }
+    ],
+    "n_events": 2
+  },
+  "verification": "Real hosted Alpaca PAPER execution via signed-intent MCP proposals; not live trading."
+}

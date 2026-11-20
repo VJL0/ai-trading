@@ -1,0 +1,29 @@
+{
+  "generated": "2026-11-05",
+  "note": "Upstream sources and pins for the frozen architecture. Commit SHAs were recorded from the actual clones on this Mac.",
+  "sources": [
+    {"name": "QuantConnect LEAN", "repo": "https://github.com/QuantConnect/Lean", "pin": "d1c09284c438b70eb965b7dc40f44e7dca69e7b5", "pin_date": "2026-11-05", "license": "Apache-2.0", "local_path": "trading/lean/Lean", "target_framework": "net10.0"},
+    {"name": "LEAN Alpaca brokerage plugin", "repo": "https://github.com/QuantConnect/Lean.Brokerages.Alpaca", "pin": "b92d6ecd391d5a79e91b060668d1ea4fafec9b89", "pin_date": "2026-10-19", "license": "Apache-2.0", "local_path": "trading/alpaca_plugin/Lean.Brokerages.Alpaca"},
+    {"name": ".NET SDK", "source": "https://dot.net/v1/dotnet-install.sh (official Microsoft installer)", "pin": "10.0.403", "local_path": ".tools/dotnet"},
+    {"name": "CPython", "source": "uv python install 3.11", "pin": "3.11.17"},
+    {"name": "Microsoft Qlib", "repo": "https://github.com/microsoft/qlib/releases", "pin": "v0.9.8", "pin_date": "2026-10-08", "license": "MIT", "local_path": "services/research/qlib_env"},
+    {"name": "TradingAgents", "repo": "https://github.com/TauricResearch/TradingAgents/releases", "pin": "v0.7.1", "pin_date": "2026-10-27", "license": "Apache-2.0", "usage": "research reference only; not integrated; never owns broker authorization"},
+    {"name": "Peekaboo", "repo": "https://github.com/openclaw/Peekaboo/releases", "pin": "v4.9.7", "pin_date": "2026-10-23", "install": "brew install openclaw/tap/peekaboo"},
+    {"name": "Playwright MCP", "repo": "https://github.com/microsoft/playwright-mcp", "pin": "see apps/mac-agent/README.md (exact npm version)"},
+    {"name": "TradingView Lightweight Charts", "repo": "https://github.com/tradingview/lightweight-charts", "license": "Apache-2.0 (attribution required)", "pin": "see apps/dashboard/package.json"},
+    {"name": "PydanticAI", "repo": "https://github.com/pydantic/pydantic-ai", "pin": "pydantic-ai-slim 2.66.0 (uv.lock)"},
+    {"name": "alpaca-py", "repo": "https://github.com/alpacahq/alpaca-py", "pin": "0.45.0 (uv.lock)"}
+  ],
+  "official_docs_used_for_implementation_details": [
+    "https://platform.claude.com/docs/en/models/opus-5-5/overview",
+    "https://developers.openai.com/api/docs/models/gpt-6.1-sol",
+    "https://developers.openai.com/api/docs/guides/reasoning",
+    "https://www.quantconnect.com/docs/v2/lean-engine/getting-started",
+    "https://github.com/QuantConnect/Lean/blob/master/Launcher/config.json",
+    "https://docs.alpaca.markets/us/docs/trading-api",
+    "https://docs.alpaca.markets/us/docs/working-with-orders",
+    "https://docs.alpaca.markets/us/docs/paper-trading",
+    "https://docs.alpaca.markets/us/docs/about-market-data-api"
+  ],
+  "lock_files": ["uv.lock", "apps/dashboard/pnpm-lock.yaml", "apps/mac-agent/browser/pnpm-lock.yaml", "trading/**/packages.lock.json", "trading/PINS.json"]
+}

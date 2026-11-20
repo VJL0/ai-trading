@@ -1,0 +1,45 @@
+{
+  "name": "@lat/dashboard",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Read-only real-time operations UI for the local AI paper-trading workstation (React 19 + Vite, localhost only)",
+  "type": "module",
+  "license": "UNLICENSED",
+  "packageManager": "pnpm@12.11.2",
+  "engines": {
+    "node": ">=24.0.0"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc --noEmit -p tsconfig.json && vite build && node scripts/check-bundle.mjs",
+    "preview": "vite preview",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "lint": "tsc --noEmit -p tsconfig.json && node scripts/lint.mjs",
+    "gen:types": "node scripts/gen-contracts.mjs",
+    "check:bundle": "node scripts/check-bundle.mjs",
+    "e2e": "vite build && playwright test"
+  },
+  "dependencies": {
+    "react": "19.3.1",
+    "react-dom": "19.3.1"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.64.1",
+    "@testing-library/dom": "10.4.2",
+    "@testing-library/jest-dom": "7.0.1",
+    "@testing-library/react": "16.3.3",
+    "@testing-library/user-event": "14.6.8",
+    "@types/node": "24.19.2",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "@vitejs/plugin-react": "6.1.2",
+    "@webgpu/types": "0.1.74",
+    "jsdom": "30.1.3",
+    "json-schema-to-typescript": "16.0.0",
+    "typescript": "7.0.2",
+    "vite": "8.3.5",
+    "vitest": "5.0.5"
+  }
+}

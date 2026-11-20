@@ -1,0 +1,33 @@
+{
+  "$comment": "Hardened @playwright/mcp configuration used by src/guarded-mcp.mjs. Relative paths are resolved by the proxy (initPage -> ../src/mcp-init-page.cjs, outputDir -> ../../artifacts). Not a security boundary on its own: the proxy (tool/element/URL policy), the init-page route guard and the host-resolver rules are.",
+  "browser": {
+    "browserName": "chromium",
+    "isolated": true,
+    "launchOptions": {
+      "headless": true,
+      "args": [
+        "--host-resolver-rules=MAP * ~NOTFOUND , EXCLUDE localhost , EXCLUDE 127.0.0.1 , EXCLUDE [::1]",
+        "--disable-background-networking",
+        "--disable-component-update",
+        "--disable-sync",
+        "--no-first-run",
+        "--no-default-browser-check"
+      ]
+    },
+    "contextOptions": {
+      "serviceWorkers": "block",
+      "acceptDownloads": false
+    },
+    "initPage": ["../src/mcp-init-page.cjs"]
+  },
+  "capabilities": ["core"],
+  "network": {
+    "allowedOrigins": ["http://127.0.0.1:*", "http://localhost:*"],
+    "blockedOrigins": ["https://app.alpaca.markets", "https://paper-api.alpaca.markets", "https://api.alpaca.markets", "https://data.alpaca.markets"]
+  },
+  "outputDir": "../../artifacts",
+  "imageResponses": "omit",
+  "webmcp": false,
+  "saveSession": false,
+  "timeouts": { "action": 5000, "navigation": 15000 }
+}

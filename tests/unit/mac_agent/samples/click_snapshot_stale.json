@@ -1,0 +1,25 @@
+{
+ "outcome": {
+  "escalation": "refresh_target",
+  "route": "local",
+  "retry_safe": true,
+  "evidence": "request_refused",
+  "effect": "refused",
+  "state": "refused",
+  "refusal_reason": "target_unavailable",
+  "mutation_dispatched": false,
+  "retry_safety": "safe",
+  "dispatch_state": "none",
+  "requires_fresh_observation": false
+ },
+ "data": null,
+ "error": {
+  "hint": "Run 'peekaboo see' again and use the new snapshot ID.",
+  "mutation_dispatched": false,
+  "retry_safe": true,
+  "message": "Snapshot is stale: Snapshot 'ps1_29257a91b9149916d304d23103315e81' already drove a mutation whose result requires a fresh observation.",
+  "code": "SNAPSHOT_STALE"
+ },
+ "success": false,
+ "effect": "refused"
+}

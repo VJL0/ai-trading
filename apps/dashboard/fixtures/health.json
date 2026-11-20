@@ -1,0 +1,66 @@
+{
+ "overall": "OK",
+ "components": [
+  {
+   "name": "market_data",
+   "status": "OK",
+   "detail": "OK SIMULATED replay:synthetic-fixture-v1",
+   "last_ok": "2026-11-05T14:29:57Z"
+  },
+  {
+   "name": "broker",
+   "status": "OK",
+   "detail": "FAKE: connected (deterministic fake broker)",
+   "last_ok": null
+  },
+  {
+   "name": "reconciliation",
+   "status": "OK",
+   "detail": "CLEAN",
+   "last_ok": "2026-11-05T14:29:00Z"
+  },
+  {
+   "name": "models",
+   "status": "OK",
+   "detail": "registry mreg_20261105T140000Z_dashfixture01",
+   "last_ok": null
+  },
+  {
+   "name": "gpt_runtime",
+   "status": "OK",
+   "detail": "mode API_KEYS (FAKE transport)",
+   "last_ok": null
+  },
+  {
+   "name": "event_stream",
+   "status": "OK",
+   "detail": "1 subscribers",
+   "last_ok": null
+  },
+  {
+   "name": "database",
+   "status": "OK",
+   "detail": "SQLite WAL ledger.sqlite: quick_check ok",
+   "last_ok": null
+  },
+  {
+   "name": "agent",
+   "status": "OK",
+   "detail": "last tool call 2026-11-05T14:05:00Z by agent:claude-code",
+   "last_ok": "2026-11-05T14:05:00Z"
+  },
+  {
+   "name": "engine",
+   "status": "OK",
+   "detail": "FAKE engine in-process",
+   "last_ok": "2026-11-05T14:29:59Z"
+  },
+  {
+   "name": "scheduler",
+   "status": "OK",
+   "detail": "session scheduler running",
+   "last_ok": null
+  }
+ ],
+ "asof": "2026-11-05T14:30:00Z"
+}
