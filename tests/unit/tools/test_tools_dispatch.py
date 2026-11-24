@@ -25,6 +25,7 @@ EXPECTED_MUTATION = {
     "stop_session": "sessions.stop",
     "schedule_session": "sessions.add_schedule",
     "cancel_schedule": "sessions.cancel_schedule",
+    "run_research_experiment": "quantlab_experiment",
 }
 # Session-manager mutations are recorded by the fake as "sessions.<method>".
 MUTATION_CALLS = frozenset({*MUTATING_METHODS, *(f"sessions.{m}" for m in SESSION_MUTATING_METHODS)})

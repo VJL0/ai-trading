@@ -946,8 +946,9 @@ class MarketDataStore:
             where.append("b.available_at_ts <= ?")
             params.append(_naive(asof))
         if dataset_version is not None:
-            where.append("b.dataset_version = ?")
-            params.append(dataset_version)
+            clause, extra = self._version_scope("b", dataset_version)
+            where.extend(clause)
+            params.extend(extra)
         else:
             where.append("NOT d.defects_injected")
             where.append("(a.dataset_version IS NULL OR b.dataset_version = a.dataset_version)")
@@ -973,6 +974,16 @@ class MarketDataStore:
             FROM dedup WHERE rn = 1 ORDER BY symbol, start_ts
         """  # noqa: S608 - only placeholders and constant fragments are interpolated
         return sql, params
+
+    def _version_scope(self, alias: str, dataset_version: str) -> tuple[list[str], list[Any]]:
+        """SQL filter for one stored dataset, or for a research snapshot: its constituents up to its cutoff."""
+        from .research_snapshots import is_snapshot_id, resolve_scope
+
+        if is_snapshot_id(dataset_version):
+            versions, cutoff = resolve_scope(self, dataset_version)
+            return ([f"{alias}.dataset_version IN ({', '.join('?' for _ in versions)})",
+                     f"{alias}.available_at_ts <= ?"], [*versions, _naive(cutoff)])
+        return [f"{alias}.dataset_version = ?"], [dataset_version]
 
     def load_bars(
         self,
@@ -1064,8 +1075,9 @@ class MarketDataStore:
             where.append("q.available_at_ts <= ?")
             params.append(_naive(asof))
         if dataset_version is not None:
-            where.append("q.dataset_version = ?")
-            params.append(dataset_version)
+            clause, extra = self._version_scope("q", dataset_version)
+            where.extend(clause)
+            params.extend(extra)
         else:
             where.append("NOT d.defects_injected")
             where.append("(a.dataset_version IS NULL OR q.dataset_version = a.dataset_version)")
@@ -1198,8 +1210,9 @@ class MarketDataStore:
             where.append("c.feed = ?")
             params.append(DataFeed(feed).value)
         if dataset_version is not None:
-            where.append("c.dataset_version = ?")
-            params.append(dataset_version)
+            clause, extra = self._version_scope("c", dataset_version)
+            where.extend(clause)
+            params.extend(extra)
         sql = f"""
             WITH dedup AS (
                 SELECT c.*, row_number() OVER (PARTITION BY symbol, action_type, ex_date, feed
@@ -1231,12 +1244,22 @@ class MarketDataStore:
             rows = con.execute(sql, params).fetchall()
         return [json.loads(r[0]) for r in rows]
 
+    def list_research_snapshots(self, feed: DataFeed | None = None) -> list[dict[str, Any]]:
+        """Immutable cumulative research snapshots (``research_snapshots``), oldest first."""
+        from .research_snapshots import list_snapshots
+
+        return list_snapshots(self, feed=feed)
+
     def latest_manifest(self, feed: DataFeed | None = None) -> dict[str, Any] | None:
         """Most recently written non-defect-injected dataset manifest (optionally for one feed)."""
         manifests = self.list_manifests(feed, include_defective=False)
         return manifests[-1] if manifests else None
 
     def get_manifest(self, dataset_version: str) -> dict[str, Any] | None:
+        from .research_snapshots import get_snapshot, is_snapshot_id
+
+        if is_snapshot_id(dataset_version):
+            return get_snapshot(self, dataset_version)
         with self._con() as con:
             row = con.execute("SELECT manifest_json FROM datasets WHERE dataset_version = ?", [dataset_version]).fetchone()
         if row:

@@ -1,0 +1,781 @@
+{
+ "research": {
+  "families": {
+   "D1_crypto_tsmom": {
+    "family": "D1_crypto_tsmom",
+    "asset_class": "crypto",
+    "description": "time-series momentum, volatility targeted (BTC or BTC/ETH/SOL)",
+    "n_variants": 48,
+    "passed_dev_gate": false,
+    "fail_reasons": [
+     "DSR 0.714 < 0.95",
+     "no edge vs passive benchmark (Sharpe-diff SPA p=0.82, alpha t=-0.02)",
+     "PBO 0.62 > 0.5",
+     "walk-forward max drawdown -38.4% below -35%"
+    ],
+    "selected_variant": "assets=core3,lookback=50,rebalance=7,rule=sma,target_vol=0.4",
+    "selected_spec_hash": "c934c3abfc5badbda26c",
+    "wf_oos": {
+     "sharpe": 1.0433302496317365,
+     "cagr": 0.39732341142522976,
+     "max_drawdown": -0.38402275899154736,
+     "ann_vol": 0.39476946003848473,
+     "sortino": 1.653410690809139,
+     "calmar": 1.0346350629546286,
+     "cvar95_daily": -0.04560052771507741,
+     "start": "2023-01-01",
+     "end": "2025-11-20",
+     "pct_positive_years": 1.0
+    },
+    "benchmark": "BTC buy-and-hold",
+    "benchmark_wf_period": {
+     "sharpe": 1.4486324540439752,
+     "cagr": 0.7731989782927127,
+     "max_drawdown": -0.3061971786534292
+    },
+    "dsr": 0.7135423118306923,
+    "n_trials": 96.0,
+    "spa_p_vs_benchmark": 0.822,
+    "alpha_t": -0.019773515490488797,
+    "alpha_annual": -0.0030697284158069963,
+    "beta": 0.6071435612083581,
+    "pbo": 0.6155,
+    "stress_sharpe_2x_costs": 0.930295772779848,
+    "turnover_annual": 10.859197019922071,
+    "cost_drag_annual": 0.03350082108469734,
+    "trades": 381,
+    "execution_notes": [
+     "crypto execution is NOT_IMPLEMENTED in the risk engine/ledger (research and shadow only)"
+    ],
+    "bh_q_value": 0.5729153763386154,
+    "policy_tier": {
+     "status": "NOT_APPLICABLE",
+     "reason": "intraday/crypto families use their own execution model"
+    },
+    "run_id": "ql_20261123T205609Z"
+   },
+   "D2_crypto_xsmom": {
+    "family": "D2_crypto_xsmom",
+    "asset_class": "crypto",
+    "description": "cross-sectional momentum across liquid USD pairs",
+    "n_variants": 36,
+    "passed_dev_gate": false,
+    "fail_reasons": [
+     "DSR 0.166 < 0.95",
+     "walk-forward OOS Sharpe 0.27 < 0.5",
+     "no edge vs passive benchmark (Sharpe-diff SPA p=0.79, alpha t=-0.34)",
+     "walk-forward max drawdown -36.4% below -35%"
+    ],
+    "selected_variant": "lookback=14,n=2,rebalance=7,regime=btc_sma50",
+    "selected_spec_hash": "cfbea8fd7a57cd28124a",
+    "wf_oos": {
+     "sharpe": 0.27166669919271313,
+     "cagr": 0.03729552862242369,
+     "max_drawdown": -0.36425565922269265,
+     "ann_vol": 0.31795191679158735,
+     "sortino": 0.4292603408088574,
+     "calmar": 0.10238832994938471,
+     "cvar95_daily": -0.04132039846954229,
+     "start": "2023-01-01",
+     "end": "2025-11-20",
+     "pct_positive_years": 0.3333333333333333
+    },
+    "benchmark": "BTC buy-and-hold",
+    "benchmark_wf_period": {
+     "sharpe": 1.4486324540439752,
+     "cagr": 0.7731989782927127,
+     "max_drawdown": -0.3061971786534292
+    },
+    "dsr": 0.16649224030971826,
+    "n_trials": 72.0,
+    "spa_p_vs_benchmark": 0.785,
+    "alpha_t": -0.3413317855485329,
+    "alpha_annual": -0.061817733080409075,
+    "beta": 0.21683722578703646,
+    "pbo": 0.3525,
+    "stress_sharpe_2x_costs": 0.25205156837758946,
+    "turnover_annual": 13.836992535827237,
+    "cost_drag_annual": 0.06786456595293398,
+    "trades": 186,
+    "execution_notes": [
+     "crypto execution is NOT_IMPLEMENTED in the risk engine/ledger (research and shadow only)"
+    ],
+    "bh_q_value": 0.8335077596902818,
+    "policy_tier": {
+     "status": "NOT_APPLICABLE",
+     "reason": "intraday/crypto families use their own execution model"
+    },
+    "run_id": "ql_20261123T205609Z"
+   },
+   "A_momentum": {
+    "family": "A_momentum",
+    "asset_class": "us_equity",
+    "description": "cross-sectional momentum (5 scores x regimes x breadth x rebalance)",
+    "n_variants": 120,
+    "passed_dev_gate": false,
+    "fail_reasons": [
+     "DSR 0.614 < 0.95",
+     "no edge vs passive benchmark (Sharpe-diff SPA p=1.00, alpha t=0.71)",
+     "walk-forward max drawdown -58.3% below -35%"
+    ],
+    "selected_variant": "n=10,rebalance=5,regime=none,score=mom_12_1,universe=large300",
+    "selected_spec_hash": "e8ec4a6d4715cec46d83",
+    "wf_oos": {
+     "sharpe": 0.6584639453406381,
+     "cagr": 0.22232073093362703,
+     "max_drawdown": -0.582925662189355,
+     "ann_vol": 0.4754602511951452,
+     "sortino": 0.9807204707710527,
+     "calmar": 0.3813877915386908,
+     "cvar95_daily": -0.06749294014632301,
+     "start": "2019-01-02",
+     "end": "2025-11-20",
+     "pct_positive_years": 0.8571428571428571
+    },
+    "benchmark": "SPY buy-and-hold",
+    "benchmark_wf_period": {
+     "sharpe": 0.8879037786897983,
+     "cagr": 0.1670290390025322,
+     "max_drawdown": -0.3379388878655277
+    },
+    "dsr": 0.6143282280940706,
+    "n_trials": 240.0,
+    "spa_p_vs_benchmark": 1.0,
+    "alpha_t": 0.7065101446265393,
+    "alpha_annual": 0.10811060458563658,
+    "beta": 1.1800574028426543,
+    "pbo": 0.142,
+    "stress_sharpe_2x_costs": 1.0000213262626159,
+    "turnover_annual": 10.990160686691686,
+    "cost_drag_annual": 0.006854510800925518,
+    "trades": 4889,
+    "execution_notes": [
+     "multi-day holding: current position lifecycle flattens before every close",
+     "current risk policy: 1 position, <= 25% of equity, allowlist only"
+    ],
+    "bh_q_value": 0.606103209728698,
+    "policy_tier": {
+     "status": "OK",
+     "equity": 5000.0,
+     "position_cap": 0.25,
+     "max_positions": 1,
+     "allowlist_size": 24,
+     "metrics": {
+      "sharpe": 0.7881555476569704,
+      "cagr": 0.046958085084268575,
+      "max_drawdown": -0.07164054247752094,
+      "avg_exposure": 0.07673867263238948,
+      "trades": 172,
+      "cost_drag_annual": 0.00016661785672410497,
+      "start": "2016-01-05",
+      "end": "2025-11-20"
+     },
+     "note": "multi-day holding is still blocked by the intraday-only position lifecycle"
+    },
+    "run_id": "ql_20261123T204837Z"
+   },
+   "A2_etf_rotation": {
+    "family": "A2_etf_rotation",
+    "asset_class": "etf",
+    "description": "allowlisted asset-class/sector ETF rotation (1-3 holdings)",
+    "n_variants": 72,
+    "passed_dev_gate": false,
+    "fail_reasons": [
+     "DSR 0.502 < 0.95",
+     "walk-forward OOS Sharpe 0.43 < 0.5",
+     "no edge vs passive benchmark (Sharpe-diff SPA p=0.88, alpha t=-0.62)",
+     "PBO 0.68 > 0.5"
+    ],
+    "selected_variant": "absolute=none,n=3,rebalance=21,score=mom_3",
+    "selected_spec_hash": "3fdf53da8ff404a75d2e",
+    "wf_oos": {
+     "sharpe": 0.4341986829000086,
+     "cagr": 0.06400740757347423,
+     "max_drawdown": -0.28438796472046846,
+     "ann_vol": 0.18058634209310523,
+     "sortino": 0.5914351036819707,
+     "calmar": 0.2250707326394371,
+     "cvar95_daily": -0.027838868703161344,
+     "start": "2019-01-02",
+     "end": "2025-11-20",
+     "pct_positive_years": 0.8571428571428571
+    },
+    "benchmark": "SPY buy-and-hold",
+    "benchmark_wf_period": {
+     "sharpe": 0.8879037786897983,
+     "cagr": 0.1670290390025322,
+     "max_drawdown": -0.3379388878655277
+    },
+    "dsr": 0.5015414853539899,
+    "n_trials": 144.0,
+    "spa_p_vs_benchmark": 0.879,
+    "alpha_t": -0.6219297502977643,
+    "alpha_annual": -0.030751776100947852,
+    "beta": 0.6284923872765197,
+    "pbo": 0.6755,
+    "stress_sharpe_2x_costs": 0.7787061890927166,
+    "turnover_annual": 8.9153790544288,
+    "cost_drag_annual": 0.004123797898519467,
+    "trades": 450,
+    "execution_notes": [
+     "multi-day holding: current lifecycle flattens before every close"
+    ],
+    "bh_q_value": 0.606103209728698,
+    "policy_tier": {
+     "status": "OK",
+     "equity": 5000.0,
+     "position_cap": 0.25,
+     "max_positions": 1,
+     "allowlist_size": 24,
+     "metrics": {
+      "sharpe": 0.6779553189420768,
+      "cagr": 0.0374224133838339,
+      "max_drawdown": -0.09049348246236,
+      "avg_exposure": 0.21773668095755136,
+      "trades": 161,
+      "cost_drag_annual": 0.0011813338466295854,
+      "start": "2016-01-05",
+      "end": "2025-11-20"
+     },
+     "note": "multi-day holding is still blocked by the intraday-only position lifecycle"
+    },
+    "run_id": "ql_20261123T204837Z"
+   },
+   "C1_weekly_reversal": {
+    "family": "C1_weekly_reversal",
+    "asset_class": "us_equity",
+    "description": "weekly-loser reversal among large caps (regime-conditioned)",
+    "n_variants": 24,
+    "passed_dev_gate": false,
+    "fail_reasons": [
+     "DSR 0.495 < 0.95",
+     "walk-forward OOS Sharpe 0.41 < 0.5",
+     "no edge vs passive benchmark (Sharpe-diff SPA p=1.00, alpha t=-0.70)",
+     "PBO 0.61 > 0.5",
+     "walk-forward max drawdown -54.2% below -35%"
+    ],
+    "selected_variant": "hold=5,lookback=5,n=20,regime=highvol",
+    "selected_spec_hash": "c8d265485aed77d916e9",
+    "wf_oos": {
+     "sharpe": 0.413623374228829,
+     "cagr": 0.07551605222077629,
+     "max_drawdown": -0.5424601138508892,
+     "ann_vol": 0.2562883183868432,
+     "sortino": 0.5858394661978551,
+     "calmar": 0.13921033140057565,
+     "cvar95_daily": -0.038170915481084214,
+     "start": "2019-01-02",
+     "end": "2025-11-20",
+     "pct_positive_years": 0.8571428571428571
+    },
+    "benchmark": "SPY buy-and-hold",
+    "benchmark_wf_period": {
+     "sharpe": 0.8879037786897983,
+     "cagr": 0.1670290390025322,
+     "max_drawdown": -0.3379388878655277
+    },
+    "dsr": 0.49491399189275165,
+    "n_trials": 48.0,
+    "spa_p_vs_benchmark": 1.0,
+    "alpha_t": -0.7046106995989659,
+    "alpha_annual": -0.05338031175270443,
+    "beta": 0.9176590154595858,
+    "pbo": 0.61,
+    "stress_sharpe_2x_costs": 0.4961443008691922,
+    "turnover_annual": 32.09745767489784,
+    "cost_drag_annual": 0.01899580379196473,
+    "trades": 6335,
+    "execution_notes": [
+     "multi-day holding: current position lifecycle flattens before every close",
+     "current risk policy: 1 position, <= 25% of equity, allowlist only"
+    ],
+    "bh_q_value": 0.606103209728698,
+    "policy_tier": {
+     "status": "OK",
+     "equity": 5000.0,
+     "position_cap": 0.25,
+     "max_positions": 1,
+     "allowlist_size": 24,
+     "metrics": {
+      "sharpe": 0.11962659190048276,
+      "cagr": 0.0033546504816048817,
+      "max_drawdown": -0.08691104864623167,
+      "avg_exposure": 0.033947520807472285,
+      "trades": 177,
+      "cost_drag_annual": 0.0014774998021309918,
+      "start": "2016-01-05",
+      "end": "2025-11-20"
+     },
+     "note": "multi-day holding is still blocked by the intraday-only position lifecycle"
+    },
+    "run_id": "ql_20261123T204837Z"
+   },
+   "C2_pullback": {
+    "family": "C2_pullback",
+    "asset_class": "us_equity",
+    "description": "RSI(2) pullback within an uptrend (liquid stocks)",
+    "n_variants": 24,
+    "passed_dev_gate": false,
+    "fail_reasons": [
+     "DSR 0.277 < 0.95",
+     "walk-forward OOS Sharpe 0.20 < 0.5",
+     "no edge vs passive benchmark (Sharpe-diff SPA p=1.00, alpha t=-1.00)",
+     "walk-forward max drawdown -67.0% below -35%"
+    ],
+    "selected_variant": "max_hold=10,n=5,rsi_below=10,trend=sma200",
+    "selected_spec_hash": "98af0f9b72f10dd8390a",
+    "wf_oos": {
+     "sharpe": 0.20315992059816806,
+     "cagr": 0.012812034051214782,
+     "max_drawdown": -0.6698316072468103,
+     "ann_vol": 0.31665316515856456,
+     "sortino": 0.2733821427513095,
+     "calmar": 0.01912724618038811,
+     "cvar95_daily": -0.04624468415282919,
+     "start": "2019-01-02",
+     "end": "2025-11-20",
+     "pct_positive_years": 0.5714285714285714
+    },
+    "benchmark": "SPY buy-and-hold",
+    "benchmark_wf_period": {
+     "sharpe": 0.8879037786897983,
+     "cagr": 0.1670290390025322,
+     "max_drawdown": -0.3379388878655277
+    },
+    "dsr": 0.2773622631122564,
+    "n_trials": 37.0,
+    "spa_p_vs_benchmark": 1.0,
+    "alpha_t": -0.9955811967234067,
+    "alpha_annual": -0.10588260368996363,
+    "beta": 0.9799928037668463,
+    "pbo": 0.1715,
+    "stress_sharpe_2x_costs": 0.3431129603727795,
+    "turnover_annual": 112.7200854819484,
+    "cost_drag_annual": 0.11477788492996162,
+    "trades": 5656,
+    "execution_notes": [
+     "multi-day holding: current position lifecycle flattens before every close",
+     "current risk policy: 1 position, <= 25% of equity, allowlist only"
+    ],
+    "bh_q_value": 0.7226377368877436,
+    "policy_tier": {
+     "status": "OK",
+     "equity": 5000.0,
+     "position_cap": 0.25,
+     "max_positions": 1,
+     "allowlist_size": 24,
+     "metrics": {
+      "sharpe": 0.6869233998233406,
+      "cagr": 0.005729741115996223,
+      "max_drawdown": -0.0130951563228775,
+      "avg_exposure": 0.008256180139871047,
+      "trades": 67,
+      "cost_drag_annual": 0.0006255356495274601,
+      "start": "2016-01-05",
+      "end": "2025-11-20"
+     },
+     "note": "multi-day holding is still blocked by the intraday-only position lifecycle"
+    },
+    "run_id": "ql_20261123T204837Z"
+   },
+   "C3_etf_pullback": {
+    "family": "C3_etf_pullback",
+    "asset_class": "etf",
+    "description": "RSI(2) pullback on SPY/QQQ/IWM/DIA, one position",
+    "n_variants": 12,
+    "passed_dev_gate": false,
+    "fail_reasons": [
+     "DSR 0.878 < 0.95",
+     "no edge vs passive benchmark (Sharpe-diff SPA p=1.00, alpha t=0.36)"
+    ],
+    "selected_variant": "max_hold=10,n=1,rsi_below=20,trend=none",
+    "selected_spec_hash": "f4d3e195b3275efc3982",
+    "wf_oos": {
+     "sharpe": 0.7198660600887051,
+     "cagr": 0.11585794471899313,
+     "max_drawdown": -0.2987005582962792,
+     "ann_vol": 0.17311859932652063,
+     "sortino": 1.0593930840401817,
+     "calmar": 0.38787321115106316,
+     "cvar95_daily": -0.026254265180862272,
+     "start": "2019-01-02",
+     "end": "2025-11-20",
+     "pct_positive_years": 1.0
+    },
+    "benchmark": "SPY buy-and-hold",
+    "benchmark_wf_period": {
+     "sharpe": 0.8879037786897983,
+     "cagr": 0.1670290390025322,
+     "max_drawdown": -0.3379388878655277
+    },
+    "dsr": 0.878395839313322,
+    "n_trials": 12.0,
+    "spa_p_vs_benchmark": 1.0,
+    "alpha_t": 0.36180640430121713,
+    "alpha_annual": 0.016609013210064184,
+    "beta": 0.6218774716499276,
+    "pbo": 0.282,
+    "stress_sharpe_2x_costs": 0.6362068315524506,
+    "turnover_annual": 55.24537409493161,
+    "cost_drag_annual": 0.02635114138289015,
+    "trades": 545,
+    "execution_notes": [
+     "multi-day holding: current lifecycle flattens before close"
+    ],
+    "bh_q_value": 0.606103209728698,
+    "policy_tier": {
+     "status": "OK",
+     "equity": 5000.0,
+     "position_cap": 0.25,
+     "max_positions": 1,
+     "allowlist_size": 24,
+     "metrics": {
+      "sharpe": 0.6733223705631167,
+      "cagr": 0.024276911206609686,
+      "max_drawdown": -0.08372859534261656,
+      "avg_exposure": 0.08987206611420276,
+      "trades": 1251,
+      "cost_drag_annual": 0.005337270522842917,
+      "start": "2016-01-05",
+      "end": "2025-11-20"
+     },
+     "note": "multi-day holding is still blocked by the intraday-only position lifecycle"
+    },
+    "run_id": "ql_20261123T204837Z"
+   },
+   "G_ml_rank": {
+    "family": "G_ml_rank",
+    "asset_class": "us_equity",
+    "description": "walk-forward LightGBM vs ridge cross-sectional ranking (same features, same folds, same portfolio rule)",
+    "n_variants": 16,
+    "passed_dev_gate": false,
+    "fail_reasons": [
+     "DSR 0.742 < 0.95",
+     "no edge vs passive benchmark (Sharpe-diff SPA p=1.00, alpha t=0.70)",
+     "walk-forward max drawdown -41.2% below -35%"
+    ],
+    "selected_variant": "model=lgbm,n=10,rebalance=21,regime=none",
+    "selected_spec_hash": "d749b785d85ba7ab5b3b",
+    "wf_oos": {
+     "sharpe": 0.7451722270581657,
+     "cagr": 0.18116099074590686,
+     "max_drawdown": -0.4121072951201341,
+     "ann_vol": 0.27384475665866653,
+     "sortino": 1.0865690241878907,
+     "calmar": 0.4395966606053317,
+     "cvar95_daily": -0.03849652172088832,
+     "start": "2020-01-02",
+     "end": "2025-11-20",
+     "pct_positive_years": 0.8333333333333334
+    },
+    "benchmark": "SPY buy-and-hold",
+    "benchmark_wf_period": {
+     "sharpe": 0.7585525448866047,
+     "cagr": 0.14410253576020282,
+     "max_drawdown": -0.3379388878655274
+    },
+    "dsr": 0.7423975394634106,
+    "n_trials": 16.0,
+    "spa_p_vs_benchmark": 1.0,
+    "alpha_t": 0.6952884154207508,
+    "alpha_annual": 0.04669545522048146,
+    "beta": 1.010055565607781,
+    "pbo": 0.16,
+    "stress_sharpe_2x_costs": 0.955014011000914,
+    "turnover_annual": 14.554438129835171,
+    "cost_drag_annual": 0.014098323583450511,
+    "trades": 1532,
+    "execution_notes": [
+     "multi-day holding: current position lifecycle flattens before every close"
+    ],
+    "bh_q_value": 0.606103209728698,
+    "policy_tier": {
+     "status": "OK",
+     "equity": 5000.0,
+     "position_cap": 0.25,
+     "max_positions": 1,
+     "allowlist_size": 24,
+     "metrics": {
+      "sharpe": 0.1575834902665161,
+      "cagr": 0.0027805821484974125,
+      "max_drawdown": -0.05676147370433249,
+      "avg_exposure": 0.011879801049501426,
+      "trades": 12,
+      "cost_drag_annual": 0.00010977261245517825,
+      "start": "2016-01-05",
+      "end": "2025-11-20"
+     },
+     "note": "multi-day holding is still blocked by the intraday-only position lifecycle"
+    },
+    "run_id": "ql_20261123T204837Z"
+   },
+   "B_orb": {
+    "family": "B_orb",
+    "asset_class": "us_equity",
+    "description": "stocks-in-play 5-minute opening-range breakout (long-only)",
+    "n_variants": 32,
+    "passed_dev_gate": false,
+    "fail_reasons": [
+     "DSR 0.000 < 0.95",
+     "walk-forward OOS Sharpe -0.07 < 0.5",
+     "no edge vs passive benchmark (Sharpe-diff SPA p=0.75, alpha t=-0.25)",
+     "Sharpe not positive at 2x costs"
+    ],
+    "selected_variant": "catalyst=none,filter=candle_vwap_spy,min_relvol=2.0,n=5,or_minutes=5,side=long,stop=or_low,target_r=0.0",
+    "selected_spec_hash": "f45f9d70b42229757c00",
+    "wf_oos": {
+     "sharpe": -0.07118632481817581,
+     "cagr": -0.029798768542310783,
+     "max_drawdown": -0.21890959148858102,
+     "ann_vol": 0.18556854999870723,
+     "sortino": -0.11158262118382166,
+     "calmar": -0.1361236314027162,
+     "cvar95_daily": -0.02685199462772595,
+     "start": "2022-01-03",
+     "end": "2025-11-20",
+     "pct_positive_years": 0.25
+    },
+    "benchmark": "SPY open-to-close",
+    "benchmark_wf_period": {
+     "sharpe": 0.36197942582954656,
+     "cagr": 0.04431453466676061,
+     "max_drawdown": -0.13327150824209066
+    },
+    "dsr": 6.159451088615882e-07,
+    "n_trials": 96.0,
+    "spa_p_vs_benchmark": 0.746,
+    "alpha_t": -0.24787875556052477,
+    "alpha_annual": -0.02279227291480572,
+    "beta": 0.17514379031143665,
+    "pbo": 0.0025,
+    "stress_sharpe_2x_costs": -0.19302356495604364,
+    "turnover_annual": 106.21758957654724,
+    "cost_drag_annual": 0.11169790234176764,
+    "trades": 2588,
+    "execution_notes": [
+     "news-catalyst variants excluded: Alpaca news history on this plan starts 2026-04 (inside the holdout), so catalyst confirmation is prospective-only",
+     "intraday, same-session exit: compatible with the current lifecycle",
+     "current policy: 1 position, $2,000 max order, allowlist of 24 symbols",
+     "stocks in play are mostly NOT on the allowlist"
+    ],
+    "bh_q_value": 0.9999993840548912,
+    "policy_tier": {
+     "status": "NOT_APPLICABLE",
+     "reason": "intraday/crypto families use their own execution model"
+    },
+    "run_id": "ql_20261123T211856Z"
+   }
+  },
+  "updated_at": "2026-11-23T21:21:00.292450+00:00",
+  "holdout": [
+   "2025-11-21",
+   "2026-11-20"
+  ],
+  "gate": {
+   "dsr_min": 0.95,
+   "wf_oos_sharpe_min": 0.5,
+   "benchmark_spa_p_max": 0.1,
+   "alpha_t_min": 2.0,
+   "pbo_max": 0.5,
+   "stress_cost_multiplier": 2.0,
+   "stress_sharpe_min": 0.0,
+   "max_drawdown_floor": -0.35,
+   "min_trades": 50
+  },
+  "no_edge_note": "Backtested development results on historical data under a cost model. They are not realized trading results and are not evidence of future profitability."
+ },
+ "timing": {
+  "A_momentum": {
+   "open": {
+    "sharpe": 0.8344015391069454,
+    "cagr": 0.3109204466032367,
+    "max_drawdown": -0.6140538775427337,
+    "cost_drag_annual": 0.006854510800925518
+   },
+   "close": {
+    "sharpe": 0.8372171330116427,
+    "cagr": 0.3122344904599539,
+    "max_drawdown": -0.6303187131338952,
+    "cost_drag_annual": 0.005638276368809537
+   }
+  },
+  "A2_etf_rotation": {
+   "open": {
+    "sharpe": 0.756081629638762,
+    "cagr": 0.11313250636382532,
+    "max_drawdown": -0.2871401035066731,
+    "cost_drag_annual": 0.004123797898519467
+   },
+   "close": {
+    "sharpe": 0.7566163173187512,
+    "cagr": 0.11269523913759527,
+    "max_drawdown": -0.27375279854577717,
+    "cost_drag_annual": 0.0035422044272675197
+   }
+  },
+  "C1_weekly_reversal": {
+   "open": {
+    "sharpe": 0.4730945120498882,
+    "cagr": 0.08103630399671613,
+    "max_drawdown": -0.5379898952403388,
+    "cost_drag_annual": 0.01899580379196473
+   },
+   "close": {
+    "sharpe": 0.4355363428874539,
+    "cagr": 0.07232275121951282,
+    "max_drawdown": -0.543601694543729,
+    "cost_drag_annual": 0.01537441175419156
+   }
+  },
+  "C2_pullback": {
+   "open": {
+    "sharpe": 0.5919053549213829,
+    "cagr": 0.13453074774911844,
+    "max_drawdown": -0.6700900258441383,
+    "cost_drag_annual": 0.11477788492996162
+   },
+   "close": {
+    "sharpe": 0.4744655195808768,
+    "cagr": 0.09627988199257986,
+    "max_drawdown": -0.6116413694734428,
+    "cost_drag_annual": 0.09001793647327891
+   }
+  },
+  "C3_etf_pullback": {
+   "open": {
+    "sharpe": 0.6678462574173682,
+    "cagr": 0.09790395871225432,
+    "max_drawdown": -0.3439278365314984,
+    "cost_drag_annual": 0.02635114138289015
+   },
+   "close": {
+    "sharpe": 0.38412214180737103,
+    "cagr": 0.05002353475046961,
+    "max_drawdown": -0.3330226934419368,
+    "cost_drag_annual": 0.0224293390678926
+   }
+  },
+  "G_ml_rank": {
+   "open": {
+    "sharpe": 0.8274944508233983,
+    "cagr": 0.2093417416421064,
+    "max_drawdown": -0.519779411645942,
+    "cost_drag_annual": 0.014098323583450511
+   },
+   "close": {
+    "sharpe": 0.8945229967162132,
+    "cagr": 0.23030464494961977,
+    "max_drawdown": -0.4886230924095055,
+    "cost_drag_annual": 0.011143227407129724
+   }
+  }
+ },
+ "crypto_vs_etf": {
+  "rule": "long when close > SMA(50), else flat; daily decisions",
+  "IBIT": {
+   "strategy": {
+    "days": 399,
+    "years": 1.583,
+    "total_return": 0.3122877923710472,
+    "cagr": 0.18725686010087772,
+    "ann_vol": 0.3180137015080718,
+    "sharpe": 0.6963594940102842,
+    "sortino": 1.1227649734882754,
+    "max_drawdown": -0.26764298396621355,
+    "calmar": 0.6996516677773869,
+    "cvar95_daily": -0.04106588335798571,
+    "cvar99_daily": -0.05556925824057577,
+    "worst_day": -0.05846537698355666,
+    "best_day": 0.13457465199396793,
+    "skew": 1.0908760936662683,
+    "kurtosis": 6.537868004620583,
+    "hit_rate": 0.47058823529411764,
+    "yearly": {
+     "2024": 0.11958146546740678,
+     "2025": 0.17212354156219534
+    },
+    "pct_positive_years": 1.0,
+    "start": "2024-04-22",
+    "end": "2025-11-20"
+   },
+   "buy_and_hold": {
+    "days": 399,
+    "years": 1.583,
+    "total_return": 0.3351513541869755,
+    "cagr": 0.2002795904460717,
+    "ann_vol": 0.48646664083054086,
+    "sharpe": 0.617547530135017,
+    "sortino": 0.9278532461723349,
+    "max_drawdown": -0.3132276646156775,
+    "calmar": 0.6394058158681791,
+    "cvar95_daily": -0.06100331544876099,
+    "cvar99_daily": -0.09614000096917152,
+    "worst_day": -0.1440606564283371,
+    "best_day": 0.13458457589149475,
+    "skew": 0.13982492595102522,
+    "kurtosis": 1.8741743462546907,
+    "hit_rate": 0.48866498740554154
+   },
+   "trades": 38
+  },
+  "BTC/USD": {
+   "strategy": {
+    "days": 580,
+    "years": 1.589,
+    "total_return": 0.20591916167393465,
+    "cagr": 0.12505662652801708,
+    "ann_vol": 0.3063101713388773,
+    "sharpe": 0.536199037615998,
+    "sortino": 0.8470475546304704,
+    "max_drawdown": -0.24327731344738424,
+    "calmar": 0.5140496857511714,
+    "cvar95_daily": -0.036224233569443334,
+    "cvar99_daily": -0.05753076747916003,
+    "worst_day": -0.07175067182964157,
+    "best_day": 0.10266833401723807,
+    "skew": 0.9626903900999009,
+    "kurtosis": 7.997584608251032,
+    "hit_rate": 0.47413793103448276,
+    "yearly": {
+     "2024": 0.21806347198769926,
+     "2025": -0.009970178560519738
+    },
+    "pct_positive_years": 0.5,
+    "start": "2024-04-20",
+    "end": "2025-11-20"
+   },
+   "buy_and_hold": {
+    "days": 580,
+    "years": 1.589,
+    "total_return": 0.3549049509046922,
+    "cagr": 0.21063044427276045,
+    "ann_vol": 0.45984206167684566,
+    "sharpe": 0.6436026326347093,
+    "sortino": 0.982430641669577,
+    "max_drawdown": -0.30619717448216,
+    "calmar": 0.6878915346915863,
+    "cvar95_daily": -0.05041187796099433,
+    "cvar99_daily": -0.06901956101258595,
+    "worst_day": -0.08639027923345566,
+    "best_day": 0.12053358554840088,
+    "skew": 0.5021844019223749,
+    "kurtosis": 2.6982228612824795,
+    "hit_rate": 0.503448275862069
+   },
+   "trades": 104
+  },
+  "note": "IBIT trades only in U.S. regular hours (weekend gaps realized at Monday's open); BTC/USD trades 24/7 with 25 bps taker fees. Both are long-only; neither is currently executable here (IBIT is not on the allowlist; crypto has no execution path)."
+ },
+ "selection_summary": {
+  "asof": "2026-11-23T21:21:39.096204Z",
+  "action": "NO_TRADE",
+  "selected": null,
+  "reason": "no executable candidate with positive evidence-weighted utility",
+  "params": {},
+  "counts": {
+   "candidates": 66,
+   "selectable": 0
+  }
+ },
+ "capabilities_hash": "7261a6a51813bb5c"
+}

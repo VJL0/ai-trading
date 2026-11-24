@@ -5,6 +5,7 @@
  */
 import { MarketMycelium } from "./mycelium/MarketMycelium";
 import { ResearchPanel } from "./components/ResearchPanel";
+import { QuantlabPanel } from "./components/QuantlabPanel";
 import { AgentActivity } from "./components/AgentActivity";
 import { DecisionCard } from "./components/DecisionCard";
 import { EventTimeline } from "./components/EventTimeline";
@@ -50,6 +51,9 @@ export function App() {
         </div>
         <div className="area-research">
           <ResearchPanel />
+        </div>
+        <div className="area-quantlab">
+          <QuantlabPanel />
         </div>
         <div className="area-timeline">
           <EventTimeline />

@@ -8,8 +8,9 @@ requests to the paper endpoint; it never submits or cancels orders.
   refused with ``LiveKeyRefused``. The key value is never logged or included in messages.
 * SDK floats/strings are converted to ``Decimal`` via ``str`` (``from_external_float`` for floats).
 * HTTP 429 on reads: bounded backoff (the SDK's own blocking retry is disabled), then ``BrokerRateLimited``.
-* Unsupported broker objects (non-equity assets, non-DAY orders, stop orders, notional orders) raise
-  ``BrokerPayloadError`` rather than being silently degraded; reconciliation then fails closed.
+* Unsupported broker objects (non-equity assets, non-DAY orders, plain stop / trailing orders, notional orders,
+  stop-limit BUYs) raise ``BrokerPayloadError`` rather than being silently degraded; reconciliation then fails
+  closed. The only stop order understood is the protective ``stop_limit`` SELL this system signs.
 """
 
 from __future__ import annotations
@@ -213,7 +214,8 @@ def map_position(raw: Any, now: datetime) -> PositionSnapshot:
     return PositionSnapshot(
         symbol=symbol, quantity=qty, avg_entry_price=_req_dec(d, "avg_entry_price"), cost_basis=_req_dec(d, "cost_basis"),
         market_value=_dec(d, "market_value", required=False), current_price=_dec(d, "current_price", required=False),
-        unrealized_pl=_dec(d, "unrealized_pl", required=False), asof=now, source="BROKER",
+        unrealized_pl=_dec(d, "unrealized_pl", required=False),
+        unrealized_intraday_pl=_dec(d, "unrealized_intraday_pl", required=False), asof=now, source="BROKER",
     )
 
 
@@ -229,7 +231,7 @@ def map_order(raw: Any, now: datetime, gateway: GatewayKind = GatewayKind.LEAN_A
         raise BrokerPayloadError("non-simple broker order is unsupported")
     status = _str(d, "status").lower()
     otype = str(getattr(d.get("order_type") or d.get("type"), "value", d.get("order_type") or d.get("type")) or "").lower()
-    if otype not in ("limit", "market"):
+    if otype not in ("limit", "market", "stop_limit"):
         raise BrokerPayloadError(f"unsupported broker order type {otype!r} (order {d.get('client_order_id')})")
     tif = str(getattr(d.get("time_in_force"), "value", d.get("time_in_force")) or "").lower()
     if tif != "day":
@@ -244,6 +246,9 @@ def map_order(raw: Any, now: datetime, gateway: GatewayKind = GatewayKind.LEAN_A
     if qty is None:
         raise BrokerPayloadError("notional (qty-less) orders are not supported")
     filled = _dec(d, "filled_qty", required=False) or Decimal(0)
+    stop_price = _dec(d, "stop_price", required=False)
+    if otype == "stop_limit" and (side_raw != "sell" or stop_price is None):
+        raise BrokerPayloadError(f"stop_limit order {d.get('client_order_id')} is not a protective SELL with a stop price")
     if status in ("done_for_day", "calculated"):
         state = OrderState.PARTIALLY_FILLED if filled > 0 else OrderState.ACKNOWLEDGED
     elif status in ALPACA_STATUS_STATE:
@@ -256,9 +261,10 @@ def map_order(raw: Any, now: datetime, gateway: GatewayKind = GatewayKind.LEAN_A
         client_order_id=coid, broker_order_id=str(d.get("id")) if d.get("id") else None, intent_id=None, gateway=gateway,
         symbol=symbol, side=Side.BUY if side_raw == "buy" else Side.SELL, quantity=qty, filled_quantity=filled,
         avg_fill_price=_dec(d, "filled_avg_price", required=False),
-        order_type=OrderType.LIMIT if otype == "limit" else OrderType.MARKET,
+        order_type={"limit": OrderType.LIMIT, "stop_limit": OrderType.STOP_LIMIT}.get(otype, OrderType.MARKET),
         limit_price=_dec(d, "limit_price", required=False), time_in_force=TimeInForce.DAY, broker_status=status,
         state=state, submitted_at=_ts(d, "submitted_at"), updated_at=updated,
+        stop_price=stop_price if otype == "stop_limit" else None,
     )
 
 

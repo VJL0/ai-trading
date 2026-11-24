@@ -1,10 +1,14 @@
 """Deterministic in-process fake broker (``GatewayKind.FAKE``, label SIMULATED) with failure injection.
 
-It behaves like a cash (no-margin) U.S. equities broker for long-only LIMIT DAY orders in the regular
-session: validates at submit, fills marketable limits against a pluggable point-in-time quote source at the
-limit or better (configurable slippage, optional partial fills), keeps resting orders that fill on later
-quotes (``advance``), expires DAY orders at the session close and emits Alpaca-like order updates with a
-unique execution id per fill through ``order_events()``.
+It behaves like a cash (no-margin) U.S. equities broker for long-only LIMIT DAY orders (and protective
+STOP_LIMIT SELL exits) in the regular session: validates at submit, fills marketable limits against a
+pluggable point-in-time quote source at the limit or better (configurable slippage, optional partial fills),
+keeps resting orders that fill on later quotes (``advance``), expires DAY orders at the session close and
+emits Alpaca-like order updates with a unique execution id per fill through ``order_events()``.
+
+A STOP_LIMIT SELL rests untriggered until a usable quote's bid trades at or below its stop (a conservative proxy
+for the last trade), then behaves as a LIMIT SELL at its limit price. A gap below the limit leaves it working
+and unfilled, exactly the case the position manager must escalate: a stop is never a guaranteed exit price.
 
 Nothing here talks to a network. Every fill is simulated; reports must label it SIMULATED.
 
@@ -115,6 +119,9 @@ class _Order:
     submitted_at: datetime
     updated_at: datetime
     session_close: datetime | None
+    order_type: OrderType = OrderType.LIMIT
+    stop: Decimal | None = None
+    triggered: bool = False
 
     @property
     def remaining(self) -> Decimal:
@@ -135,6 +142,8 @@ class _Order:
             "status": self.status, "filled": str(self.filled), "notional": str(self.notional),
             "submitted_at": iso(self.submitted_at), "updated_at": iso(self.updated_at),
             "session_close": iso(self.session_close) if self.session_close else None,
+            "order_type": self.order_type.value, "stop": None if self.stop is None else str(self.stop),
+            "triggered": self.triggered,
         }
 
     @classmethod
@@ -145,6 +154,8 @@ class _Order:
             filled=Decimal(d["filled"]), notional=Decimal(d["notional"]), submitted_at=parse_iso(d["submitted_at"]),
             updated_at=parse_iso(d["updated_at"]),
             session_close=parse_iso(d["session_close"]) if d.get("session_close") else None,
+            order_type=OrderType(d.get("order_type", OrderType.LIMIT.value)),
+            stop=Decimal(d["stop"]) if d.get("stop") is not None else None, triggered=bool(d.get("triggered", False)),
         )
 
 
@@ -364,8 +375,8 @@ class FakeBroker:
             client_order_id=o.coid, broker_order_id=o.broker_id, intent_id=o.intent_id, gateway=GatewayKind.FAKE,
             symbol=o.symbol, side=o.side, quantity=o.qty, filled_quantity=o.filled,
             avg_fill_price=(o.notional / o.filled).quantize(Decimal("0.00000001")) if o.filled > 0 else None,
-            order_type=OrderType.LIMIT, limit_price=o.limit, time_in_force=o.tif, broker_status=o.status, state=o.state,
-            submitted_at=o.submitted_at, updated_at=o.updated_at,
+            order_type=o.order_type, limit_price=o.limit, time_in_force=o.tif, broker_status=o.status, state=o.state,
+            submitted_at=o.submitted_at, updated_at=o.updated_at, stop_price=o.stop,
         )
 
     # ================================================================== ExecutionGateway: submit / cancel
@@ -390,7 +401,13 @@ class FakeBroker:
                 raise GatewayRejected("intent was not claimed for submission through the order ledger")
         if intent.client_order_id in self.orders:
             raise GatewayRejected("client_order_id must be unique (duplicate submission refused)")
-        if intent.order_type != OrderType.LIMIT:
+        if intent.order_type == OrderType.STOP_LIMIT:
+            stop = intent.stop_price
+            if intent.side != Side.SELL or stop is None or intent.limit_price > stop:
+                raise GatewayRejected("STOP_LIMIT accepted only as a SELL exit with limit at or below the stop")
+            if stop != stop.quantize(price_tick(stop)):
+                raise GatewayRejected("stop price not on a valid tick")
+        elif intent.order_type != OrderType.LIMIT:
             raise GatewayRejected(f"unsupported order type {intent.order_type.value}: LIMIT only")
         if intent.time_in_force != TimeInForce.DAY:
             raise GatewayRejected("unsupported time in force: DAY only")
@@ -453,7 +470,7 @@ class FakeBroker:
             coid=intent.client_order_id, broker_id=f"fb-{self.account_suffix}-{self._order_seq:06d}", intent_id=intent.intent_id,
             symbol=intent.symbol, side=intent.side, qty=intent.quantity, limit=intent.limit_price, tif=intent.time_in_force,
             status="accepted", filled=ZERO, notional=ZERO, submitted_at=now, updated_at=now,
-            session_close=bounds[1] if bounds else None,
+            session_close=bounds[1] if bounds else None, order_type=intent.order_type, stop=intent.stop_price,
         )
         self.orders[o.coid] = o
         self.accepted_submissions.append(o.coid)
@@ -471,6 +488,11 @@ class FakeBroker:
             q = self._quote(o.symbol)
         if q is None:
             return
+        if o.order_type == OrderType.STOP_LIMIT and not o.triggered:
+            if o.stop is None or q.bid > o.stop:
+                return
+            o.triggered = True  # from now on a resting LIMIT SELL at o.limit (may not fill on a gap)
+            o.updated_at = self.clock.now()
         slip = self.slippage_bps / BPS
         if o.side == Side.BUY:
             if o.limit < q.ask:

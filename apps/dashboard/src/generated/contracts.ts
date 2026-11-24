@@ -29,17 +29,17 @@ export type Side = "BUY" | "SELL";
  * This interface was referenced by `LatContracts`'s JSON-Schema
  * via the `definition` "OrderType".
  */
-export type OrderType = "LIMIT" | "MARKET";
+export type OrderType = "LIMIT" | "MARKET" | "STOP_LIMIT";
 /**
  * This interface was referenced by `LatContracts`'s JSON-Schema
  * via the `definition` "TimeInForce".
  */
-export type TimeInForce = "DAY";
+export type TimeInForce = "DAY" | "GTC" | "IOC";
 /**
  * This interface was referenced by `LatContracts`'s JSON-Schema
  * via the `definition` "DataFeed".
  */
-export type DataFeed = "IEX" | "SIP" | "SYNTHETIC" | "LEAN_SAMPLE";
+export type DataFeed = "IEX" | "SIP" | "SYNTHETIC" | "CRYPTO_US" | "LEAN_SAMPLE";
 /**
  * This interface was referenced by `LatContracts`'s JSON-Schema
  * via the `definition` "Adjustment".
@@ -49,7 +49,7 @@ export type Adjustment = "raw" | "split" | "dividend" | "all";
  * This interface was referenced by `LatContracts`'s JSON-Schema
  * via the `definition` "MarketSession".
  */
-export type MarketSession = "PRE" | "REGULAR" | "POST" | "CLOSED";
+export type MarketSession = "PRE" | "REGULAR" | "POST" | "CLOSED" | "CONTINUOUS";
 /**
  * This interface was referenced by `LatContracts`'s JSON-Schema
  * via the `definition` "OrderState".
@@ -167,17 +167,23 @@ export type RiskVerdict = "APPROVED" | "REJECTED";
  * This interface was referenced by `LatContracts`'s JSON-Schema
  * via the `definition` "Proposer".
  */
-export type Proposer = "QUANT_BASELINE" | "QUANT_MODEL" | "AI_PIPELINE" | "AGENT_TOOL" | "HUMAN" | "TEST";
+export type Proposer =
+  "QUANT_BASELINE" | "QUANT_MODEL" | "AI_PIPELINE" | "AGENT_TOOL" | "HUMAN" | "TEST" | "POSITION_MANAGER";
 /**
  * This interface was referenced by `LatContracts`'s JSON-Schema
  * via the `definition` "SessionConstraint".
  */
-export type SessionConstraint = "REGULAR_ONLY";
+export type SessionConstraint = "REGULAR_ONLY" | "CONTINUOUS";
 /**
  * This interface was referenced by `LatContracts`'s JSON-Schema
  * via the `definition` "AiRuntimeMode".
  */
 export type AiRuntimeMode = "NONE" | "API_KEYS" | "CLAUDE_CODE" | "CODEX" | "CHATGPT_OAUTH";
+/**
+ * This interface was referenced by `LatContracts`'s JSON-Schema
+ * via the `definition` "AssetClass".
+ */
+export type AssetClass = "US_EQUITY" | "CRYPTO";
 
 /**
  * All packages.contracts models (serialization mode). Decimal fields are canonical decimal strings; timestamps are ISO-8601 UTC strings ending in Z.
@@ -229,6 +235,10 @@ export interface AccountSnapshot {
   account_blocked: boolean;
   transfers_blocked: boolean;
   shorting_enabled: boolean;
+  /**
+   * Alpaca crypto_status; crypto entries need ACTIVE
+   */
+  crypto_status: string | null;
   asof: UtcTimestamp;
   source: string;
 }
@@ -265,6 +275,10 @@ export interface ApprovedOrderIntent {
    * hex(r||s) over signing_string()
    */
   signature: string;
+  /**
+   * STOP_LIMIT protective exits only; signed (lat-intent-v2). Not a guaranteed price.
+   */
+  stop_price: DecimalString | null;
 }
 /**
  * This interface was referenced by `LatContracts`'s JSON-Schema
@@ -330,6 +344,7 @@ export interface BrokerOrder {
   state: OrderState;
   submitted_at: UtcTimestamp | null;
   updated_at: UtcTimestamp;
+  stop_price: DecimalString | null;
 }
 /**
  * This interface was referenced by `LatContracts`'s JSON-Schema
@@ -524,6 +539,10 @@ export interface PositionSnapshot {
   market_value: DecimalString | null;
   current_price: DecimalString | null;
   unrealized_pl: DecimalString | null;
+  /**
+   * P&L since the previous close (broker field); daily-loss input for multi-day holds
+   */
+  unrealized_intraday_pl: DecimalString | null;
   asof: UtcTimestamp;
   /**
    * BROKER | LEDGER | FAKE_BROKER
@@ -596,9 +615,13 @@ export interface QuantSignal {
   est_fees_bps: DecimalString;
   est_slippage_bps: DecimalString;
   /**
-   * expected_return_bps minus total estimated costs
+   * expected_return_bps (GROSS) minus the live round-trip cost estimate, charged once, minus uncertainty_bps: the quantity the decision threshold applies to
    */
   net_edge_bps: DecimalString;
+  /**
+   * explicit forecast-uncertainty buffer (bps)
+   */
+  uncertainty_bps: DecimalString;
   is_candidate: boolean;
   reason: string;
   features_asof: UtcTimestamp;
@@ -718,6 +741,11 @@ export interface SystemHealth {
   lock_reasons: string[];
   strategy_state_ok: boolean;
   permissions_ok: boolean;
+  /**
+   * risk-reducing SELL exits locked? None => same as entries (fail closed). Halts and unprotected-position safety states lock entries but not exits; state uncertainty locks both.
+   */
+  exits_locked: boolean | null;
+  exit_lock_reasons: string[];
 }
 /**
  * This interface was referenced by `LatContracts`'s JSON-Schema
@@ -793,6 +821,51 @@ export interface RiskPolicy {
    * always forced true in LIVE_APPROVAL
    */
   require_human_approval: boolean;
+  /**
+   * multi-day equity holding (DAY protective stops re-armed each session)
+   */
+  allow_overnight_positions: boolean;
+  /**
+   * cap on a proposal's holding_sessions
+   */
+  max_holding_sessions: number;
+  /**
+   * assumed overnight gap for a multi-day entry: notional x gap must fit max_daily_loss
+   */
+  overnight_gap_budget_bps: DecimalString;
+  /**
+   * PAPER crypto spot (long-only LIMIT GTC/IOC)
+   */
+  crypto_enabled: boolean;
+  crypto_allowlist: string[];
+  crypto_max_order_notional: DecimalString;
+  crypto_max_position_notional: DecimalString;
+  crypto_max_positions: number;
+  crypto_max_spread_bps: DecimalString;
+  crypto_min_order_notional: DecimalString;
+  crypto_default_stop_loss_bps: DecimalString;
+  crypto_instruments: CryptoInstrument[];
+  /**
+   * per-side fee charged in the received asset (Alpaca tier-1 taker); used in planned loss
+   */
+  crypto_fee_bps: DecimalString;
+  /**
+   * strategy ids allowed to hold across sessions (validated strategies only)
+   */
+  multi_day_strategy_allowlist: string[];
+}
+/**
+ * Execution increments for one crypto pair, pinned in the operator policy (never fetched during evaluation).
+ * Defaults come from Alpaca's asset metadata (2026-11-23): quantity increment 1e-9; prices are restricted to
+ * whole cents here (a multiple of Alpaca's 1e-9 price increment).
+ *
+ * This interface was referenced by `LatContracts`'s JSON-Schema
+ * via the `definition` "CryptoInstrument".
+ */
+export interface CryptoInstrument {
+  symbol: string;
+  qty_increment?: string;
+  price_increment?: string;
 }
 /**
  * This interface was referenced by `LatContracts`'s JSON-Schema
@@ -820,6 +893,10 @@ export interface TradeProposal {
   time_in_force: TimeInForce;
   session_constraint: SessionConstraint;
   max_planned_loss: DecimalString | null;
+  /**
+   * multi-day holding request for a BUY entry (sessions incl. the entry session); None/1 = intraday. Honoured only when the risk policy allows overnight positions.
+   */
+  holding_sessions: number | null;
   evidence_ids: string[];
   signal_id: string | null;
   finding_ids: string[];

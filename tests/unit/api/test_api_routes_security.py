@@ -219,3 +219,13 @@ def test_agent_tool_routes_need_agent_token(client: Any) -> None:
     for wrong in (client.op, client.eng):  # operator/engine tokens never work as agent tokens
         assert client.get("/api/v1/agent/tools", headers={"X-LAT-Agent-Token": wrong}).status_code == 401
     assert client.post("/api/v1/agent/tools/request_halt", json={"reason": "x"}).status_code == 401
+
+
+def test_quantlab_views_are_read_only_and_bounded(client: Any) -> None:
+    for kind in ("capabilities", "research", "opportunities", "strategies", "trials", "options"):
+        r = client.get(f"/api/v1/quantlab/{kind}")
+        assert r.status_code == 200, kind
+        assert "status" in r.json()
+    assert client.get("/api/v1/quantlab/secrets").status_code == 404
+    assert client.get("/api/v1/quantlab/research?family=../../etc").status_code == 422
+    assert client.post("/api/v1/quantlab/research", json={}).status_code == 405

@@ -18,6 +18,12 @@ Entries are locked whenever *any* of these holds (fail closed):
 Flags live in ``system_state`` under ``entries_flag:<name>``; a monotonically increasing epoch
 (``entries_lock_epoch``) is bumped on every raise so a reconciliation that began before a flag was
 raised can never clear it.
+
+Exits (risk-reducing long-only SELLs) have their own, narrower lock (``exit_reasons_conn``). It contains every
+*state-uncertainty* reason above (process guard, flags, UNKNOWN orders, no CLEAN reconciliation, mode) because an
+exit sized from stale positions could oversell, but **not** ENTRIES-scope halts and **not** the live
+``position_safety`` rows: those exist precisely so that new entries stop while protective exits and liquidations
+continue. An ALL-scope halt (operator kill switch) blocks exits too.
 """
 
 from __future__ import annotations
@@ -186,6 +192,52 @@ def last_reconciliation_conn(conn: sqlite3.Connection) -> tuple[str, str] | None
 # ---------------------------------------------------------------------------- service object
 
 
+POSITION_SAFETY_STATES: frozenset[str] = frozenset(
+    {"UNPROTECTED", "UNVERIFIED", "BREACHED", "OVERNIGHT", "EXITING", "ORPHANED"}
+)
+
+
+def position_safety_conn(conn: sqlite3.Connection) -> list[dict[str, Any]]:
+    return [dict(r) for r in conn.execute(
+        "SELECT symbol, state, reason, since, updated_at FROM position_safety WHERE active=1 ORDER BY symbol")]
+
+
+def set_position_safety_conn(
+    conn: sqlite3.Connection, symbol: str, state: str, *, reason: str, mode: str, at: datetime, source: str,
+) -> bool:
+    """Raise/refresh the live safety state of one position (locks new entries). Returns True when newly raised
+    or changed state (audited); a refresh of the same state only updates ``reason``/``updated_at``."""
+    if state not in POSITION_SAFETY_STATES:
+        raise ValueError(f"unknown position safety state {state!r}")
+    row = conn.execute("SELECT state, active FROM position_safety WHERE symbol=?", (symbol,)).fetchone()
+    changed = row is None or not row[1] or row[0] != state
+    if changed:
+        conn.execute(
+            "INSERT INTO position_safety(symbol, state, reason, since, updated_at, active) VALUES (?,?,?,?,?,1)"
+            " ON CONFLICT(symbol) DO UPDATE SET state=excluded.state, reason=excluded.reason, since=excluded.since,"
+            " updated_at=excluded.updated_at, active=1, cleared_at=NULL, cleared_reason=NULL",
+            (symbol, state, reason[:500], iso(at), iso(at)),
+        )
+        append_audit(conn, event_type="POSITION_SAFETY_SET", source=source, mode=mode, ts=at,
+                     payload={"symbol": symbol, "state": state, "reason": reason[:500]})
+    else:
+        conn.execute("UPDATE position_safety SET reason=?, updated_at=? WHERE symbol=?", (reason[:500], iso(at), symbol))
+    return changed
+
+
+def clear_position_safety_conn(
+    conn: sqlite3.Connection, symbol: str, *, reason: str, mode: str, at: datetime, source: str,
+) -> bool:
+    cur = conn.execute(
+        "UPDATE position_safety SET active=0, cleared_at=?, cleared_reason=?, updated_at=? WHERE symbol=? AND active=1",
+        (iso(at), reason[:500], iso(at), symbol),
+    )
+    if cur.rowcount:
+        append_audit(conn, event_type="POSITION_SAFETY_CLEARED", source=source, mode=mode, ts=at,
+                     payload={"symbol": symbol, "reason": reason[:500]})
+    return cur.rowcount > 0
+
+
 class EntriesLock:
     def __init__(self, db: Database, mode: TradingMode, *, clock: Clock | None = None) -> None:
         self.db = db
@@ -201,12 +253,16 @@ class EntriesLock:
             return True, [f"entries-lock state unreadable: {type(exc).__name__}"]
         return bool(reasons), reasons
 
-    def reasons_conn(self, conn: sqlite3.Connection, *, assume_process_reconciled: bool = False) -> list[str]:
-        """Lock reasons computed on an open connection (also usable inside a writer transaction).
+    def exits_locked(self) -> tuple[bool, list[str]]:
+        """``(locked, reasons)`` for risk-reducing SELL exits. Any error => locked (fail closed)."""
+        try:
+            reasons = self.db.read(self.exit_reasons_conn)
+        except Exception as exc:
+            return True, [f"exit-lock state unreadable: {type(exc).__name__}"]
+        return bool(reasons), reasons
 
-        ``assume_process_reconciled`` is used only by the reconciler while it persists a CLEAN run (which is
-        about to release the process-start guard).
-        """
+    def _uncertainty_reasons_conn(self, conn: sqlite3.Connection, *, assume_process_reconciled: bool) -> list[str]:
+        """Reasons that make broker/ledger state uncertain: they block entries *and* exits."""
         reasons: list[str] = []
         if not assume_process_reconciled and not self.process_reconciled():
             reasons.append(PROCESS_GUARD_REASON)
@@ -214,10 +270,6 @@ class EntriesLock:
             reasons.append("mode RESEARCH_ONLY never places orders")
         if self.mode in (TradingMode.LIVE_APPROVAL, TradingMode.BOUNDED_LIVE) and not modes.LIVE_EXECUTION_COMPILED:
             reasons.append(f"mode {self.mode.value}: live execution is compiled off in this build")
-        for row in conn.execute(
-            "SELECT halt_id, reason, source FROM trading_halts WHERE cleared_at IS NULL ORDER BY created_at"
-        ):
-            reasons.append(f"halt {row[0]}: {row[1]} (source={row[2]})")
         for name, value in sorted(active_flags_conn(conn).items()):
             reasons.append(f"{name}: {value.get('reason', '')}")
         # Defence in depth: an order with unknown outcome locks entries even if its flag were cleared.
@@ -227,6 +279,43 @@ class EntriesLock:
         if not has_clean_reconciliation_conn(conn):
             reasons.append("no CLEAN broker reconciliation has completed yet")
         return reasons
+
+    def reasons_conn(self, conn: sqlite3.Connection, *, assume_process_reconciled: bool = False) -> list[str]:
+        """Entry-lock reasons computed on an open connection (also usable inside a writer transaction).
+
+        ``assume_process_reconciled`` is used only by the reconciler while it persists a CLEAN run (which is
+        about to release the process-start guard).
+        """
+        reasons = self._uncertainty_reasons_conn(conn, assume_process_reconciled=assume_process_reconciled)
+        for row in conn.execute(
+            "SELECT halt_id, reason, source, scope FROM trading_halts WHERE cleared_at IS NULL ORDER BY created_at"
+        ):
+            reasons.append(f"halt {row[0]}: {row[1]} (source={row[2]}, scope={row[3]})")
+        for ps in position_safety_conn(conn):
+            reasons.append(f"position {ps['symbol']} {ps['state']}: {ps['reason']}")
+        return reasons
+
+    def exit_reasons_conn(self, conn: sqlite3.Connection) -> list[str]:
+        """Exit-lock reasons: state uncertainty and ALL-scope halts only (see module docstring)."""
+        reasons = self._uncertainty_reasons_conn(conn, assume_process_reconciled=False)
+        for row in conn.execute(
+            "SELECT halt_id, reason, source FROM trading_halts WHERE cleared_at IS NULL AND scope='ALL' ORDER BY created_at"
+        ):
+            reasons.append(f"halt {row[0]} (scope=ALL, exits blocked): {row[1]} (source={row[2]})")
+        return reasons
+
+    def position_safety(self) -> list[dict[str, Any]]:
+        return self.db.read(position_safety_conn)
+
+    def set_position_safety(self, symbol: str, state: str, reason: str, source: str = "position_manager") -> bool:
+        at = self.clock.now()
+        return self.db.write(lambda c: set_position_safety_conn(
+            c, symbol, state, reason=reason, mode=self.mode.value, at=at, source=source))
+
+    def clear_position_safety(self, symbol: str, reason: str, source: str = "position_manager") -> bool:
+        at = self.clock.now()
+        return self.db.write(lambda c: clear_position_safety_conn(
+            c, symbol, reason=reason, mode=self.mode.value, at=at, source=source))
 
     def flags(self) -> dict[str, FlagState]:
         raw = self.db.read(active_flags_conn)
@@ -264,9 +353,12 @@ class EntriesLock:
         return self.db.query("SELECT * FROM trading_halts WHERE cleared_at IS NULL ORDER BY created_at")
 
     # ------------------------------------------------------------------ writes
-    def lock(self, reason: str, source: str) -> str:
-        """Add a stop-new-orders halt (always allowed: fail-safe direction). Returns the halt id."""
-        return self.db.write(lambda c: add_halt(c, reason=reason, source=source, mode=self.mode.value))
+    def lock(self, reason: str, source: str, *, scope: str = "ENTRIES") -> str:
+        """Add a halt (always allowed: fail-safe direction). Returns the halt id.
+
+        ENTRIES (default) stops new entries; protective exits continue. ALL also blocks exits (kill switch).
+        """
+        return self.db.write(lambda c: add_halt(c, reason=reason, source=source, mode=self.mode.value, scope=scope))
 
     def set_flag(self, flag: Flag | str, reason: str, source: str) -> int:
         at = self.clock.now()

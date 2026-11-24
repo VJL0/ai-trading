@@ -38,7 +38,8 @@
   "human_approval_id": null,
   "key_id": "risk-key-fixture",
   "signature_alg": "ECDSA_P256_SHA256",
-  "signature": "45a19d627e0e14397d3250a1006e5d9fd279d7acc47a541ed2b5d0bb8fa2495e53f01a846a7e78027384b5a4205831651d22d9b21ea2c5b21fabf6ede208ba19"
+  "signature": "45a19d627e0e14397d3250a1006e5d9fd279d7acc47a541ed2b5d0bb8fa2495e53f01a846a7e78027384b5a4205831651d22d9b21ea2c5b21fabf6ede208ba19",
+  "stop_price": null
  },
  "events": [
   {

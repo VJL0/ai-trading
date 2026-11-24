@@ -412,11 +412,35 @@ class PnlOut(OutModel):
     start_of_day_equity: Dec | None
 
 
+class ManagedPositionOut(OutModel):
+    symbol: str
+    quantity: Dec
+    avg_cost: Dec
+    stop_price: Dec = Field(description="planned protective stop: a trigger, never a guaranteed exit price")
+    protected_quantity: Dec = Field(description="shares covered by broker-acknowledged protective STOP_LIMIT SELLs")
+    risk_to_stop: Dec = Field(description="loss if exited exactly at the stop; gaps can lose more")
+    exit_deadline: UtcDatetime
+    exit_reason: str | None
+    safety_state: str | None = Field(description="UNPROTECTED | EXITING | BREACHED | OVERNIGHT | UNVERIFIED | null")
+
+
+class RoundTripOut(OutModel):
+    symbol: str
+    close_reason: str | None
+    realized_pl: Dec | None
+    entry_avg_price: Dec | None
+    exit_avg_price: Dec | None
+    closed_at: UtcDatetime | None
+
+
 class PortfolioOut(ToolOutput):
     account: AccountOut | None
     broker_positions: list[BrokerPositionOut]
     ledger_positions: list[LedgerPositionOut]
     pnl: PnlOut
+    managed_positions: list[ManagedPositionOut] = Field(
+        default_factory=list, description="positions under the autonomous position manager (protection, exit plan)")
+    recent_round_trips: list[RoundTripOut] = Field(default_factory=list, description="closed positions, newest first")
 
 
 class OrderOut(OutModel):
@@ -511,12 +535,23 @@ class RiskLimitsOut(OutModel):
     symbol_allowlist: list[str]
 
 
+class PositionSafetyOut(OutModel):
+    symbol: str
+    state: str
+    reason: str
+    since: UtcDatetime | None
+
+
 class RiskStatusOut(ToolOutput):
     mode: str
     live_execution_compiled: bool
     policy_version: str
     entries_locked: bool
     lock_reasons: list[str]
+    exits_locked: bool = Field(default=True, description="risk-reducing exits blocked (state uncertainty / kill switch)")
+    exit_lock_reasons: list[str] = Field(default_factory=list)
+    position_safety: list[PositionSafetyOut] = Field(
+        default_factory=list, description="explicit unsafe-position states; each locks new entries, never exits")
     halts: list[HaltOut]
     limits: RiskLimitsOut = Field(description="read-only; only a human operator can change them")
     utilization: list[UtilizationOut]
@@ -865,3 +900,124 @@ class SearchMemoryIn(ToolInput):
 
 class MemorySearchOut(ToolOutput):
     memory: dict[str, Any]
+
+
+# -- quantlab (multi-asset research; read-only views + one bounded development-only experiment tool)
+FAMILY_PATTERN: Final = r"^$|^[A-Z][A-Za-z0-9_]{1,40}$"
+FACTOR_EXPRESSION_PATTERN: Final = r"^[a-z0-9_(),. +\-*/]{1,300}$"
+
+
+class GetResearchResultsIn(ToolInput):
+    family: str = Field(default="", pattern=FAMILY_PATTERN, description="family for detail, '' for summary")
+
+
+class RunResearchExperimentIn(ToolInput):
+    expression: str = Field(pattern=FACTOR_EXPRESSION_PATTERN, description=(
+        "score, e.g. rank(mom(126,21))-rank(vol(63)); fns mom resid_mom vol rsi relvol high52 beta dist_sma rank"
+        " zscore clip; + - * /; numeric literals"))
+    universe: Literal["liquid1000", "large300"] = "liquid1000"
+    n: int = Field(20, ge=5, le=100, strict=True, description="names held, equal weight")
+    rebalance: Literal[1, 5, 10, 21, 63] = Field(21, description="sessions between rebalances")
+    regime: Literal["none", "sma200", "volscale"] = "none"
+
+
+class AssetClassCapabilityOut(OutModel):
+    asset_class: str
+    research_eligible: bool
+    execution_eligible: bool
+    api_schema: str
+    market_data: str
+    account_permission: str
+    policy_execution: str
+    policy_detail: str
+
+
+class CapabilitiesOut(ToolOutput):
+    snapshot_asof: str | None
+    content_hash: str | None
+    account_type: str | None
+    crypto_status: str | None
+    options_trading_level: int | None
+    asset_classes: list[AssetClassCapabilityOut]
+    data_entitlements: dict[str, str]
+    option_roots: dict[str, list[str]]
+    notes: list[str]
+
+
+class FamilyResultOut(OutModel):
+    family: str
+    asset_class: str | None
+    passed_dev_gate: bool
+    selected_variant: str | None
+    wf_oos_sharpe: float | None
+    wf_oos_cagr: float | None
+    wf_oos_max_drawdown: float | None
+    benchmark: str | None
+    benchmark_sharpe: float | None
+    dsr: float | None
+    n_trials: float | None
+    spa_p_vs_benchmark: float | None
+    alpha_t: float | None
+    pbo: float | None
+    stress_sharpe_2x_costs: float | None
+    turnover_annual: float | None
+    cost_drag_annual: float | None
+    fail_reasons: list[str]
+    registry_state: str | None
+
+
+class ResearchResultsOut(ToolOutput):
+    status: str
+    updated_at: str | None
+    holdout: list[str]
+    families: list[FamilyResultOut]
+    holdout_results: list[dict[str, Any]]
+    detail: dict[str, Any] | None
+    no_edge_note: str | None
+
+
+class ScanItemOut(OutModel):
+    symbol: str
+    score: float | None
+    why: str
+    family: str
+
+
+class RankedOpportunityOut(OutModel):
+    instrument: str
+    family: str
+    asset_class: str
+    evidence: str
+    expected_net_return: float
+    utility: float
+    weight: float
+    selectable: bool
+    reasons: list[str]
+
+
+class OpportunitiesOut(ToolOutput):
+    status: str
+    scan_asof: str | None
+    regime: dict[str, JsonScalar]
+    lists: dict[str, list[ScanItemOut]]
+    action: str | None
+    reason: str | None
+    ranked: list[RankedOpportunityOut]
+    crypto: dict[str, Any]
+    options: dict[str, Any]
+    notes: list[str]
+
+
+class RunResearchExperimentOut(ToolOutput):
+    accepted: bool
+    status: str | None
+    error: str | None
+    spec: dict[str, JsonScalar] | None
+    passed_dev_gate: bool | None
+    wf_oos_sharpe: float | None
+    wf_oos_cagr: float | None
+    dsr: float | None
+    n_trials: float | None
+    alpha_t: float | None
+    fail_reasons: list[str]
+    note: str

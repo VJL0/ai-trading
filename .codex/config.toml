@@ -11,8 +11,8 @@ env = { LAT_AGENT_NAME = "codex" }
 startup_timeout_sec = 30
 tool_timeout_sec = 90
 # Every tool asks for approval unless listed below. Mutating tools (propose_paper_trade, request_halt,
-# cancel_paper_order, run_quant_cycle, start_paper_session, stop_session, schedule_session, cancel_schedule)
-# deliberately keep "prompt".
+# cancel_paper_order, run_quant_cycle, start_paper_session, stop_session, schedule_session, cancel_schedule,
+# run_research_experiment) deliberately keep "prompt".
 default_tools_approval_mode = "prompt"
 
 # Read-only tools: auto-approved.
@@ -90,4 +90,16 @@ approval_mode = "prompt"
 approval_mode = "prompt"
 
 [mcp_servers.local-ai-trader.tools.cancel_schedule]
+approval_mode = "prompt"
+
+[mcp_servers.local-ai-trader.tools.get_capabilities]
+approval_mode = "approve"
+
+[mcp_servers.local-ai-trader.tools.get_research_results]
+approval_mode = "approve"
+
+[mcp_servers.local-ai-trader.tools.get_opportunities]
+approval_mode = "approve"
+
+[mcp_servers.local-ai-trader.tools.run_research_experiment]
 approval_mode = "prompt"

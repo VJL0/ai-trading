@@ -40,6 +40,25 @@ HARD_MAX_INTENT_TTL_SECONDS: Final = 300
 HARD_MIN_DUPLICATE_WINDOW_SECONDS: Final = 60
 HARD_MAX_DUPLICATE_WINDOW_SECONDS: Final = 86_400
 HARD_MAX_SYMBOLS: Final = 500
+# ---- multi-day equity holding (opt-in, operator policy change only)
+HARD_MAX_HOLDING_SESSIONS: Final = 20
+HARD_MIN_OVERNIGHT_GAP_BUDGET_BPS: Final = Decimal("300")
+"""A multi-day entry must survive an assumed overnight gap of at least 3% within the daily-loss limit."""
+# ---- PAPER crypto spot (opt-in, operator policy change only)
+HARD_MAX_CRYPTO_ORDER_NOTIONAL: Final = Decimal("5000")
+HARD_MAX_CRYPTO_POSITION_NOTIONAL: Final = Decimal("10000")
+HARD_MAX_CRYPTO_POSITIONS: Final = 3
+HARD_MAX_CRYPTO_SPREAD_BPS: Final = Decimal("100")
+HARD_MAX_CRYPTO_SYMBOLS: Final = 10
+HARD_MIN_CRYPTO_ORDER_NOTIONAL: Final = Decimal("1")
+HARD_MAX_CRYPTO_STOP_BPS: Final = Decimal("2000")
+CRYPTO_SYMBOL: Final = re.compile(r"^[A-Z0-9]{2,10}/USD$")
+"""Policy-allowlisted crypto pairs must be quoted in USD (no stablecoin or BTC quotes in this build)."""
+STABLECOIN_BASES: Final[frozenset[str]] = frozenset({"USDC", "USDT", "USDG", "DAI", "PYUSD", "TUSD", "USDP"})
+HARD_MIN_CRYPTO_FEE_BPS: Final = Decimal("10")
+"""Crypto fees may not be configured below 10 bps (understated fees would understate planned losses)."""
+HARD_MAX_CRYPTO_FEE_BPS: Final = Decimal("100")
+STRATEGY_ID: Final = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:-]{0,95}$")
 
 # ---------------------------------------------------------------------------- engine constants
 # Not policy fields (yet): see requested contract changes in services/risk/README.md.
@@ -59,6 +78,17 @@ PLANNED_LOSS_ABS_TOLERANCE: Final = Decimal("0.05")
 """... nor by more than this many dollars (both tolerances must be exceeded to reject)."""
 MAX_THROUGH_TOUCH_BPS: Final = Decimal("10")
 """A BUY limit may exceed the ask (a SELL limit may undercut the bid) by at most this many bps."""
+
+ENTRY_CUTOFF_BEFORE_CLOSE_SECONDS: Final = 1800
+"""No new BUY entries in the last 30 minutes of the XNYS session (early closes included), so every position
+can be exited during regular hours. Exits are never cut off before the close."""
+MAX_STOP_LIMIT_GAP_BPS: Final = Decimal("300")
+"""A protective STOP_LIMIT SELL may set its limit at most this far below its stop."""
+MAX_PROTECTIVE_STOP_DISTANCE_BPS: Final = Decimal("2000")
+"""A protective stop more than this far below the mid is not protection (equals the default-stop ceiling)."""
+MAX_OPEN_SELLS_PER_SYMBOL: Final = 2
+"""Structural cap on concurrently working risk-reducing SELL orders per symbol (protective + top-up). Their total
+remaining quantity can never exceed the long position (long_only). SELLs do not use ``max_pending_orders``."""
 
 US_EQUITY_SYMBOL: Final = re.compile(r"^[A-Z]{1,5}(\.[A-Z]{1,2})?$")
 """Listed U.S. common stock / ETF symbols (class shares like BRK.B allowed). No digits/OTC suffixes."""
@@ -168,7 +198,69 @@ def validate_policy(policy: RiskPolicy) -> list[str]:
         )
     if policy.max_orders_per_minute > policy.max_orders_per_day:
         v.append("max_orders_per_minute cannot exceed max_orders_per_day")
+    _validate_extensions(policy, v)
     return v
+
+
+def _validate_extensions(policy: RiskPolicy, v: list[str]) -> None:
+    """Multi-day holding and PAPER crypto: bounded even while disabled, so enabling them is a one-flag change."""
+    _ceiling("max_holding_sessions", policy.max_holding_sessions, HARD_MAX_HOLDING_SESSIONS, v)
+    if policy.overnight_gap_budget_bps < HARD_MIN_OVERNIGHT_GAP_BUDGET_BPS:
+        v.append(f"overnight_gap_budget_bps={policy.overnight_gap_budget_bps} below floor "
+                 f"{HARD_MIN_OVERNIGHT_GAP_BUDGET_BPS} (overnight gaps are not bounded by stops)")
+    crypto = list(policy.crypto_allowlist)
+    if len(crypto) > HARD_MAX_CRYPTO_SYMBOLS:
+        v.append(f"crypto_allowlist has {len(crypto)} pairs (> {HARD_MAX_CRYPTO_SYMBOLS})")
+    if len(set(crypto)) != len(crypto):
+        v.append("crypto_allowlist contains duplicates")
+    bad = sorted(s for s in crypto if not CRYPTO_SYMBOL.match(s) or s.split("/")[0] in STABLECOIN_BASES)
+    if bad:
+        v.append(f"crypto_allowlist has invalid pairs (USD-quoted, non-stablecoin bases only): {bad}")
+    if policy.crypto_enabled and not crypto:
+        v.append("crypto_enabled requires a non-empty crypto_allowlist")
+    for name, value in (
+        ("crypto_max_order_notional", policy.crypto_max_order_notional),
+        ("crypto_max_position_notional", policy.crypto_max_position_notional),
+        ("crypto_max_spread_bps", policy.crypto_max_spread_bps),
+        ("crypto_min_order_notional", policy.crypto_min_order_notional),
+        ("crypto_default_stop_loss_bps", policy.crypto_default_stop_loss_bps),
+        ("overnight_gap_budget_bps", policy.overnight_gap_budget_bps),
+    ):
+        _positive(name, value, v)
+    _ceiling("crypto_max_order_notional", policy.crypto_max_order_notional, HARD_MAX_CRYPTO_ORDER_NOTIONAL, v)
+    _ceiling("crypto_max_position_notional", policy.crypto_max_position_notional,
+             HARD_MAX_CRYPTO_POSITION_NOTIONAL, v)
+    _ceiling("crypto_max_positions", policy.crypto_max_positions, HARD_MAX_CRYPTO_POSITIONS, v)
+    _ceiling("crypto_max_spread_bps", policy.crypto_max_spread_bps, HARD_MAX_CRYPTO_SPREAD_BPS, v)
+    _ceiling("crypto_default_stop_loss_bps", policy.crypto_default_stop_loss_bps, HARD_MAX_CRYPTO_STOP_BPS, v)
+    if policy.crypto_min_order_notional < HARD_MIN_CRYPTO_ORDER_NOTIONAL:
+        v.append(f"crypto_min_order_notional below {HARD_MIN_CRYPTO_ORDER_NOTIONAL}")
+    if policy.crypto_min_order_notional > policy.crypto_max_order_notional:
+        v.append("crypto_min_order_notional cannot exceed crypto_max_order_notional")
+    if policy.crypto_default_stop_loss_bps < HARD_MIN_DEFAULT_STOP_BPS:
+        v.append(f"crypto_default_stop_loss_bps below floor {HARD_MIN_DEFAULT_STOP_BPS}")
+    specs = {i.symbol: i for i in policy.crypto_instruments}
+    if len(specs) != len(policy.crypto_instruments):
+        v.append("crypto_instruments contains duplicate symbols")
+    missing = sorted(s for s in crypto if s not in specs)
+    if missing:
+        v.append(f"crypto_allowlist pairs without pinned instrument increments: {missing}")
+    for inst in policy.crypto_instruments:
+        if inst.qty_increment <= 0 or inst.price_increment <= 0:
+            v.append(f"crypto instrument {inst.symbol}: increments must be positive")
+        if not inst.qty_increment.is_finite() or inst.qty_increment < Decimal("0.000000001"):
+            v.append(f"crypto instrument {inst.symbol}: qty_increment finer than 1e-9")
+    if policy.crypto_fee_bps < HARD_MIN_CRYPTO_FEE_BPS or policy.crypto_fee_bps > HARD_MAX_CRYPTO_FEE_BPS:
+        v.append(f"crypto_fee_bps={policy.crypto_fee_bps} outside [{HARD_MIN_CRYPTO_FEE_BPS}, {HARD_MAX_CRYPTO_FEE_BPS}] "
+                 "(fees may not be understated)")
+    strategies = list(policy.multi_day_strategy_allowlist)
+    if len(set(strategies)) != len(strategies):
+        v.append("multi_day_strategy_allowlist contains duplicates")
+    bad_ids = sorted(s for s in strategies if not STRATEGY_ID.match(s) or s.startswith(("agent:", "position-manager")))
+    if bad_ids:
+        v.append(f"multi_day_strategy_allowlist has invalid or non-strategy ids: {bad_ids}")
+    if policy.allow_overnight_positions and not strategies:
+        v.append("allow_overnight_positions requires a non-empty multi_day_strategy_allowlist")
 
 
 def hard_ceilings() -> dict[str, str]:
@@ -194,6 +286,12 @@ def hard_ceilings() -> dict[str, str]:
         "max_intent_ttl_seconds": str(HARD_MAX_INTENT_TTL_SECONDS),
         "duplicate_window_seconds_range": f"{HARD_MIN_DUPLICATE_WINDOW_SECONDS}-{HARD_MAX_DUPLICATE_WINDOW_SECONDS}",
         "max_allowlist_symbols": str(HARD_MAX_SYMBOLS),
+        "max_holding_sessions": str(HARD_MAX_HOLDING_SESSIONS),
+        "min_overnight_gap_budget_bps": format(HARD_MIN_OVERNIGHT_GAP_BUDGET_BPS, "f"),
+        "max_crypto_order_notional": format(HARD_MAX_CRYPTO_ORDER_NOTIONAL, "f"),
+        "max_crypto_position_notional": format(HARD_MAX_CRYPTO_POSITION_NOTIONAL, "f"),
+        "max_crypto_positions": str(HARD_MAX_CRYPTO_POSITIONS),
+        "max_crypto_spread_bps": format(HARD_MAX_CRYPTO_SPREAD_BPS, "f"),
     }
 
 
@@ -201,8 +299,13 @@ STRUCTURAL_INVARIANTS: Final[tuple[str, ...]] = (
     "long-only: SELL may only reduce an existing long position; no shorting",
     "no margin borrowing: BUY notional x buffer must be covered by settled cash / non-marginable buying power",
     "regular session only (XNYS calendar); extended hours always rejected",
-    "LIMIT orders only, time-in-force DAY, whole shares",
+    "LIMIT orders only for entries, time-in-force DAY, whole shares; protective exits may rest as STOP_LIMIT SELLs "
+    "(a stop is a trigger, never a guaranteed exit price)",
+    "no new entries in the last 30 minutes of the regular session; exits continue until the close",
+    "ENTRIES-scope halts and unprotected-position safety states stop new entries but never block risk-reducing exits",
     "leveraged/inverse/volatility products always denylisted",
     "live execution compiled off; LIVE_APPROVAL / BOUNDED_LIVE always denied in this build",
+    "multi-day equity holding and PAPER crypto are disabled unless an operator policy change enables them; crypto "
+    "is long-only LIMIT (GTC/IOC) on USD pairs, bounded by its own notional ceilings, PAPER mode only",
     "the AI has read-only access to the policy; only the authenticated human operator can change limits",
 )

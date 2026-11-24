@@ -77,14 +77,19 @@ class PaperModel(NoTradeModel):
             else:
                 inputs = transform(x[None], candidate['transform'])
             pred = self.model.predict(inputs)
-            net_lower = float(pred[0, 0]) - self.report['allowance_bps']
+            net = float(pred[0, 0])
+            allowance = float(self.report['allowance_bps'])
         except Exception:
             self.book.rollback('inference failure; reverted paper candidate', self.record['id'])
             self.retired = True
             return None
-        # Conservative: model target already includes modeled costs; the existing signal
-        # engine subtracts current execution costs again. Never fabricate a gross forecast.
-        return ModelPrediction(net_lower, net_lower, None, False)
+        if not np.isfinite(net) or not np.isfinite(allowance) or allowance < 0:
+            return None
+        # The target is NET of the training cost convention (round trip at the suite reference notional). The engine
+        # re-prices that convention with live inputs and charges the live round trip exactly once; the validation
+        # allowance is kept as an explicit uncertainty buffer subtracted before the threshold (never hidden).
+        return ModelPrediction(net, net - allowance, None, False, basis='NET',
+                               reference_notional=float(SuiteConfig().reference_notional), uncertainty_bps=allowance)
 
 
 _CACHE: dict[str, PaperModel] = {}

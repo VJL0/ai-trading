@@ -32,8 +32,10 @@ from .strict_schema import output_schema, strict_input_schema
 if TYPE_CHECKING:
     from .backends import ToolBackend
 
-Category = Literal["market", "models", "portfolio", "operations", "paper_trading"]
-CATEGORIES: Final[tuple[str, ...]] = ("market", "models", "portfolio", "operations", "paper_trading")
+Category = Literal["market", "models", "portfolio", "operations", "paper_trading", "research"]
+CATEGORIES: Final[tuple[str, ...]] = ("market", "models", "portfolio", "operations", "paper_trading", "research")
+# "research" = bounded development-only experiments: they write only to the append-only research trial ledger,
+# never place/cancel orders, never change policy, and cannot read the protected holdout.
 # Read-only tools that serve market/model research (what an in-app research model needs); "operations" tools
 # (sessions, reports, activity, health) serve the operating agent.
 RESEARCH_CATEGORIES: Final[frozenset[str]] = frozenset({"market", "models", "portfolio"})
@@ -256,6 +258,34 @@ _SPECS: Final[tuple[ToolSpec, ...]] = (
         "Health of data feed, broker, models, AI runtime, database, scheduler and engine." + _DATA_NOTE,
         "operations", False, s.NoInput, s.SystemHealthOut,
     ),
+    # ---------------------------------------------------------------- quantlab multi-asset research
+    ToolSpec(
+        "get_capabilities",
+        "Verified Alpaca capability snapshot per asset class (equity long/short, margin, leveraged ETPs, crypto,"
+        " options): API, data, account and risk-policy layers; research vs execution eligibility." + _DATA_NOTE,
+        "models", False, s.NoInput, s.CapabilitiesOut,
+    ),
+    ToolSpec(
+        "get_research_results",
+        "Multi-asset strategy research: per family after-cost walk-forward OOS metrics vs benchmark, deflated"
+        " Sharpe (all trials), SPA, alpha t, PBO, cost stress, gate verdict, registry state, holdout outcomes."
+        " Backtests, not realized results." + _DATA_NOTE,
+        "models", False, s.GetResearchResultsIn, s.ResearchResultsOut,
+    ),
+    ToolSpec(
+        "get_opportunities",
+        "Latest point-in-time scan (regime, relative strength, volume, gaps, volatility, sectors, crypto, options)"
+        " and the cross-asset utility ranking with TRADE/NO_TRADE and reasons. Conditions are not signals."
+        + _DATA_NOTE,
+        "models", False, s.NoInput, s.OpportunitiesOut,
+    ),
+    ToolSpec(
+        "run_research_experiment",
+        "Evaluate one declarative factor strategy on the development period only, through the same gates as every"
+        " family; recorded in the trial ledger. Places no PAPER orders, cannot change policy or read the holdout."
+        " A few per hour.",
+        "research", True, s.RunResearchExperimentIn, s.RunResearchExperimentOut,
+    ),
 )
 
 
@@ -266,6 +296,9 @@ MUTATING_TOOL_NAMES: Final[tuple[str, ...]] = tuple(n for n, t in TOOL_REGISTRY.
 RESEARCH_READ_TOOL_NAMES: Final[tuple[str, ...]] = tuple(
     n for n, t in TOOL_REGISTRY.items() if not t.mutating and t.category in RESEARCH_CATEGORIES
 )
+QUANTLAB_READ_TOOL_NAMES: Final[tuple[str, ...]] = ("get_capabilities", "get_research_results", "get_opportunities")
+"""Multi-asset research views for operating agents (MCP / HTTP). Not offered to the in-app single-candidate AI
+pipeline: it does not need them and Anthropic rejects requests with more than 20 strict tools."""
 SESSION_TOOL_NAMES: Final[tuple[str, ...]] = (
     "start_paper_session", "stop_session", "schedule_session", "cancel_schedule", "get_session_status",
     "list_schedules", "get_session_report", "explain_decisions", "get_performance", "get_activity", "get_system_health",

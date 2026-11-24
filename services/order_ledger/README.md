@@ -68,6 +68,17 @@ RiskEngine.authorize -> OrderLedger.record_intent (RISK_APPROVED | awaits HUMAN_
 * Migration `migrations/0400_order_ledger.sql` adds columns/tables (engine queue, duplicates, absorptions,
   reconciliation epochs) and append-only triggers on fills/transitions/runs/approvals.
 
+## Exit lock and protective stops (Phase 1)
+
+`EntriesLock.exits_locked()` is the narrower lock for risk-reducing SELLs: every state-uncertainty reason below plus
+ALL-scope halts (`trading_halts.scope`, migration `0410_position_safety.sql`), but not ENTRIES-scope halts and not the
+live `position_safety` rows the position manager writes (those lock new entries only). `ExecutionService.submit` and
+`AlpacaPaperGateway` use it for SELLs. Protective `STOP_LIMIT` SELLs are supported end to end: signed stop price,
+FakeBroker trigger simulation (bid at/below the stop; a gap below the limit rests unfilled), Alpaca `stop_limit`
+requests and mapping, and a ledger anomaly if the broker's stop differs from the signed one. `AlpacaPaperGateway`
+preflights every SELL against the broker's own position net of its other open SELLs. See
+[position lifecycle](../../docs/architecture/position-lifecycle.md).
+
 ## Entries lock
 
 Locked when any holds: active halt; a flag (`startup_unreconciled`, `broker_disconnected`, `unknown_orders_present`,

@@ -46,6 +46,11 @@ VALID_ARGS: dict[str, dict[str, Any]] = {
     "get_performance": {},
     "get_activity": {"limit": 10, "kind": None},
     "get_system_health": {},
+    "get_capabilities": {},
+    "get_research_results": {"family": ""},
+    "get_opportunities": {},
+    "run_research_experiment": {"expression": "rank(mom(126,21)) - rank(vol(63))", "universe": "liquid1000",
+                                "n": 20, "rebalance": 21, "regime": "none"},
 }
 
 

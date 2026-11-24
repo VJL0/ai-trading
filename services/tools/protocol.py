@@ -24,8 +24,10 @@ from packages.core.config import Settings
 READ_METHODS: tuple[str, ...] = (
     "search_memory", "status", "market_bars", "market_quality", "market_snapshot", "predictions", "model_report", "signals",
     "portfolio", "orders", "order_detail", "risk_view", "now", "performance", "health_report", "activity",
+    "positions_view", "quantlab_view",
 )
-MUTATING_METHODS: tuple[str, ...] = ("submit_agent_proposal", "halt", "cancel", "run_cycle", "sessions")
+MUTATING_METHODS: tuple[str, ...] = ("submit_agent_proposal", "halt", "cancel", "run_cycle", "sessions",
+                                     "quantlab_experiment")
 # Members of ``ToolRuntime.sessions`` (``SessionControl``). Read tools may call only the read members.
 SESSION_READ_METHODS: tuple[str, ...] = ("active", "list", "report", "list_schedules", "explain", "scheduler_status")
 SESSION_MUTATING_METHODS: tuple[str, ...] = ("start", "stop", "add_schedule", "cancel_schedule")
@@ -96,6 +98,16 @@ class ToolRuntime(Protocol):
     def signals(self, limit: int = 50) -> dict[str, Any]: ...
 
     def portfolio(self) -> dict[str, Any]: ...
+
+    def positions_view(self) -> dict[str, Any]: ...
+
+    def quantlab_view(self, kind: str, family: str | None = None) -> dict[str, Any]:
+        """Read-only quantlab artifact view (capabilities | research | opportunities | strategies | trials)."""
+        ...
+
+    def quantlab_experiment(self, spec: dict[str, Any], actor: str) -> dict[str, Any]:
+        """Bounded development-only factor experiment; writes only to the research trial ledger."""
+        ...
 
     def orders(self, limit: int = 100) -> dict[str, Any]: ...
 

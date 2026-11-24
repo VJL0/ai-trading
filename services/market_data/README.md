@@ -106,6 +106,16 @@ queue overflow or stream end raise `StreamDisconnected` -> DISCONNECTED -> backo
 bar that leaves a hole triggers a backfill before LIVE resumes. Transitions go to `md_feed_state_transitions`,
 backfills to `md_ingestion_runs` (migration `0100_market_data.sql`), findings to `data_quality_events`.
 
+## History pipeline and research snapshots (roadmap Phase 2)
+
+`pipeline.HistoryPipeline` plans increment/initial/history windows per symbol (whole settled sessions only), fetches
+and validates them through the checks above, stores each as an incremental dataset, then builds an immutable
+`research_snapshots` snapshot (constituents + knowledge cutoff + content hash + lineage + coverage) and marks it
+ready for research when enough new complete sessions arrived. The store resolves `rs_...` ids wherever it accepts a
+`dataset_version`. `feed_compare` measures IEX against historical SIP (free plan, data older than 15 minutes).
+CLI: `pipeline [--dry-run]`, `snapshot build|verify|list`, `compare-feeds`. Details and evidence:
+[data pipeline and parity](../../docs/architecture/data-pipeline-and-parity.md).
+
 ## Limitations / honesty
 
 * **No Alpaca keys exist on this Mac**: the Alpaca provider is unit-tested only with handcrafted alpaca-py objects and

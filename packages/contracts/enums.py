@@ -31,6 +31,7 @@ class DataFeed(StrEnum):
     IEX = "IEX"
     SIP = "SIP"
     SYNTHETIC = "SYNTHETIC"
+    CRYPTO_US = "CRYPTO_US"  # Alpaca crypto feed (location 'us'), 24/7
     LEAN_SAMPLE = "LEAN_SAMPLE"  # real historical sample data bundled in the pinned LEAN repo
 
 
@@ -46,6 +47,7 @@ class MarketSession(StrEnum):
     REGULAR = "REGULAR"
     POST = "POST"
     CLOSED = "CLOSED"
+    CONTINUOUS = "CONTINUOUS"  # 24/7 crypto market (no XNYS session)
 
 
 class Side(StrEnum):
@@ -56,14 +58,32 @@ class Side(StrEnum):
 class OrderType(StrEnum):
     LIMIT = "LIMIT"
     MARKET = "MARKET"
+    STOP_LIMIT = "STOP_LIMIT"  # protective exits only: a SELL that becomes a LIMIT once the stop trades
+
+
+PROTECTIVE_ORDER_TYPES: frozenset[OrderType] = frozenset({OrderType.STOP_LIMIT})
+"""Order types allowed only for risk-reducing (long-only SELL) protective exits, never for entries."""
 
 
 class TimeInForce(StrEnum):
-    DAY = "DAY"
+    DAY = "DAY"  # U.S. equities (regular session)
+    GTC = "GTC"  # crypto only (Alpaca crypto accepts gtc / ioc)
+    IOC = "IOC"  # crypto only
+
+
+class AssetClass(StrEnum):
+    """Derived from the symbol (crypto pairs contain '/'); never a free-standing field an agent can set."""
+
+    US_EQUITY = "US_EQUITY"
+    CRYPTO = "CRYPTO"
+
+
+CRYPTO_TIME_IN_FORCE: frozenset[TimeInForce] = frozenset({TimeInForce.GTC, TimeInForce.IOC})
 
 
 class SessionConstraint(StrEnum):
-    REGULAR_ONLY = "REGULAR_ONLY"
+    REGULAR_ONLY = "REGULAR_ONLY"  # U.S. equities: XNYS regular session only
+    CONTINUOUS = "CONTINUOUS"  # crypto only: 24/7
 
 
 class DecisionAction(StrEnum):
@@ -78,6 +98,7 @@ class Proposer(StrEnum):
     AGENT_TOOL = "AGENT_TOOL"  # external agent (Claude Code / Codex) via the validated tool interface
     HUMAN = "HUMAN"
     TEST = "TEST"
+    POSITION_MANAGER = "POSITION_MANAGER"  # deterministic exits/protection for positions the system already holds
 
 
 class AiRuntimeMode(StrEnum):

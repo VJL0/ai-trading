@@ -18,10 +18,13 @@ from services.ai.tools import (
     shared_read_only_tool_names,
 )
 from services.tools.backends import InProcessToolBackend
-from services.tools.registry import MUTATING_TOOL_NAMES, READ_ONLY_TOOL_NAMES, TOOL_REGISTRY
+from services.tools.registry import MUTATING_TOOL_NAMES, QUANTLAB_READ_TOOL_NAMES, TOOL_REGISTRY
+from services.tools.registry import READ_ONLY_TOOL_NAMES as ALL_READ_ONLY
 from tests.unit.tools.fake_runtime import FakeToolRuntime
 
 from .chatgpt_helpers import MUTATING_RUNTIME_CALLS
+
+READ_ONLY_TOOL_NAMES = tuple(n for n in ALL_READ_ONLY if n not in QUANTLAB_READ_TOOL_NAMES)
 
 SOL_SHARED = {*CONTEXT_TOOL_NAMES, "request_deep_review", *READ_ONLY_TOOL_NAMES, SOL_OUTPUT_TOOL}
 CLAUDE_SHARED = {*CONTEXT_TOOL_NAMES, *READ_ONLY_TOOL_NAMES}

@@ -320,6 +320,113 @@ def cmd_status(args: argparse.Namespace) -> int:
     return 0
 
 
+def _alpaca_provider(mode: FeedMode) -> Any:
+    from packages.core.clock import SystemClock
+    from packages.core.secrets import SecretStore
+
+    from .alpaca_provider import AlpacaMarketDataProvider, MissingCredentials
+
+    settings = load_settings()
+    secrets = SecretStore(settings.project_root, use_keychain=settings.use_keychain)
+    try:
+        return AlpacaMarketDataProvider(secrets, mode, SystemClock()), secrets
+    except MissingCredentials as exc:
+        raise CliError(str(exc)) from None
+
+
+def _pipeline_symbols(args: argparse.Namespace) -> tuple[str, ...]:
+    if args.symbols:
+        return tuple(s.upper() for s in args.symbols)
+    from packages.contracts.policy import RiskPolicy
+
+    return tuple(RiskPolicy().symbol_allowlist)  # the eligible stock/ETF universe of the active default policy
+
+
+def cmd_pipeline(args: argparse.Namespace) -> int:
+    """Scheduled history backfill + increments, then the research snapshot and research trigger."""
+    from packages.core.clock import SystemClock
+
+    from .alpaca_provider import FeedEntitlementError
+    from .pipeline import HistoryPipeline, PipelineConfig
+    from .store import MarketDataStore
+
+    mode = FeedMode(args.feed_mode)
+    if mode == FeedMode.SIMULATED:
+        raise CliError("pipeline ingests real Alpaca history (IEX_FREE, or SIP_PAID for historical SIP)")
+    provider, _ = _alpaca_provider(mode)
+    config = PipelineConfig(symbols=_pipeline_symbols(args), history_days=args.history_days,
+                            max_requests=args.max_requests, min_new_sessions=args.min_new_sessions,
+                            chunk_sessions=args.chunk_sessions)
+    store = MarketDataStore(_datasets_dir(args))
+    db = _db(args)
+    try:
+        pipe = HistoryPipeline(provider, store, db, SystemClock(), config,
+                               limitations=FEED_MODE_LIMITATIONS[mode])
+        if args.dry_run:
+            plan = pipe.plan()
+            _emit({"dry_run": True, "windows": len(plan), "first": [w.as_dict() for w in plan[:20]],
+                   "budget_per_run": config.max_requests})
+            return 0
+        try:
+            run = asyncio.run(pipe.run())
+        except FeedEntitlementError as exc:
+            raise CliError(str(exc)) from None
+    finally:
+        if db is not None:
+            db.close()
+    _emit({"feed_mode": mode.value, "real_alpaca_data": True, **run.as_dict()})
+    return 0 if run.as_dict()["ok"] else 1
+
+
+def cmd_snapshot(args: argparse.Namespace) -> int:
+    from .research_snapshots import SnapshotError, build_snapshot, list_snapshots, verify_snapshot
+    from .store import MarketDataStore
+
+    store = MarketDataStore(_datasets_dir(args))
+    if args.action == "list":
+        _emit({"snapshots": [{k: m.get(k) for k in ("snapshot_id", "feed", "timeframe", "cutoff", "symbols", "start",
+                                                      "end", "row_counts", "created_at")} for m in list_snapshots(store)]})
+        return 0
+    if args.action == "verify":
+        if not args.id:
+            raise CliError("snapshot verify needs --id")
+        report = verify_snapshot(store, args.id)
+        _emit(report)
+        return 0 if report["ok"] else 1
+    feed = DataFeed(args.feed) if args.feed else _effective_feed()
+    try:
+        snap = build_snapshot(store, feed=feed, timeframe=args.timeframe,
+                              cutoff=_parse_ts(args.cutoff) if args.cutoff else None, note="cli")
+    except SnapshotError as exc:
+        raise CliError(str(exc)) from None
+    _emit({k: v for k, v in snap.items() if k != "lineage"} | {"lineage_datasets": len(snap.get("lineage", []))})
+    return 0
+
+
+def cmd_compare_feeds(args: argparse.Namespace) -> int:
+    from packages.core.clock import SystemClock
+
+    from .calendar import get_calendar
+    from .feed_compare import compare_alpaca_feeds
+
+    _, secrets = _alpaca_provider(FeedMode.IEX_FREE)
+    cal = get_calendar()
+    now = datetime.now(UTC)
+    last = cal.ny_date(now - timedelta(minutes=20))
+    if not (cal.is_session(last) and cal.session_close(last) <= now - timedelta(minutes=20)):
+        last = cal.previous_session(last)
+    days = cal.sessions_ending(last, args.sessions)
+    start, end = cal.session_open(days[0]), cal.session_close(days[-1])
+    report = asyncio.run(compare_alpaca_feeds(secrets, [s.upper() for s in args.symbols], start, end,
+                                              clock=SystemClock(), calendar=cal))
+    if args.out:
+        out = Path(args.out)
+        out.parent.mkdir(parents=True, exist_ok=True)
+        out.write_text(json.dumps(report, indent=1, sort_keys=True, default=str), encoding="utf-8")
+    _emit(report)
+    return 0 if not report["errors"] else 1
+
+
 # ------------------------------------------------------------------------------------------ parser
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="python -m services.market_data.cli", description=(__doc__ or "").split("\n\n")[0])
@@ -380,6 +487,32 @@ def build_parser() -> argparse.ArgumentParser:
 
     st = sub.add_parser("status", help="datasets, active series and feed configuration")
     st.set_defaults(func=cmd_status)
+
+    pl = sub.add_parser("pipeline", help="scheduled history backfill + increments -> research snapshot (real Alpaca)")
+    pl.add_argument("--symbols", nargs="+", help="default: the eligible allowlist of the default risk policy")
+    pl.add_argument("--feed-mode", default=FeedMode.IEX_FREE.value, choices=[FeedMode.IEX_FREE.value, FeedMode.SIP_PAID.value],
+                    help="SIP_PAID here means historical SIP (free plan: data older than 15 min); never purchases")
+    pl.add_argument("--history-days", type=int, default=730)
+    pl.add_argument("--max-requests", type=int, default=200, help="provider requests per run (rate-limit budget)")
+    pl.add_argument("--chunk-sessions", type=int, default=10)
+    pl.add_argument("--min-new-sessions", type=int, default=5, help="complete sessions that trigger new research")
+    pl.add_argument("--dry-run", action="store_true", help="print the plan only (no network)")
+    pl.add_argument("--no-db", action="store_true")
+    pl.set_defaults(func=cmd_pipeline)
+
+    sn = sub.add_parser("snapshot", help="research snapshots: build | verify | list")
+    sn.add_argument("action", choices=["build", "verify", "list"])
+    sn.add_argument("--feed", choices=[f.value for f in DataFeed])
+    sn.add_argument("--timeframe", default="1Min")
+    sn.add_argument("--cutoff", help="knowledge cutoff (ISO UTC); default now")
+    sn.add_argument("--id")
+    sn.set_defaults(func=cmd_snapshot)
+
+    cf = sub.add_parser("compare-feeds", help="IEX vs historical SIP minute bars for recent sessions (read-only)")
+    cf.add_argument("--symbols", nargs="+", default=["SPY", "QQQ", "AAPL", "MSFT"])
+    cf.add_argument("--sessions", type=int, default=5)
+    cf.add_argument("--out", help="write the JSON report here as well")
+    cf.set_defaults(func=cmd_compare_feeds)
     return p
 
 

@@ -16,7 +16,9 @@ from typing import Any, Self
 from pydantic import BaseModel, ConfigDict, Field, model_validator
 
 from .enums import (
+    CRYPTO_TIME_IN_FORCE,
     Adjustment,
+    AssetClass,
     ConfidenceLabel,
     DataFeed,
     DecisionAction,
@@ -47,7 +49,15 @@ from .types import Dec, UtcDatetime
 
 SCHEMA_VERSION = "1.0.0"
 
-_SYMBOL_PATTERN = r"^[A-Z][A-Z0-9.]{0,9}$"
+EQUITY_SYMBOL_PATTERN = r"^[A-Z][A-Z0-9.]{0,9}$"
+CRYPTO_SYMBOL_PATTERN = r"^[A-Z0-9]{2,10}/(USD|USDT|USDC|BTC)$"
+_SYMBOL_PATTERN = r"^(?:[A-Z][A-Z0-9.]{0,9}|[A-Z0-9]{2,10}/(?:USD|USDT|USDC|BTC))$"
+"""U.S. equity tickers, or Alpaca crypto pairs ``BASE/QUOTE``. The asset class is derived from this shape."""
+
+
+def asset_class_of(symbol: str) -> AssetClass:
+    """Crypto pairs contain '/', U.S. equity tickers never do (the risk engine re-checks the exact pattern)."""
+    return AssetClass.CRYPTO if "/" in symbol else AssetClass.US_EQUITY
 
 
 class Contract(BaseModel):
@@ -193,7 +203,9 @@ class QuantSignal(Contract):
     est_spread_bps: Dec
     est_fees_bps: Dec
     est_slippage_bps: Dec
-    net_edge_bps: Dec = Field(description="expected_return_bps minus total estimated costs")
+    net_edge_bps: Dec = Field(description="expected_return_bps (GROSS) minus the live round-trip cost estimate, charged "
+                                          "once, minus uncertainty_bps: the quantity the decision threshold applies to")
+    uncertainty_bps: Dec = Field(default=Decimal(0), description="explicit forecast-uncertainty buffer (bps)")
     is_candidate: bool
     reason: str
     features_asof: UtcDatetime
@@ -290,6 +302,10 @@ class TradeProposal(Contract):
     time_in_force: TimeInForce = TimeInForce.DAY
     session_constraint: SessionConstraint = SessionConstraint.REGULAR_ONLY
     max_planned_loss: Dec | None = None
+    holding_sessions: int | None = Field(
+        default=None, ge=1, le=20,
+        description="multi-day holding request for a BUY entry (sessions incl. the entry session); None/1 = intraday. "
+                    "Honoured only when the risk policy allows overnight positions.")
     evidence_ids: tuple[str, ...] = ()
     signal_id: str | None = None
     finding_ids: tuple[str, ...] = ()
@@ -313,13 +329,37 @@ class TradeProposal(Contract):
             raise ValueError(f"TRADE proposal missing required fields: {missing}")
         if not self.evidence_ids:
             raise ValueError("TRADE proposal requires evidence_ids")
-        assert self.quantity is not None and self.limit_price is not None
+        assert self.quantity is not None and self.limit_price is not None and self.symbol is not None
+        crypto = asset_class_of(self.symbol) == AssetClass.CRYPTO
+        if crypto and self.time_in_force not in CRYPTO_TIME_IN_FORCE:
+            raise ValueError("crypto orders require time_in_force GTC or IOC")
+        if not crypto and self.time_in_force != TimeInForce.DAY:
+            raise ValueError("U.S. equity orders require time_in_force DAY")
+        if crypto != (self.session_constraint == SessionConstraint.CONTINUOUS):
+            raise ValueError("crypto orders require session_constraint CONTINUOUS; equities REGULAR_ONLY")
+        if crypto and self.order_type == OrderType.LIMIT and self.time_in_force != TimeInForce.IOC:
+            raise ValueError("crypto LIMIT orders must be IOC (nothing rests unattended; stops are the exception)")
+        if crypto and self.order_type == OrderType.STOP_LIMIT and self.time_in_force != TimeInForce.GTC:
+            raise ValueError("crypto protective STOP_LIMIT orders must be GTC (they persist 24/7)")
+        if self.holding_sessions is not None and self.side != Side.BUY:
+            raise ValueError("holding_sessions applies to BUY entries only")
+        if crypto and self.holding_sessions is not None:
+            raise ValueError("holding_sessions applies to U.S. equities only (crypto trades continuously)")
         if self.quantity <= 0:
             raise ValueError("quantity must be positive")
         if self.limit_price <= 0:
             raise ValueError("limit_price must be positive")
-        if self.order_type != OrderType.LIMIT:
-            raise ValueError("only LIMIT orders are supported in the initial build")
+        if self.order_type == OrderType.STOP_LIMIT:
+            # Protective exit only: a long-only SELL resting below the market that becomes a LIMIT order once the
+            # stop trades. Not guaranteed protection: a gap through the limit leaves it unfilled.
+            if self.side != Side.SELL:
+                raise ValueError("STOP_LIMIT is allowed only for protective SELL exits")
+            if self.stop_price is None or self.stop_price <= 0:
+                raise ValueError("STOP_LIMIT requires a positive stop_price")
+            if self.limit_price > self.stop_price:
+                raise ValueError("STOP_LIMIT SELL limit_price must be at or below stop_price")
+        elif self.order_type != OrderType.LIMIT:
+            raise ValueError("only LIMIT orders (and STOP_LIMIT protective exits) are supported")
         return self
 
 
@@ -378,6 +418,9 @@ class ApprovedOrderIntent(Contract):
     key_id: str
     signature_alg: str = "ECDSA_P256_SHA256"
     signature: str = Field(pattern=r"^[0-9a-f]{128}$", description="hex(r||s) over signing_string()")
+    stop_price: Dec | None = Field(
+        default=None, description="STOP_LIMIT protective exits only; signed (lat-intent-v2). Not a guaranteed price."
+    )
 
     @model_validator(mode="after")
     def _check(self) -> Self:
@@ -385,15 +428,41 @@ class ApprovedOrderIntent(Contract):
             raise ValueError("extended-hours orders are not permitted")
         if self.quantity <= 0 or self.limit_price <= 0:
             raise ValueError("quantity and limit_price must be positive")
+        crypto = asset_class_of(self.symbol) == AssetClass.CRYPTO
+        if crypto != (self.time_in_force in CRYPTO_TIME_IN_FORCE):
+            raise ValueError("crypto intents require GTC/IOC and equity intents require DAY")
+        if crypto and self.order_type == OrderType.LIMIT and self.time_in_force != TimeInForce.IOC:
+            raise ValueError("crypto LIMIT intents must be IOC")
+        if crypto and self.order_type == OrderType.STOP_LIMIT and self.time_in_force != TimeInForce.GTC:
+            raise ValueError("crypto STOP_LIMIT intents must be GTC")
         if self.expires_at <= self.created_at:
             raise ValueError("intent expires before it is created")
+        if self.order_type == OrderType.STOP_LIMIT:
+            if self.side != Side.SELL or self.stop_price is None or self.stop_price <= 0:
+                raise ValueError("STOP_LIMIT intents must be SELL exits with a positive stop_price")
+            if self.limit_price > self.stop_price:
+                raise ValueError("STOP_LIMIT SELL limit_price must be at or below stop_price")
+        elif self.stop_price is not None:
+            raise ValueError("stop_price is only valid on STOP_LIMIT intents")
         return self
+
+    @property
+    def is_protective(self) -> bool:
+        return self.order_type == OrderType.STOP_LIMIT
+
+    @property
+    def asset_class(self) -> AssetClass:
+        return asset_class_of(self.symbol)
 
     def signing_string(self) -> str:
         """Exact UTF-8 string the risk engine signs and LEAN verifies (then parses order fields from).
 
         Pipe-delimited so the C# verifier does not need to reproduce canonical JSON. LEAN executes
         the parameters parsed from *this* string, so what is executed is exactly what was signed.
+        LIMIT intents keep the original ``lat-intent-v1`` string byte for byte; STOP_LIMIT protective exits use
+        ``lat-intent-v2`` (v1 fields plus ``stop_price``), which the LEAN v1 verifier refuses (fail closed).
+        Crypto intents (symbol ``BASE/QUOTE``) use ``lat-intent-v3`` (v2 fields plus ``asset_class``); LEAN never
+        executes crypto and refuses v3, and the Python gateway accepts it only for crypto symbols.
         """
         return intent_signing_string(self.model_dump(mode="json", exclude={"signature"}))
 
@@ -406,9 +475,21 @@ INTENT_SIGNING_FIELDS: tuple[str, ...] = (
 )
 
 
+INTENT_SIGNING_FIELDS_V2: tuple[str, ...] = (*INTENT_SIGNING_FIELDS, "stop_price")
+INTENT_SIGNING_FIELDS_V3: tuple[str, ...] = (*INTENT_SIGNING_FIELDS_V2, "asset_class")
+
+
 def intent_signing_string(fields: dict[str, Any]) -> str:
-    parts = ["lat-intent-v1"]
-    for name in INTENT_SIGNING_FIELDS:
+    symbol = str(fields.get("symbol") or "")
+    if asset_class_of(symbol) == AssetClass.CRYPTO:
+        fields = {**fields, "asset_class": AssetClass.CRYPTO.value}
+        version, names = "lat-intent-v3", INTENT_SIGNING_FIELDS_V3
+    elif fields.get("stop_price") is not None or fields.get("order_type") == OrderType.STOP_LIMIT.value:
+        version, names = "lat-intent-v2", INTENT_SIGNING_FIELDS_V2
+    else:
+        version, names = "lat-intent-v1", INTENT_SIGNING_FIELDS
+    parts = [version]
+    for name in names:
         value = fields.get(name)
         if value is None:
             text = ""
@@ -454,6 +535,7 @@ class BrokerOrder(Contract):
     state: OrderState
     submitted_at: UtcDatetime | None = None
     updated_at: UtcDatetime
+    stop_price: Dec | None = None
 
 
 class OrderEvent(Contract):
@@ -483,6 +565,8 @@ class PositionSnapshot(Contract):
     market_value: Dec | None = None
     current_price: Dec | None = None
     unrealized_pl: Dec | None = None
+    unrealized_intraday_pl: Dec | None = Field(
+        default=None, description="P&L since the previous close (broker field); daily-loss input for multi-day holds")
     asof: UtcDatetime
     source: str = Field(description="BROKER | LEDGER | FAKE_BROKER")
 
@@ -503,6 +587,7 @@ class AccountSnapshot(Contract):
     account_blocked: bool
     transfers_blocked: bool = False
     shorting_enabled: bool = False
+    crypto_status: str | None = Field(default=None, description="Alpaca crypto_status; crypto entries need ACTIVE")
     asof: UtcDatetime
     source: str
 
@@ -552,6 +637,24 @@ class SystemHealth(Contract):
     lock_reasons: tuple[str, ...] = ()
     strategy_state_ok: bool = True
     permissions_ok: bool = True
+    exits_locked: bool | None = Field(
+        default=None,
+        description="risk-reducing SELL exits locked? None => same as entries (fail closed). Halts and unprotected-"
+                    "position safety states lock entries but not exits; state uncertainty locks both.",
+    )
+    exit_lock_reasons: tuple[str, ...] = ()
+
+    @property
+    def exits_blocked(self) -> bool:
+        if self.exits_locked is None:
+            return self.entries_locked or bool(self.lock_reasons)
+        return self.exits_locked or bool(self.exit_lock_reasons)
+
+    @property
+    def exit_block_reasons(self) -> tuple[str, ...]:
+        if self.exits_locked is None:
+            return self.lock_reasons
+        return self.exit_lock_reasons
 
 
 class RiskContext(Contract):

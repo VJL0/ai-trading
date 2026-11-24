@@ -168,6 +168,18 @@ class OrderRecord:
     def intent(self) -> ApprovedOrderIntent:
         return ApprovedOrderIntent.model_validate_json(self.intent_json)
 
+    @property
+    def stop_price(self) -> Decimal | None:
+        """Signed stop of a protective STOP_LIMIT exit (from the stored intent), else None."""
+        if self.order_type != OrderType.STOP_LIMIT:
+            return None
+        raw = json.loads(self.intent_json).get("stop_price")
+        return None if raw is None else _d(raw)
+
+    @property
+    def is_protective(self) -> bool:
+        return self.side == Side.SELL and self.order_type == OrderType.STOP_LIMIT
+
     def to_broker_order(self) -> BrokerOrder:
         return BrokerOrder(
             client_order_id=self.client_order_id, broker_order_id=self.broker_order_id, intent_id=self.intent_id,
@@ -175,7 +187,7 @@ class OrderRecord:
             filled_quantity=self.filled_quantity, avg_fill_price=self.avg_fill_price, order_type=self.order_type,
             limit_price=self.limit_price, time_in_force=self.time_in_force,
             broker_status=self.broker_status or self.state.value, state=self.state,
-            submitted_at=self.submitted_at, updated_at=self.updated_at,
+            submitted_at=self.submitted_at, updated_at=self.updated_at, stop_price=self.stop_price,
         )
 
 
@@ -1330,6 +1342,10 @@ def _snapshot_mismatch(row: sqlite3.Row, snap: BrokerOrder) -> str:
         problems.append(f"quantity {_fmt(snap.quantity)}!={row['quantity']}")
     if row["limit_price"] is not None and snap.limit_price is not None and snap.limit_price != _d(row["limit_price"]):
         problems.append(f"limit {_fmt(snap.limit_price)}!={row['limit_price']}")
+    if row["order_type"] == OrderType.STOP_LIMIT.value and snap.stop_price is not None:
+        signed = json.loads(row["intent_json"]).get("stop_price")
+        if signed is None or snap.stop_price != _d(signed):
+            problems.append(f"stop {_fmt(snap.stop_price)}!={signed}")
     if snap.filled_quantity > snap.quantity:
         problems.append("broker filled quantity exceeds order quantity")
     return ", ".join(problems)

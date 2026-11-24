@@ -102,13 +102,20 @@ def get_state(db: Database, key: str, default: Any = None) -> Any:
     return json.loads(row["value_json"]) if row else default
 
 
-def add_halt(conn: sqlite3.Connection, *, reason: str, source: str, mode: str) -> str:
+HALT_SCOPES = ("ENTRIES", "ALL")
+"""ENTRIES (default): stop new entries; protective exits continue. ALL: operator kill switch, exits blocked too."""
+
+
+def add_halt(conn: sqlite3.Connection, *, reason: str, source: str, mode: str, scope: str = "ENTRIES") -> str:
+    if scope not in HALT_SCOPES:
+        raise ValueError(f"halt scope must be one of {HALT_SCOPES}")
     halt_id = new_id("halt")
     conn.execute(
-        "INSERT INTO trading_halts(halt_id, reason, source, created_at) VALUES (?,?,?,?)",
-        (halt_id, reason, source, utc_iso()),
+        "INSERT INTO trading_halts(halt_id, reason, source, created_at, scope) VALUES (?,?,?,?,?)",
+        (halt_id, reason, source, utc_iso(), scope),
     )
-    append_audit(conn, event_type="HALT_ADDED", source=source, mode=mode, payload={"halt_id": halt_id, "reason": reason})
+    append_audit(conn, event_type="HALT_ADDED", source=source, mode=mode,
+                 payload={"halt_id": halt_id, "reason": reason, "scope": scope})
     return halt_id
 
 

@@ -91,15 +91,18 @@ class IntentFactory:
         ttl_s: int | None = None,
         gateway: GatewayKind | None = None,
         mode: TradingMode | None = None,
+        order_type: OrderType = OrderType.LIMIT,
+        stop: str | None = None,
     ) -> ApprovedOrderIntent:
         now = self.clock.now()
+        stop_price = Decimal(stop) if stop is not None else None
         mode = mode or self.mode
         gateway = gateway or self.gateway
         causal = new_causal_id()
         proposal = TradeProposal(
             proposal_id=new_id("prop"), causal_id=causal, created_at=now, data_asof=now, action=DecisionAction.TRADE,
             proposer=Proposer.TEST, strategy_id="test-strategy", symbol=symbol, side=side, quantity=Decimal(qty),
-            order_type=OrderType.LIMIT, limit_price=Decimal(limit), max_planned_loss=Decimal("10"),
+            order_type=order_type, limit_price=Decimal(limit), stop_price=stop_price, max_planned_loss=Decimal("10"),
             evidence_ids=("ev_test",), dataset_version="test-ds",
         )
         decision = RiskDecision(
@@ -109,7 +112,8 @@ class IntentFactory:
         intent = self.sign(
             intent_id=new_id("intent"), client_order_id=client_order_id(modes.client_order_tag(mode, gateway)),
             proposal_id=proposal.proposal_id, decision_id=decision.decision_id, causal_id=causal, mode=mode, gateway=gateway,
-            symbol=symbol, side=side, quantity=Decimal(qty), order_type=OrderType.LIMIT, limit_price=Decimal(limit),
+            symbol=symbol, side=side, quantity=Decimal(qty), order_type=order_type, limit_price=Decimal(limit),
+            stop_price=stop_price if order_type == OrderType.STOP_LIMIT else None,
             time_in_force=TimeInForce.DAY, extended_hours=False, policy_version=POLICY_VERSION, created_at=now,
             expires_at=now + timedelta(seconds=ttl_s or self.ttl_s), requires_human_approval=requires_human,
             human_approval_id=None, key_id=self.signer.key_id,

@@ -1,0 +1,4209 @@
+{
+ "adjustment": "raw",
+ "constituents": [
+  "ds_6f37a2401444b6ea",
+  "ds_4e168a5befa21490",
+  "ds_3d25b03a4a32c6a5",
+  "ds_2d6032b20cab7dd8",
+  "ds_ee3a0bdb558659fa",
+  "ds_31e8b4adf6de2739",
+  "ds_925962ab5a97e023",
+  "ds_d9e724dfcb727990",
+  "ds_5013ebeab328fd94",
+  "ds_61dfcf5f4f5d203d",
+  "ds_8288859b80c35012",
+  "ds_7a0ece7494355c43",
+  "ds_076c65bec2cd190b",
+  "ds_79eddb33b7394100",
+  "ds_ce704c011ccf79f3",
+  "ds_8c69bb47c8e4ebf0",
+  "ds_29f481e4be7b22c7",
+  "ds_50c873748db372fb",
+  "ds_09a21e0325a915ea",
+  "ds_bc17a5159b3c3b9b",
+  "ds_cc3f8ac1e17c56b9",
+  "ds_c32d9dc802b9a606",
+  "ds_d3ad99705e7e4392",
+  "ds_2133f2e0fee0e6ef",
+  "ds_9e652bf668e3188c",
+  "ds_0cbb746b07911687",
+  "ds_7f49b2c2516e91c4",
+  "ds_2f46718bb1003960",
+  "ds_98a4e83566e5d936",
+  "ds_0a58cf226714c345",
+  "ds_5e79a45dd0a01752",
+  "ds_2fda6479c750853f",
+  "ds_95f90917ab432dbe",
+  "ds_267eff960eb046c6",
+  "ds_bba358823994ef05",
+  "ds_00659f8c7073e385",
+  "ds_14a871e375ef2843",
+  "ds_0e3a3407e5700f4c",
+  "ds_839a6b5124621068",
+  "ds_1ee3a8ad71c2e6f1",
+  "ds_777dc6394870c810",
+  "ds_e26d3ca8714c9bd3",
+  "ds_5dcc9b2f84790c63",
+  "ds_20875412ca8eb85b",
+  "ds_fb55228a40d114df",
+  "ds_d2ee4e3047203954",
+  "ds_177ebb8396f2304b",
+  "ds_c211deb65ccdf2da",
+  "ds_083de29c54712d46",
+  "ds_aa169a2c6d3c786b",
+  "ds_b974a0bb1e3e74d2",
+  "ds_2d0e591e02515083",
+  "ds_8571fb0a8be1e227",
+  "ds_d7c733de59269b56",
+  "ds_efdacfd48fca928e",
+  "ds_cac24ed9703765b0",
+  "ds_8daac2d489d985b8",
+  "ds_b288e78302590e8f",
+  "ds_4560594b437fe04d",
+  "ds_9a78758ca3191214",
+  "ds_490d750073df1149",
+  "ds_81af810fd2c7d8c5",
+  "ds_ff918abf6a8258e4",
+  "ds_10f65919f5adece9",
+  "ds_3718012e4c5a26bc",
+  "ds_65e00e8c255f8285",
+  "ds_902bffbaa6292a33",
+  "ds_62a602e48a214b21",
+  "ds_4f558cda0232b7bf",
+  "ds_64c211c0e947c251",
+  "ds_24e8a34b062fa580",
+  "ds_e1d441641d6f437b",
+  "ds_54f69dc084affb8b",
+  "ds_8d3a4a63cd4e9493",
+  "ds_5d9d35c10dd779b0",
+  "ds_6b911bc8ba8be371",
+  "ds_7923978a2df9d3dd",
+  "ds_0202c29c562b18d7",
+  "ds_e8eb79e9934394df",
+  "ds_29f0ca0d5a4c5f6b",
+  "ds_5d2777efd7b3e66d",
+  "ds_0044ceca48565aa1",
+  "ds_f7a27d0cb59afe31",
+  "ds_733a3688eca52d4c",
+  "ds_7ee85b59748eb0fb",
+  "ds_80e955214a19b457",
+  "ds_372b16369c0838c3",
+  "ds_c0520bc28d2a9345",
+  "ds_736526f8add709cf",
+  "ds_6e75cfa1b1080a88",
+  "ds_0595a306f08db507",
+  "ds_73342ef30e638748",
+  "ds_529dc6e0e4457e3f",
+  "ds_9dbfaaeda059dc0c",
+  "ds_aeb78cefe9c39c9a",
+  "ds_9472fe93b986fd7b",
+  "ds_c9e872df92f2388e",
+  "ds_eea336259baac9f5",
+  "ds_c669e231fec4d475",
+  "ds_93b41ab9867c11f0",
+  "ds_a9e96bdd8a8e71ed",
+  "ds_96cb17dcd5657e86",
+  "ds_7518355f6c5bc5f8",
+  "ds_939fce9afdace07d",
+  "ds_2e9f9af5c77d9c4f",
+  "ds_9200a98c225e8220",
+  "ds_21f3198be969bf87",
+  "ds_d3eafd8da9e6f159",
+  "ds_e4a6e4eb2cae9cfe",
+  "ds_4788a3669b8d7482",
+  "ds_9376e084dd942954",
+  "ds_9d811e3af033f8fc",
+  "ds_25f4657b2c086722",
+  "ds_ed133532a99e36c4",
+  "ds_357a937e57f9dde7",
+  "ds_2e8abaf724f1ac73",
+  "ds_14edae99fa1c905e",
+  "ds_f7630fcb4beea26a",
+  "ds_82709d273c50dc8f",
+  "ds_020b466f335445e5",
+  "ds_b91996622e6917d2",
+  "ds_bed84f7025bf033a",
+  "ds_4c4758c779d9bb9a",
+  "ds_f7a82763c88669e8",
+  "ds_0cb8b6267604da8b",
+  "ds_0041a509f99d00d7",
+  "ds_0e4ca716eaf55f5e",
+  "ds_4effdef6ac75924b",
+  "ds_381f949a445e1842",
+  "ds_9b44a32d03c395c7",
+  "ds_b5b58b9e492e0114",
+  "ds_f91ab8df25610b7a",
+  "ds_a4007b25b33ca87d",
+  "ds_aaa4edf453f96c48",
+  "ds_87f314dd5b66089c",
+  "ds_4eebfccd10f52706",
+  "ds_6808f34074c15eb6",
+  "ds_3cbe4e813eb18bd1",
+  "ds_4917aba7bbb6885c",
+  "ds_10f857c8e1567706",
+  "ds_55a1ba69f1a70fb2",
+  "ds_14b3571e87905af2",
+  "ds_e930982d586885f8",
+  "ds_24f389f59c70f53c",
+  "ds_0da5807038e028cd",
+  "ds_b8a856eac6039401",
+  "ds_67972509f058c802",
+  "ds_16a5add943ce8930",
+  "ds_c2e3ea066fc3923d",
+  "ds_e531dd57abc3ed3a",
+  "ds_98c5a89fdc3a91c7",
+  "ds_14ac1d7566712046",
+  "ds_3ecb39fdf944e92b",
+  "ds_d53b8992c8d48dde",
+  "ds_5ca87ef5afb0da3f",
+  "ds_13b2e35dd5aceae3",
+  "ds_b1446f2ac1aee658",
+  "ds_c5677b229ccdaf08",
+  "ds_a725fc3c71702199",
+  "ds_84fcbd3ac3a89509",
+  "ds_bcac224c86f33e4c",
+  "ds_09d8b36787641303",
+  "ds_23f5abe9bae4e6fa",
+  "ds_018a12cfb745d7b1",
+  "ds_ba28549db9e0d428",
+  "ds_75a970ad0aa0f62b",
+  "ds_20b57b7a1b839ea2",
+  "ds_b1d61b579e2617d5",
+  "ds_87e5cab71c713bb2",
+  "ds_bd7512045a15a634",
+  "ds_0d503d8410bf7029",
+  "ds_b086eb7cb507f968",
+  "ds_443be9eab247fc70",
+  "ds_264be83edae54caa",
+  "ds_f98fcf111fe4776d",
+  "ds_939ef4edaee165d7",
+  "ds_c8db5990c9dea539",
+  "ds_5c5558091039f2e9",
+  "ds_d499253b13e61d6a",
+  "ds_41cf4de1976ac9a1",
+  "ds_573841465dfe1cb8",
+  "ds_413ed87c5b152ec9",
+  "ds_b0f25e0fccefbf83",
+  "ds_a760518bf7f413cb",
+  "ds_88bdde5b25f6bf4c",
+  "ds_eb63846653a29fe9",
+  "ds_7947ee67bb0e7db2",
+  "ds_10000984d097e0bf",
+  "ds_d6748b5c5bd6bc40",
+  "ds_64f8567c7eb820b7",
+  "ds_ed9832f85da8c186",
+  "ds_836d4f4b5a831ec8",
+  "ds_23518fafc9f6ff37",
+  "ds_0f5601780b7f6a55",
+  "ds_4365170d1e0f4467",
+  "ds_52c61eed914dff2d",
+  "ds_05415cd6833f77aa",
+  "ds_9cc791584a1b8db1",
+  "ds_fca10943c27aef4d",
+  "ds_2bdd9faeb2237234",
+  "ds_1d0810dc3a406423"
+ ],
+ "coverage": {
+  "AAPL": {
+   "bars": 195107,
+   "expected_sessions": 506,
+   "first_bar_start": "2024-11-13T14:30:00Z",
+   "incomplete_session_dates": [
+    "2024-12-23"
+   ],
+   "incomplete_sessions": 1,
+   "last_available_at": "2026-11-19T21:00:02Z",
+   "last_bar_end": "2026-11-19T21:00:00Z",
+   "median_regular_minute_coverage": 1.0,
+   "missing_session_dates": [
+    "2025-03-10"
+   ],
+   "missing_sessions": 1,
+   "revised_bars": 0,
+   "sessions": 505,
+   "stale_sessions_at_cutoff": 0
+  },
+  "AMZN": {
+   "bars": 35654,
+   "expected_sessions": 92,
+   "first_bar_start": "2026-07-14T13:30:00Z",
+   "incomplete_session_dates": [],
+   "incomplete_sessions": 0,
+   "last_available_at": "2026-11-19T21:00:02Z",
+   "last_bar_end": "2026-11-19T21:00:00Z",
+   "median_regular_minute_coverage": 0.9974,
+   "missing_session_dates": [],
+   "missing_sessions": 0,
+   "revised_bars": 0,
+   "sessions": 92,
+   "stale_sessions_at_cutoff": 0
+  },
+  "DIA": {
+   "bars": 20905,
+   "expected_sessions": 92,
+   "first_bar_start": "2026-07-14T13:30:00Z",
+   "incomplete_session_dates": [
+    "2026-08-07",
+    "2026-08-10",
+    "2026-08-12",
+    "2026-08-13",
+    "2026-08-14",
+    "2026-08-17",
+    "2026-08-25",
+    "2026-08-26",
+    "2026-08-28",
+    "2026-08-31",
+    "2026-09-01",
+    "2026-09-02",
+    "2026-09-04",
+    "2026-09-11",
+    "2026-09-14",
+    "2026-09-17",
+    "2026-09-18",
+    "2026-09-22",
+    "2026-09-24",
+    "2026-09-28",
+    "2026-09-30",
+    "2026-10-19",
+    "2026-10-28",
+    "2026-10-29",
+    "2026-11-10",
+    "2026-11-12",
+    "2026-11-13"
+   ],
+   "incomplete_sessions": 27,
+   "last_available_at": "2026-11-19T21:00:02Z",
+   "last_bar_end": "2026-11-19T21:00:00Z",
+   "median_regular_minute_coverage": 0.5615,
+   "missing_session_dates": [],
+   "missing_sessions": 0,
+   "revised_bars": 0,
+   "sessions": 92,
+   "stale_sessions_at_cutoff": 0
+  },
+  "GLD": {
+   "bars": 29962,
+   "expected_sessions": 92,
+   "first_bar_start": "2026-07-14T13:30:00Z",
+   "incomplete_session_dates": [
+    "2026-07-27"
+   ],
+   "incomplete_sessions": 1,
+   "last_available_at": "2026-11-19T21:00:02Z",
+   "last_bar_end": "2026-11-19T21:00:00Z",
+   "median_regular_minute_coverage": 0.8385,
+   "missing_session_dates": [],
+   "missing_sessions": 0,
+   "revised_bars": 0,
+   "sessions": 92,
+   "stale_sessions_at_cutoff": 0
+  },
+  "GOOGL": {
+   "bars": 35844,
+   "expected_sessions": 92,
+   "first_bar_start": "2026-07-14T13:30:00Z",
+   "incomplete_session_dates": [],
+   "incomplete_sessions": 0,
+   "last_available_at": "2026-11-19T21:00:02Z",
+   "last_bar_end": "2026-11-19T21:00:00Z",
+   "median_regular_minute_coverage": 1.0,
+   "missing_session_dates": [],
+   "missing_sessions": 0,
+   "revised_bars": 0,
+   "sessions": 92,
+   "stale_sessions_at_cutoff": 0
+  },
+  "IWM": {
+   "bars": 35612,
+   "expected_sessions": 92,
+   "first_bar_start": "2026-07-14T13:30:00Z",
+   "incomplete_session_dates": [],
+   "incomplete_sessions": 0,
+   "last_available_at": "2026-11-19T21:00:02Z",
+   "last_bar_end": "2026-11-19T21:00:00Z",
+   "median_regular_minute_coverage": 0.9949,
+   "missing_session_dates": [],
+   "missing_sessions": 0,
+   "revised_bars": 0,
+   "sessions": 92,
+   "stale_sessions_at_cutoff": 0
+  },
+  "JNJ": {
+   "bars": 29206,
+   "expected_sessions": 92,
+   "first_bar_start": "2026-07-14T13:30:00Z",
+   "incomplete_session_dates": [],
+   "incomplete_sessions": 0,
+   "last_available_at": "2026-11-19T21:00:02Z",
+   "last_bar_end": "2026-11-19T21:00:00Z",
+   "median_regular_minute_coverage": 0.8103,
+   "missing_session_dates": [],
+   "missing_sessions": 0,
+   "revised_bars": 0,
+   "sessions": 92,
+   "stale_sessions_at_cutoff": 0
+  },
+  "JPM": {
+   "bars": 33164,
+   "expected_sessions": 92,
+   "first_bar_start": "2026-07-14T13:30:00Z",
+   "incomplete_session_dates": [],
+   "incomplete_sessions": 0,
+   "last_available_at": "2026-11-19T21:00:02Z",
+   "last_bar_end": "2026-11-19T21:00:00Z",
+   "median_regular_minute_coverage": 0.9359,
+   "missing_session_dates": [],
+   "missing_sessions": 0,
+   "revised_bars": 0,
+   "sessions": 92,
+   "stale_sessions_at_cutoff": 0
+  },
+  "KO": {
+   "bars": 35360,
+   "expected_sessions": 92,
+   "first_bar_start": "2026-07-14T13:30:00Z",
+   "incomplete_session_dates": [],
+   "incomplete_sessions": 0,
+   "last_available_at": "2026-11-19T21:00:02Z",
+   "last_bar_end": "2026-11-19T21:00:00Z",
+   "median_regular_minute_coverage": 0.9897,
+   "missing_session_dates": [],
+   "missing_sessions": 0,
+   "revised_bars": 0,
+   "sessions": 92,
+   "stale_sessions_at_cutoff": 0
+  },
+  "META": {
+   "bars": 35704,
+   "expected_sessions": 92,
+   "first_bar_start": "2026-07-14T13:30:00Z",
+   "incomplete_session_dates": [],
+   "incomplete_sessions": 0,
+   "last_available_at": "2026-11-19T21:00:02Z",
+   "last_bar_end": "2026-11-19T21:00:00Z",
+   "median_regular_minute_coverage": 0.9974,
+   "missing_session_dates": [],
+   "missing_sessions": 0,
+   "revised_bars": 0,
+   "sessions": 92,
+   "stale_sessions_at_cutoff": 0
+  },
+  "MSFT": {
+   "bars": 189224,
+   "expected_sessions": 506,
+   "first_bar_start": "2024-11-13T14:30:00Z",
+   "incomplete_session_dates": [
+    "2024-12-23"
+   ],
+   "incomplete_sessions": 1,
+   "last_available_at": "2026-11-19T21:00:02Z",
+   "last_bar_end": "2026-11-19T21:00:00Z",
+   "median_regular_minute_coverage": 0.9923,
+   "missing_session_dates": [
+    "2025-03-10"
+   ],
+   "missing_sessions": 1,
+   "revised_bars": 0,
+   "sessions": 505,
+   "stale_sessions_at_cutoff": 0
+  },
+  "NVDA": {
+   "bars": 35875,
+   "expected_sessions": 92,
+   "first_bar_start": "2026-07-14T13:30:00Z",
+   "incomplete_session_dates": [],
+   "incomplete_sessions": 0,
+   "last_available_at": "2026-11-19T21:00:02Z",
+   "last_bar_end": "2026-11-19T21:00:00Z",
+   "median_regular_minute_coverage": 1.0,
+   "missing_session_dates": [],
+   "missing_sessions": 0,
+   "revised_bars": 0,
+   "sessions": 92,
+   "stale_sessions_at_cutoff": 0
+  },
+  "PG": {
+   "bars": 31400,
+   "expected_sessions": 92,
+   "first_bar_start": "2026-07-14T13:30:00Z",
+   "incomplete_session_dates": [],
+   "incomplete_sessions": 0,
+   "last_available_at": "2026-11-19T21:00:02Z",
+   "last_bar_end": "2026-11-19T21:00:00Z",
+   "median_regular_minute_coverage": 0.8872,
+   "missing_session_dates": [],
+   "missing_sessions": 0,
+   "revised_bars": 0,
+   "sessions": 92,
+   "stale_sessions_at_cutoff": 0
+  },
+  "QQQ": {
+   "bars": 187400,
+   "expected_sessions": 506,
+   "first_bar_start": "2024-11-13T14:30:00Z",
+   "incomplete_session_dates": [
+    "2024-12-23"
+   ],
+   "incomplete_sessions": 1,
+   "last_available_at": "2026-11-19T21:00:02Z",
+   "last_bar_end": "2026-11-19T21:00:00Z",
+   "median_regular_minute_coverage": 0.9846,
+   "missing_session_dates": [
+    "2025-03-10"
+   ],
+   "missing_sessions": 1,
+   "revised_bars": 0,
+   "sessions": 505,
+   "stale_sessions_at_cutoff": 0
+  },
+  "SPY": {
+   "bars": 194283,
+   "expected_sessions": 506,
+   "first_bar_start": "2024-11-13T14:30:00Z",
+   "incomplete_session_dates": [
+    "2024-12-23"
+   ],
+   "incomplete_sessions": 1,
+   "last_available_at": "2026-11-19T21:00:02Z",
+   "last_bar_end": "2026-11-19T21:00:00Z",
+   "median_regular_minute_coverage": 1.0,
+   "missing_session_dates": [
+    "2025-03-10"
+   ],
+   "missing_sessions": 1,
+   "revised_bars": 0,
+   "sessions": 505,
+   "stale_sessions_at_cutoff": 0
+  },
+  "TLT": {
+   "bars": 30623,
+   "expected_sessions": 92,
+   "first_bar_start": "2026-07-14T13:30:00Z",
+   "incomplete_session_dates": [],
+   "incomplete_sessions": 0,
+   "last_available_at": "2026-11-19T21:00:02Z",
+   "last_bar_end": "2026-11-19T21:00:00Z",
+   "median_regular_minute_coverage": 0.8641,
+   "missing_session_dates": [],
+   "missing_sessions": 0,
+   "revised_bars": 0,
+   "sessions": 92,
+   "stale_sessions_at_cutoff": 0
+  },
+  "V": {
+   "bars": 33985,
+   "expected_sessions": 92,
+   "first_bar_start": "2026-07-14T13:30:00Z",
+   "incomplete_session_dates": [],
+   "incomplete_sessions": 0,
+   "last_available_at": "2026-11-19T21:00:02Z",
+   "last_bar_end": "2026-11-19T21:00:00Z",
+   "median_regular_minute_coverage": 0.9564,
+   "missing_session_dates": [],
+   "missing_sessions": 0,
+   "revised_bars": 0,
+   "sessions": 92,
+   "stale_sessions_at_cutoff": 0
+  },
+  "VOO": {
+   "bars": 19352,
+   "expected_sessions": 92,
+   "first_bar_start": "2026-07-14T13:30:00Z",
+   "incomplete_session_dates": [
+    "2026-07-14",
+    "2026-07-15",
+    "2026-07-16",
+    "2026-07-17",
+    "2026-07-20",
+    "2026-07-22",
+    "2026-07-23",
+    "2026-07-24",
+    "2026-07-27",
+    "2026-08-06",
+    "2026-08-10",
+    "2026-08-11",
+    "2026-08-17",
+    "2026-08-21",
+    "2026-08-25",
+    "2026-08-26",
+    "2026-08-28",
+    "2026-09-01",
+    "2026-09-02",
+    "2026-09-03",
+    "2026-09-11",
+    "2026-09-17",
+    "2026-09-18",
+    "2026-10-07",
+    "2026-10-12",
+    "2026-10-13",
+    "2026-10-14",
+    "2026-10-15",
+    "2026-10-16",
+    "2026-10-19",
+    "2026-10-20",
+    "2026-10-21",
+    "2026-10-23",
+    "2026-10-26",
+    "2026-10-27",
+    "2026-10-28",
+    "2026-10-29",
+    "2026-11-13"
+   ],
+   "incomplete_sessions": 38,
+   "last_available_at": "2026-11-19T21:00:02Z",
+   "last_bar_end": "2026-11-19T21:00:00Z",
+   "median_regular_minute_coverage": 0.5359,
+   "missing_session_dates": [],
+   "missing_sessions": 0,
+   "revised_bars": 0,
+   "sessions": 92,
+   "stale_sessions_at_cutoff": 0
+  },
+  "VTI": {
+   "bars": 17796,
+   "expected_sessions": 92,
+   "first_bar_start": "2026-07-14T13:30:00Z",
+   "incomplete_session_dates": [
+    "2026-07-27",
+    "2026-08-05",
+    "2026-08-07",
+    "2026-08-10",
+    "2026-08-11",
+    "2026-08-12",
+    "2026-08-13",
+    "2026-08-14",
+    "2026-08-28",
+    "2026-09-02",
+    "2026-09-09",
+    "2026-09-11",
+    "2026-09-14",
+    "2026-09-15",
+    "2026-09-17",
+    "2026-09-18",
+    "2026-09-21",
+    "2026-09-23",
+    "2026-09-24",
+    "2026-09-25",
+    "2026-09-30",
+    "2026-10-05",
+    "2026-10-06",
+    "2026-10-07",
+    "2026-10-09",
+    "2026-10-12",
+    "2026-10-13",
+    "2026-10-15",
+    "2026-10-16",
+    "2026-10-19",
+    "2026-10-20",
+    "2026-10-21",
+    "2026-10-22",
+    "2026-10-23",
+    "2026-10-27",
+    "2026-10-28",
+    "2026-10-29",
+    "2026-10-30",
+    "2026-11-03",
+    "2026-11-04",
+    "2026-11-06",
+    "2026-11-09",
+    "2026-11-10",
+    "2026-11-11",
+    "2026-11-12",
+    "2026-11-13",
+    "2026-11-16",
+    "2026-11-17",
+    "2026-11-18"
+   ],
+   "incomplete_sessions": 49,
+   "last_available_at": "2026-11-19T21:00:02Z",
+   "last_bar_end": "2026-11-19T21:00:00Z",
+   "median_regular_minute_coverage": 0.4872,
+   "missing_session_dates": [],
+   "missing_sessions": 0,
+   "revised_bars": 0,
+   "sessions": 92,
+   "stale_sessions_at_cutoff": 0
+  },
+  "XLE": {
+   "bars": 35473,
+   "expected_sessions": 92,
+   "first_bar_start": "2026-07-14T13:30:00Z",
+   "incomplete_session_dates": [],
+   "incomplete_sessions": 0,
+   "last_available_at": "2026-11-19T21:00:02Z",
+   "last_bar_end": "2026-11-19T21:00:00Z",
+   "median_regular_minute_coverage": 0.9923,
+   "missing_session_dates": [],
+   "missing_sessions": 0,
+   "revised_bars": 0,
+   "sessions": 92,
+   "stale_sessions_at_cutoff": 0
+  },
+  "XLF": {
+   "bars": 31006,
+   "expected_sessions": 82,
+   "first_bar_start": "2026-07-28T13:30:00Z",
+   "incomplete_session_dates": [],
+   "incomplete_sessions": 0,
+   "last_available_at": "2026-11-19T21:00:02Z",
+   "last_bar_end": "2026-11-19T21:00:00Z",
+   "median_regular_minute_coverage": 0.9769,
+   "missing_session_dates": [],
+   "missing_sessions": 0,
+   "revised_bars": 0,
+   "sessions": 82,
+   "stale_sessions_at_cutoff": 0
+  },
+  "XLK": {
+   "bars": 26996,
+   "expected_sessions": 82,
+   "first_bar_start": "2026-07-28T13:30:00Z",
+   "incomplete_session_dates": [],
+   "incomplete_sessions": 0,
+   "last_available_at": "2026-11-19T21:00:02Z",
+   "last_bar_end": "2026-11-19T21:00:00Z",
+   "median_regular_minute_coverage": 0.841,
+   "missing_session_dates": [],
+   "missing_sessions": 0,
+   "revised_bars": 0,
+   "sessions": 82,
+   "stale_sessions_at_cutoff": 0
+  },
+  "XLV": {
+   "bars": 28765,
+   "expected_sessions": 82,
+   "first_bar_start": "2026-07-28T13:30:00Z",
+   "incomplete_session_dates": [],
+   "incomplete_sessions": 0,
+   "last_available_at": "2026-11-19T21:00:02Z",
+   "last_bar_end": "2026-11-19T21:00:00Z",
+   "median_regular_minute_coverage": 0.9128,
+   "missing_session_dates": [],
+   "missing_sessions": 0,
+   "revised_bars": 0,
+   "sessions": 82,
+   "stale_sessions_at_cutoff": 0
+  },
+  "XOM": {
+   "bars": 28091,
+   "expected_sessions": 82,
+   "first_bar_start": "2026-07-28T13:30:00Z",
+   "incomplete_session_dates": [],
+   "incomplete_sessions": 0,
+   "last_available_at": "2026-11-19T21:00:02Z",
+   "last_bar_end": "2026-11-19T21:00:00Z",
+   "median_regular_minute_coverage": 0.8923,
+   "missing_session_dates": [],
+   "missing_sessions": 0,
+   "revised_bars": 0,
+   "sessions": 82,
+   "stale_sessions_at_cutoff": 0
+  }
+ },
+ "created_at": "2026-11-20T08:10:17.579001Z",
+ "cutoff": "2026-11-20T08:10:17.579001Z",
+ "dataset_version": "rs_95135dab40bccd81",
+ "defects_injected": [],
+ "end": "2026-11-19T21:00:00Z",
+ "feed": "IEX",
+ "is_synthetic": false,
+ "kind": "research_snapshot",
+ "limitations": [
+  "Alpaca Basic (free) plan; SIP consolidated data requires a paid plan that is never purchased automatically",
+  "Minute bars aggregate IEX trades only; minutes without an IEX trade are absent (gaps are reported, never filled)",
+  "Real-time quotes/trades from IEX only (~2-3% of consolidated volume); NBBO not guaranteed"
+ ],
+ "lineage": [
+  {
+   "created_at": "2026-11-12T21:55:53.502341Z",
+   "dataset_version": "ds_6f37a2401444b6ea",
+   "end": "2026-11-12T21:00:00Z",
+   "generator": {
+    "name": "services.market_data.ingestion",
+    "version": "1.0.0"
+   },
+   "kind": "ingestion_backfill_bars",
+   "row_counts": {
+    "bars": 758273,
+    "bars_1Min": 758273,
+    "bars_rejected": 19403
+   },
+   "source_id": "alpaca:iex",
+   "start": "2024-11-13T14:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:08:16.776317Z",
+   "dataset_version": "ds_4e168a5befa21490",
+   "end": "2026-11-19T21:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_increment_bars",
+   "row_counts": {
+    "bars": 1950,
+    "bars_1Min": 1950,
+    "bars_rejected": 75
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-11-13T14:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:08:17.404102Z",
+   "dataset_version": "ds_3d25b03a4a32c6a5",
+   "end": "2026-11-19T21:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_increment_bars",
+   "row_counts": {
+    "bars": 1949,
+    "bars_1Min": 1949,
+    "bars_rejected": 27
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-11-13T14:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:08:17.943657Z",
+   "dataset_version": "ds_2d6032b20cab7dd8",
+   "end": "2026-11-19T21:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_increment_bars",
+   "row_counts": {
+    "bars": 1893,
+    "bars_1Min": 1893,
+    "bars_rejected": 75
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-11-13T14:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:08:18.497097Z",
+   "dataset_version": "ds_ee3a0bdb558659fa",
+   "end": "2026-11-19T21:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_increment_bars",
+   "row_counts": {
+    "bars": 1949,
+    "bars_1Min": 1949,
+    "bars_rejected": 32
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-11-13T14:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:08:19.032087Z",
+   "dataset_version": "ds_31e8b4adf6de2739",
+   "end": "2026-11-19T21:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 780,
+    "bars_1Min": 780,
+    "bars_rejected": 11
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-11-18T14:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:08:19.504582Z",
+   "dataset_version": "ds_925962ab5a97e023",
+   "end": "2026-11-19T21:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 557,
+    "bars_1Min": 557,
+    "bars_rejected": 1
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-11-18T14:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:08:19.968318Z",
+   "dataset_version": "ds_d9e724dfcb727990",
+   "end": "2026-11-19T21:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 701,
+    "bars_1Min": 701,
+    "bars_rejected": 1
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-11-18T14:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:08:20.448611Z",
+   "dataset_version": "ds_5013ebeab328fd94",
+   "end": "2026-11-19T21:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 780,
+    "bars_1Min": 780,
+    "bars_rejected": 12
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-11-18T14:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:08:20.924273Z",
+   "dataset_version": "ds_61dfcf5f4f5d203d",
+   "end": "2026-11-19T21:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 764,
+    "bars_1Min": 764,
+    "bars_rejected": 2
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-11-18T14:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:08:21.407749Z",
+   "dataset_version": "ds_8288859b80c35012",
+   "end": "2026-11-19T21:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 763,
+    "bars_1Min": 763
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-11-18T14:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:08:21.887552Z",
+   "dataset_version": "ds_7a0ece7494355c43",
+   "end": "2026-11-19T21:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 719,
+    "bars_1Min": 719,
+    "bars_rejected": 3
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-11-18T14:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:08:22.357397Z",
+   "dataset_version": "ds_076c65bec2cd190b",
+   "end": "2026-11-19T21:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 772,
+    "bars_1Min": 772,
+    "bars_rejected": 1
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-11-18T14:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:08:22.998006Z",
+   "dataset_version": "ds_79eddb33b7394100",
+   "end": "2026-11-19T21:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 774,
+    "bars_1Min": 774,
+    "bars_rejected": 5
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-11-18T14:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:08:23.496587Z",
+   "dataset_version": "ds_ce704c011ccf79f3",
+   "end": "2026-11-19T21:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 780,
+    "bars_1Min": 780,
+    "bars_rejected": 64
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-11-18T14:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:08:23.978225Z",
+   "dataset_version": "ds_8c69bb47c8e4ebf0",
+   "end": "2026-11-19T21:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 705,
+    "bars_1Min": 705,
+    "bars_rejected": 1
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-11-18T14:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:08:24.454184Z",
+   "dataset_version": "ds_29f481e4be7b22c7",
+   "end": "2026-11-19T21:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 648,
+    "bars_1Min": 648,
+    "bars_rejected": 2
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-11-18T14:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:08:24.922031Z",
+   "dataset_version": "ds_50c873748db372fb",
+   "end": "2026-11-19T21:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 743,
+    "bars_1Min": 743
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-11-18T14:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:08:25.403142Z",
+   "dataset_version": "ds_09a21e0325a915ea",
+   "end": "2026-11-19T21:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 517,
+    "bars_1Min": 517
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-11-18T14:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:08:25.863526Z",
+   "dataset_version": "ds_bc17a5159b3c3b9b",
+   "end": "2026-11-19T21:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 389,
+    "bars_1Min": 389
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-11-18T14:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:08:26.305445Z",
+   "dataset_version": "ds_cc3f8ac1e17c56b9",
+   "end": "2026-11-19T21:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 777,
+    "bars_1Min": 777
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-11-18T14:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:08:26.778421Z",
+   "dataset_version": "ds_c32d9dc802b9a606",
+   "end": "2026-11-19T21:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 765,
+    "bars_1Min": 765,
+    "bars_rejected": 1
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-11-18T14:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:08:27.272842Z",
+   "dataset_version": "ds_d3ad99705e7e4392",
+   "end": "2026-11-19T21:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 729,
+    "bars_1Min": 729
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-11-18T14:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:08:27.752590Z",
+   "dataset_version": "ds_2133f2e0fee0e6ef",
+   "end": "2026-11-19T21:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 771,
+    "bars_1Min": 771
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-11-18T14:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:08:28.248262Z",
+   "dataset_version": "ds_9e652bf668e3188c",
+   "end": "2026-11-19T21:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 717,
+    "bars_1Min": 717
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-11-18T14:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:08:28.721505Z",
+   "dataset_version": "ds_0cbb746b07911687",
+   "end": "2026-11-17T21:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3899,
+    "bars_1Min": 3899,
+    "bars_rejected": 127
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-11-04T14:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:08:29.385369Z",
+   "dataset_version": "ds_7f49b2c2516e91c4",
+   "end": "2026-11-17T21:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 2431,
+    "bars_1Min": 2431,
+    "bars_rejected": 7
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-11-04T14:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:08:29.943483Z",
+   "dataset_version": "ds_2f46718bb1003960",
+   "end": "2026-11-17T21:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3325,
+    "bars_1Min": 3325,
+    "bars_rejected": 16
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-11-04T14:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:08:30.553304Z",
+   "dataset_version": "ds_98a4e83566e5d936",
+   "end": "2026-11-17T21:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3898,
+    "bars_1Min": 3898,
+    "bars_rejected": 52
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-11-04T14:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:08:31.194543Z",
+   "dataset_version": "ds_0a58cf226714c345",
+   "end": "2026-11-17T21:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3870,
+    "bars_1Min": 3870,
+    "bars_rejected": 64
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-11-04T14:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:08:31.821096Z",
+   "dataset_version": "ds_5e79a45dd0a01752",
+   "end": "2026-11-17T21:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3712,
+    "bars_1Min": 3712,
+    "bars_rejected": 4
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-11-04T14:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:08:32.466987Z",
+   "dataset_version": "ds_2fda6479c750853f",
+   "end": "2026-11-17T21:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3556,
+    "bars_1Min": 3556,
+    "bars_rejected": 8
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-11-04T14:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:08:33.077905Z",
+   "dataset_version": "ds_95f90917ab432dbe",
+   "end": "2026-11-17T21:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3856,
+    "bars_1Min": 3856,
+    "bars_rejected": 5
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-11-04T14:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:08:33.722387Z",
+   "dataset_version": "ds_267eff960eb046c6",
+   "end": "2026-11-17T21:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3868,
+    "bars_1Min": 3868,
+    "bars_rejected": 45
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-11-04T14:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:08:34.337317Z",
+   "dataset_version": "ds_bba358823994ef05",
+   "end": "2026-11-17T21:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3900,
+    "bars_1Min": 3900,
+    "bars_rejected": 311
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-11-04T14:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:08:35.011646Z",
+   "dataset_version": "ds_00659f8c7073e385",
+   "end": "2026-11-17T21:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3517,
+    "bars_1Min": 3517,
+    "bars_rejected": 1
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-11-04T14:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:08:35.593990Z",
+   "dataset_version": "ds_14a871e375ef2843",
+   "end": "2026-11-17T21:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3192,
+    "bars_1Min": 3192,
+    "bars_rejected": 63
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-11-04T14:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:08:36.195258Z",
+   "dataset_version": "ds_0e3a3407e5700f4c",
+   "end": "2026-11-17T21:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3843,
+    "bars_1Min": 3843,
+    "bars_rejected": 2
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-11-04T14:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:08:36.818042Z",
+   "dataset_version": "ds_839a6b5124621068",
+   "end": "2026-11-17T21:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 2523,
+    "bars_1Min": 2523,
+    "bars_rejected": 4
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-11-04T14:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:08:37.400026Z",
+   "dataset_version": "ds_1ee3a8ad71c2e6f1",
+   "end": "2026-11-17T21:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 1708,
+    "bars_1Min": 1708,
+    "bars_rejected": 1
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-11-04T14:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:08:37.939045Z",
+   "dataset_version": "ds_777dc6394870c810",
+   "end": "2026-11-17T21:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3805,
+    "bars_1Min": 3805,
+    "bars_rejected": 11
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-11-04T14:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:08:38.568989Z",
+   "dataset_version": "ds_e26d3ca8714c9bd3",
+   "end": "2026-11-17T21:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3725,
+    "bars_1Min": 3725,
+    "bars_rejected": 6
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-11-04T14:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:08:39.171226Z",
+   "dataset_version": "ds_5dcc9b2f84790c63",
+   "end": "2026-11-17T21:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3591,
+    "bars_1Min": 3591,
+    "bars_rejected": 2
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-11-04T14:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:08:39.786039Z",
+   "dataset_version": "ds_20875412ca8eb85b",
+   "end": "2026-11-17T21:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3655,
+    "bars_1Min": 3655,
+    "bars_rejected": 2
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-11-04T14:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:08:40.386891Z",
+   "dataset_version": "ds_fb55228a40d114df",
+   "end": "2026-11-17T21:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3627,
+    "bars_1Min": 3627,
+    "bars_rejected": 1
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-11-04T14:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:08:41.015491Z",
+   "dataset_version": "ds_d2ee4e3047203954",
+   "end": "2026-11-03T21:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3888,
+    "bars_1Min": 3888,
+    "bars_rejected": 133
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-10-21T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:08:41.670313Z",
+   "dataset_version": "ds_177ebb8396f2304b",
+   "end": "2026-11-03T21:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 2148,
+    "bars_1Min": 2148,
+    "bars_rejected": 5
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-10-21T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:08:42.267697Z",
+   "dataset_version": "ds_c211deb65ccdf2da",
+   "end": "2026-11-03T21:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3443,
+    "bars_1Min": 3443,
+    "bars_rejected": 18
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-10-21T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:08:43.020169Z",
+   "dataset_version": "ds_083de29c54712d46",
+   "end": "2026-11-03T21:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3899,
+    "bars_1Min": 3899,
+    "bars_rejected": 43
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-10-21T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:08:43.791375Z",
+   "dataset_version": "ds_aa169a2c6d3c786b",
+   "end": "2026-11-03T21:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3860,
+    "bars_1Min": 3860,
+    "bars_rejected": 54
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-10-21T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:08:44.432949Z",
+   "dataset_version": "ds_b974a0bb1e3e74d2",
+   "end": "2026-11-03T21:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3296,
+    "bars_1Min": 3296
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-10-21T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:08:45.028149Z",
+   "dataset_version": "ds_2d0e591e02515083",
+   "end": "2026-11-03T21:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3470,
+    "bars_1Min": 3470
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-10-21T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:08:45.653165Z",
+   "dataset_version": "ds_8571fb0a8be1e227",
+   "end": "2026-11-03T21:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3858,
+    "bars_1Min": 3858,
+    "bars_rejected": 17
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-10-21T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:08:46.279888Z",
+   "dataset_version": "ds_d7c733de59269b56",
+   "end": "2026-11-03T21:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3899,
+    "bars_1Min": 3899,
+    "bars_rejected": 113
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-10-21T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:08:46.925421Z",
+   "dataset_version": "ds_efdacfd48fca928e",
+   "end": "2026-11-03T21:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3899,
+    "bars_1Min": 3899,
+    "bars_rejected": 119
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-10-21T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:08:47.548686Z",
+   "dataset_version": "ds_cac24ed9703765b0",
+   "end": "2026-11-03T21:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3491,
+    "bars_1Min": 3491,
+    "bars_rejected": 3
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-10-21T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:08:48.160467Z",
+   "dataset_version": "ds_8daac2d489d985b8",
+   "end": "2026-11-03T21:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3351,
+    "bars_1Min": 3351,
+    "bars_rejected": 56
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-10-21T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:08:48.749899Z",
+   "dataset_version": "ds_b288e78302590e8f",
+   "end": "2026-11-03T21:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3761,
+    "bars_1Min": 3761,
+    "bars_rejected": 2
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-10-21T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:08:49.374025Z",
+   "dataset_version": "ds_4560594b437fe04d",
+   "end": "2026-11-03T21:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 1749,
+    "bars_1Min": 1749,
+    "bars_rejected": 13
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-10-21T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:08:49.927745Z",
+   "dataset_version": "ds_9a78758ca3191214",
+   "end": "2026-11-03T21:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 1622,
+    "bars_1Min": 1622,
+    "bars_rejected": 1
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-10-21T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:08:50.455097Z",
+   "dataset_version": "ds_490d750073df1149",
+   "end": "2026-11-03T21:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3865,
+    "bars_1Min": 3865,
+    "bars_rejected": 16
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-10-21T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:08:51.132415Z",
+   "dataset_version": "ds_81af810fd2c7d8c5",
+   "end": "2026-11-03T21:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3746,
+    "bars_1Min": 3746,
+    "bars_rejected": 2
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-10-21T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:08:51.783399Z",
+   "dataset_version": "ds_ff918abf6a8258e4",
+   "end": "2026-11-03T21:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3414,
+    "bars_1Min": 3414,
+    "bars_rejected": 1
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-10-21T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:08:52.387284Z",
+   "dataset_version": "ds_10f65919f5adece9",
+   "end": "2026-11-03T21:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3606,
+    "bars_1Min": 3606
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-10-21T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:08:53.208903Z",
+   "dataset_version": "ds_3718012e4c5a26bc",
+   "end": "2026-11-03T21:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3504,
+    "bars_1Min": 3504,
+    "bars_rejected": 2
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-10-21T13:34:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:08:53.817014Z",
+   "dataset_version": "ds_65e00e8c255f8285",
+   "end": "2026-10-20T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3859,
+    "bars_1Min": 3859,
+    "bars_rejected": 24
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-10-07T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:08:54.438551Z",
+   "dataset_version": "ds_902bffbaa6292a33",
+   "end": "2026-10-20T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 2660,
+    "bars_1Min": 2660,
+    "bars_rejected": 13
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-10-07T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:08:55.017151Z",
+   "dataset_version": "ds_62a602e48a214b21",
+   "end": "2026-10-20T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3102,
+    "bars_1Min": 3102,
+    "bars_rejected": 14
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-10-07T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:08:55.614975Z",
+   "dataset_version": "ds_4f558cda0232b7bf",
+   "end": "2026-10-20T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3896,
+    "bars_1Min": 3896,
+    "bars_rejected": 12
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-10-07T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:08:56.263738Z",
+   "dataset_version": "ds_64c211c0e947c251",
+   "end": "2026-10-20T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3862,
+    "bars_1Min": 3862,
+    "bars_rejected": 108
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-10-07T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:08:56.925014Z",
+   "dataset_version": "ds_24e8a34b062fa580",
+   "end": "2026-10-20T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3193,
+    "bars_1Min": 3193,
+    "bars_rejected": 2
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-10-07T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:08:57.529661Z",
+   "dataset_version": "ds_e1d441641d6f437b",
+   "end": "2026-10-20T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3699,
+    "bars_1Min": 3699,
+    "bars_rejected": 2
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-10-07T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:08:58.162552Z",
+   "dataset_version": "ds_54f69dc084affb8b",
+   "end": "2026-10-20T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3845,
+    "bars_1Min": 3845,
+    "bars_rejected": 10
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-10-07T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:08:58.784182Z",
+   "dataset_version": "ds_8d3a4a63cd4e9493",
+   "end": "2026-10-20T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3885,
+    "bars_1Min": 3885,
+    "bars_rejected": 26
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-10-07T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:08:59.436563Z",
+   "dataset_version": "ds_5d9d35c10dd779b0",
+   "end": "2026-10-20T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3898,
+    "bars_1Min": 3898,
+    "bars_rejected": 28
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-10-07T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:00.080093Z",
+   "dataset_version": "ds_6b911bc8ba8be371",
+   "end": "2026-10-20T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3292,
+    "bars_1Min": 3292
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-10-07T13:31:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:00.710475Z",
+   "dataset_version": "ds_7923978a2df9d3dd",
+   "end": "2026-10-20T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3458,
+    "bars_1Min": 3458,
+    "bars_rejected": 77
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-10-07T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:01.300348Z",
+   "dataset_version": "ds_0202c29c562b18d7",
+   "end": "2026-10-20T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3738,
+    "bars_1Min": 3738
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-10-07T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:01.928260Z",
+   "dataset_version": "ds_e8eb79e9934394df",
+   "end": "2026-10-20T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 1640,
+    "bars_1Min": 1640,
+    "bars_rejected": 12
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-10-07T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:02.448391Z",
+   "dataset_version": "ds_29f0ca0d5a4c5f6b",
+   "end": "2026-10-20T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 1546,
+    "bars_1Min": 1546
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-10-07T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:02.971029Z",
+   "dataset_version": "ds_5d2777efd7b3e66d",
+   "end": "2026-10-20T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3858,
+    "bars_1Min": 3858,
+    "bars_rejected": 9
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-10-07T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:03.604887Z",
+   "dataset_version": "ds_0044ceca48565aa1",
+   "end": "2026-10-20T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3721,
+    "bars_1Min": 3721,
+    "bars_rejected": 5
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-10-07T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:04.232275Z",
+   "dataset_version": "ds_f7a27d0cb59afe31",
+   "end": "2026-10-20T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3377,
+    "bars_1Min": 3377,
+    "bars_rejected": 11
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-10-07T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:04.851411Z",
+   "dataset_version": "ds_733a3688eca52d4c",
+   "end": "2026-10-20T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3458,
+    "bars_1Min": 3458
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-10-07T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:05.472564Z",
+   "dataset_version": "ds_7ee85b59748eb0fb",
+   "end": "2026-10-20T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3236,
+    "bars_1Min": 3236,
+    "bars_rejected": 2
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-10-07T13:32:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:06.206081Z",
+   "dataset_version": "ds_80e955214a19b457",
+   "end": "2026-10-06T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3867,
+    "bars_1Min": 3867,
+    "bars_rejected": 8
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-09-23T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:06.844591Z",
+   "dataset_version": "ds_372b16369c0838c3",
+   "end": "2026-10-06T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 2123,
+    "bars_1Min": 2123,
+    "bars_rejected": 4
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-09-23T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:07.382962Z",
+   "dataset_version": "ds_c0520bc28d2a9345",
+   "end": "2026-10-06T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3283,
+    "bars_1Min": 3283,
+    "bars_rejected": 23
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-09-23T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:08.012866Z",
+   "dataset_version": "ds_736526f8add709cf",
+   "end": "2026-10-06T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3893,
+    "bars_1Min": 3893,
+    "bars_rejected": 25
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-09-23T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:08.675452Z",
+   "dataset_version": "ds_6e75cfa1b1080a88",
+   "end": "2026-10-06T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3892,
+    "bars_1Min": 3892,
+    "bars_rejected": 84
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-09-23T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:09.303013Z",
+   "dataset_version": "ds_0595a306f08db507",
+   "end": "2026-10-06T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3075,
+    "bars_1Min": 3075
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-09-23T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:09.934374Z",
+   "dataset_version": "ds_73342ef30e638748",
+   "end": "2026-10-06T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3701,
+    "bars_1Min": 3701,
+    "bars_rejected": 2
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-09-23T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:10.545432Z",
+   "dataset_version": "ds_529dc6e0e4457e3f",
+   "end": "2026-10-06T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3871,
+    "bars_1Min": 3871,
+    "bars_rejected": 1
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-09-23T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:11.185261Z",
+   "dataset_version": "ds_9dbfaaeda059dc0c",
+   "end": "2026-10-06T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3888,
+    "bars_1Min": 3888,
+    "bars_rejected": 21
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-09-23T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:11.815774Z",
+   "dataset_version": "ds_aeb78cefe9c39c9a",
+   "end": "2026-10-06T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3900,
+    "bars_1Min": 3900,
+    "bars_rejected": 23
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-09-23T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:12.446288Z",
+   "dataset_version": "ds_9472fe93b986fd7b",
+   "end": "2026-10-06T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3417,
+    "bars_1Min": 3417,
+    "bars_rejected": 1
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-09-23T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:13.040481Z",
+   "dataset_version": "ds_c9e872df92f2388e",
+   "end": "2026-10-06T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3637,
+    "bars_1Min": 3637,
+    "bars_rejected": 89
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-09-23T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:13.647946Z",
+   "dataset_version": "ds_eea336259baac9f5",
+   "end": "2026-10-06T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3580,
+    "bars_1Min": 3580
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-09-23T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:14.268977Z",
+   "dataset_version": "ds_c669e231fec4d475",
+   "end": "2026-10-06T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 2780,
+    "bars_1Min": 2780,
+    "bars_rejected": 7
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-09-23T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:14.855857Z",
+   "dataset_version": "ds_93b41ab9867c11f0",
+   "end": "2026-10-06T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 1917,
+    "bars_1Min": 1917
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-09-23T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:15.394115Z",
+   "dataset_version": "ds_a9e96bdd8a8e71ed",
+   "end": "2026-10-06T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3866,
+    "bars_1Min": 3866,
+    "bars_rejected": 4
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-09-23T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:16.040175Z",
+   "dataset_version": "ds_96cb17dcd5657e86",
+   "end": "2026-10-06T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3766,
+    "bars_1Min": 3766,
+    "bars_rejected": 2
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-09-23T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:16.667205Z",
+   "dataset_version": "ds_7518355f6c5bc5f8",
+   "end": "2026-10-06T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3196,
+    "bars_1Min": 3196,
+    "bars_rejected": 2
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-09-23T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:17.291857Z",
+   "dataset_version": "ds_939fce9afdace07d",
+   "end": "2026-10-06T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3387,
+    "bars_1Min": 3387
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-09-23T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:17.894658Z",
+   "dataset_version": "ds_2e9f9af5c77d9c4f",
+   "end": "2026-10-06T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3335,
+    "bars_1Min": 3335,
+    "bars_rejected": 3
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-09-23T13:33:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:18.548757Z",
+   "dataset_version": "ds_9200a98c225e8220",
+   "end": "2026-09-22T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3849,
+    "bars_1Min": 3849,
+    "bars_rejected": 23
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-09-09T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:19.168075Z",
+   "dataset_version": "ds_21f3198be969bf87",
+   "end": "2026-09-22T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 1927,
+    "bars_1Min": 1927,
+    "bars_rejected": 8
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-09-09T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:19.705960Z",
+   "dataset_version": "ds_d3eafd8da9e6f159",
+   "end": "2026-09-22T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3146,
+    "bars_1Min": 3146,
+    "bars_rejected": 22
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-09-09T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:20.325271Z",
+   "dataset_version": "ds_e4a6e4eb2cae9cfe",
+   "end": "2026-09-22T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3890,
+    "bars_1Min": 3890,
+    "bars_rejected": 51
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-09-09T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:20.994263Z",
+   "dataset_version": "ds_4788a3669b8d7482",
+   "end": "2026-09-22T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3879,
+    "bars_1Min": 3879,
+    "bars_rejected": 55
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-09-09T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:21.643284Z",
+   "dataset_version": "ds_9376e084dd942954",
+   "end": "2026-09-22T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 2914,
+    "bars_1Min": 2914
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-09-09T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:22.236037Z",
+   "dataset_version": "ds_9d811e3af033f8fc",
+   "end": "2026-09-22T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3712,
+    "bars_1Min": 3712
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-09-09T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:22.851135Z",
+   "dataset_version": "ds_25f4657b2c086722",
+   "end": "2026-09-22T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3810,
+    "bars_1Min": 3810
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-09-09T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:23.477493Z",
+   "dataset_version": "ds_ed133532a99e36c4",
+   "end": "2026-09-22T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3887,
+    "bars_1Min": 3887,
+    "bars_rejected": 21
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-09-09T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:24.077423Z",
+   "dataset_version": "ds_357a937e57f9dde7",
+   "end": "2026-09-22T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3899,
+    "bars_1Min": 3899,
+    "bars_rejected": 53
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-09-09T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:24.729099Z",
+   "dataset_version": "ds_2e8abaf724f1ac73",
+   "end": "2026-09-22T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3446,
+    "bars_1Min": 3446
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-09-09T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:25.340196Z",
+   "dataset_version": "ds_14edae99fa1c905e",
+   "end": "2026-09-22T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3419,
+    "bars_1Min": 3419,
+    "bars_rejected": 102
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-09-09T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:26.000218Z",
+   "dataset_version": "ds_f7630fcb4beea26a",
+   "end": "2026-09-22T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3631,
+    "bars_1Min": 3631,
+    "bars_rejected": 1
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-09-09T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:26.616886Z",
+   "dataset_version": "ds_82709d273c50dc8f",
+   "end": "2026-09-22T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 2298,
+    "bars_1Min": 2298,
+    "bars_rejected": 11
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-09-09T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:27.158469Z",
+   "dataset_version": "ds_020b466f335445e5",
+   "end": "2026-09-22T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 1853,
+    "bars_1Min": 1853
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-09-09T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:27.715138Z",
+   "dataset_version": "ds_b91996622e6917d2",
+   "end": "2026-09-22T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3889,
+    "bars_1Min": 3889,
+    "bars_rejected": 10
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-09-09T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:28.466654Z",
+   "dataset_version": "ds_bed84f7025bf033a",
+   "end": "2026-09-22T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3834,
+    "bars_1Min": 3834,
+    "bars_rejected": 2
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-09-09T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:29.114486Z",
+   "dataset_version": "ds_4c4758c779d9bb9a",
+   "end": "2026-09-22T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3205,
+    "bars_1Min": 3205,
+    "bars_rejected": 2
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-09-09T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:29.705242Z",
+   "dataset_version": "ds_f7a82763c88669e8",
+   "end": "2026-09-22T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3335,
+    "bars_1Min": 3335
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-09-09T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:30.306371Z",
+   "dataset_version": "ds_0cb8b6267604da8b",
+   "end": "2026-09-22T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3339,
+    "bars_1Min": 3339
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-09-09T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:30.934303Z",
+   "dataset_version": "ds_0041a509f99d00d7",
+   "end": "2026-09-08T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3848,
+    "bars_1Min": 3848,
+    "bars_rejected": 27
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-08-25T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:31.549323Z",
+   "dataset_version": "ds_0e4ca716eaf55f5e",
+   "end": "2026-09-08T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 1744,
+    "bars_1Min": 1744,
+    "bars_rejected": 3
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-08-25T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:32.085187Z",
+   "dataset_version": "ds_4effdef6ac75924b",
+   "end": "2026-09-08T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3245,
+    "bars_1Min": 3245,
+    "bars_rejected": 19
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-08-25T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:32.697748Z",
+   "dataset_version": "ds_381f949a445e1842",
+   "end": "2026-09-08T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3898,
+    "bars_1Min": 3898,
+    "bars_rejected": 22
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-08-25T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:33.334759Z",
+   "dataset_version": "ds_9b44a32d03c395c7",
+   "end": "2026-09-08T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3857,
+    "bars_1Min": 3857,
+    "bars_rejected": 77
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-08-25T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:33.977636Z",
+   "dataset_version": "ds_b5b58b9e492e0114",
+   "end": "2026-09-08T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 2739,
+    "bars_1Min": 2739
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-08-25T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:34.592459Z",
+   "dataset_version": "ds_f91ab8df25610b7a",
+   "end": "2026-09-08T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3455,
+    "bars_1Min": 3455,
+    "bars_rejected": 2
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-08-25T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:35.205944Z",
+   "dataset_version": "ds_a4007b25b33ca87d",
+   "end": "2026-09-08T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3799,
+    "bars_1Min": 3799
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-08-25T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:35.830142Z",
+   "dataset_version": "ds_aaa4edf453f96c48",
+   "end": "2026-09-08T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3874,
+    "bars_1Min": 3874,
+    "bars_rejected": 21
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-08-25T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:36.464286Z",
+   "dataset_version": "ds_87f314dd5b66089c",
+   "end": "2026-09-08T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3900,
+    "bars_1Min": 3900,
+    "bars_rejected": 37
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-08-25T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:37.102312Z",
+   "dataset_version": "ds_4eebfccd10f52706",
+   "end": "2026-09-08T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3341,
+    "bars_1Min": 3341
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-08-25T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:37.695372Z",
+   "dataset_version": "ds_6808f34074c15eb6",
+   "end": "2026-09-08T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3221,
+    "bars_1Min": 3221,
+    "bars_rejected": 193
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-08-25T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:38.318543Z",
+   "dataset_version": "ds_3cbe4e813eb18bd1",
+   "end": "2026-09-08T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3572,
+    "bars_1Min": 3572
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-08-25T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:38.942948Z",
+   "dataset_version": "ds_4917aba7bbb6885c",
+   "end": "2026-09-08T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 1978,
+    "bars_1Min": 1978,
+    "bars_rejected": 1
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-08-25T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:39.483210Z",
+   "dataset_version": "ds_10f857c8e1567706",
+   "end": "2026-09-08T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 2100,
+    "bars_1Min": 2100
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-08-25T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:40.071949Z",
+   "dataset_version": "ds_55a1ba69f1a70fb2",
+   "end": "2026-09-08T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3868,
+    "bars_1Min": 3868,
+    "bars_rejected": 9
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-08-25T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:40.711049Z",
+   "dataset_version": "ds_14b3571e87905af2",
+   "end": "2026-09-08T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3804,
+    "bars_1Min": 3804,
+    "bars_rejected": 4
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-08-25T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:41.336964Z",
+   "dataset_version": "ds_e930982d586885f8",
+   "end": "2026-09-08T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 2772,
+    "bars_1Min": 2772,
+    "bars_rejected": 2
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-08-25T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:41.944454Z",
+   "dataset_version": "ds_24f389f59c70f53c",
+   "end": "2026-09-08T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3308,
+    "bars_1Min": 3308
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-08-25T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:42.542967Z",
+   "dataset_version": "ds_0da5807038e028cd",
+   "end": "2026-09-08T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3184,
+    "bars_1Min": 3184,
+    "bars_rejected": 1
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-08-25T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:43.168598Z",
+   "dataset_version": "ds_b8a856eac6039401",
+   "end": "2026-08-24T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3876,
+    "bars_1Min": 3876,
+    "bars_rejected": 12
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-08-11T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:43.787607Z",
+   "dataset_version": "ds_67972509f058c802",
+   "end": "2026-08-24T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 2000,
+    "bars_1Min": 2000,
+    "bars_rejected": 5
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-08-11T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:44.336860Z",
+   "dataset_version": "ds_16a5add943ce8930",
+   "end": "2026-08-24T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3558,
+    "bars_1Min": 3558,
+    "bars_rejected": 14
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-08-11T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:44.987124Z",
+   "dataset_version": "ds_c2e3ea066fc3923d",
+   "end": "2026-08-24T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3897,
+    "bars_1Min": 3897,
+    "bars_rejected": 15
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-08-11T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:45.667063Z",
+   "dataset_version": "ds_e531dd57abc3ed3a",
+   "end": "2026-08-24T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3864,
+    "bars_1Min": 3864,
+    "bars_rejected": 67
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-08-11T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:46.310945Z",
+   "dataset_version": "ds_98c5a89fdc3a91c7",
+   "end": "2026-08-24T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 2821,
+    "bars_1Min": 2821
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-08-11T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:46.918892Z",
+   "dataset_version": "ds_14ac1d7566712046",
+   "end": "2026-08-24T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3512,
+    "bars_1Min": 3512
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-08-11T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:47.535880Z",
+   "dataset_version": "ds_3ecb39fdf944e92b",
+   "end": "2026-08-24T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3798,
+    "bars_1Min": 3798
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-08-11T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:48.173123Z",
+   "dataset_version": "ds_d53b8992c8d48dde",
+   "end": "2026-08-24T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3872,
+    "bars_1Min": 3872,
+    "bars_rejected": 18
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-08-11T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:48.801938Z",
+   "dataset_version": "ds_5ca87ef5afb0da3f",
+   "end": "2026-08-24T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3899,
+    "bars_1Min": 3899,
+    "bars_rejected": 24
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-08-11T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:49.444613Z",
+   "dataset_version": "ds_13b2e35dd5aceae3",
+   "end": "2026-08-24T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3620,
+    "bars_1Min": 3620
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-08-11T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:50.075117Z",
+   "dataset_version": "ds_b1446f2ac1aee658",
+   "end": "2026-08-24T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3329,
+    "bars_1Min": 3329,
+    "bars_rejected": 150
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-08-11T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:50.753314Z",
+   "dataset_version": "ds_c5677b229ccdaf08",
+   "end": "2026-08-24T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3606,
+    "bars_1Min": 3606
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-08-11T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:51.489946Z",
+   "dataset_version": "ds_a725fc3c71702199",
+   "end": "2026-08-24T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 2272,
+    "bars_1Min": 2272,
+    "bars_rejected": 1
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-08-11T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:52.046991Z",
+   "dataset_version": "ds_84fcbd3ac3a89509",
+   "end": "2026-08-24T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 2290,
+    "bars_1Min": 2290,
+    "bars_rejected": 2
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-08-11T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:52.633442Z",
+   "dataset_version": "ds_bcac224c86f33e4c",
+   "end": "2026-08-24T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3878,
+    "bars_1Min": 3878
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-08-11T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:53.251398Z",
+   "dataset_version": "ds_09d8b36787641303",
+   "end": "2026-08-24T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3831,
+    "bars_1Min": 3831,
+    "bars_rejected": 1
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-08-11T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:53.891197Z",
+   "dataset_version": "ds_23f5abe9bae4e6fa",
+   "end": "2026-08-24T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3136,
+    "bars_1Min": 3136,
+    "bars_rejected": 4
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-08-11T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:54.494147Z",
+   "dataset_version": "ds_018a12cfb745d7b1",
+   "end": "2026-08-24T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3523,
+    "bars_1Min": 3523,
+    "bars_rejected": 1
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-08-11T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:55.099229Z",
+   "dataset_version": "ds_ba28549db9e0d428",
+   "end": "2026-08-24T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3479,
+    "bars_1Min": 3479,
+    "bars_rejected": 5
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-08-11T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:55.721213Z",
+   "dataset_version": "ds_75a970ad0aa0f62b",
+   "end": "2026-08-10T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3889,
+    "bars_1Min": 3889,
+    "bars_rejected": 58
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-07-28T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:56.360051Z",
+   "dataset_version": "ds_20b57b7a1b839ea2",
+   "end": "2026-08-10T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 2569,
+    "bars_1Min": 2569,
+    "bars_rejected": 10
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-07-28T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:56.939735Z",
+   "dataset_version": "ds_b1d61b579e2617d5",
+   "end": "2026-08-10T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3260,
+    "bars_1Min": 3260,
+    "bars_rejected": 19
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-07-28T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:57.534451Z",
+   "dataset_version": "ds_87e5cab71c713bb2",
+   "end": "2026-08-10T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3895,
+    "bars_1Min": 3895,
+    "bars_rejected": 57
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-07-28T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:58.189835Z",
+   "dataset_version": "ds_bd7512045a15a634",
+   "end": "2026-08-10T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3888,
+    "bars_1Min": 3888,
+    "bars_rejected": 7
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-07-28T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:58.777727Z",
+   "dataset_version": "ds_0d503d8410bf7029",
+   "end": "2026-08-10T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3248,
+    "bars_1Min": 3248
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-07-28T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:59.361639Z",
+   "dataset_version": "ds_b086eb7cb507f968",
+   "end": "2026-08-10T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3585,
+    "bars_1Min": 3585
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-07-28T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:09:59.998776Z",
+   "dataset_version": "ds_443be9eab247fc70",
+   "end": "2026-08-10T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3885,
+    "bars_1Min": 3885,
+    "bars_rejected": 4
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-07-28T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:10:00.628662Z",
+   "dataset_version": "ds_264be83edae54caa",
+   "end": "2026-08-10T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3878,
+    "bars_1Min": 3878,
+    "bars_rejected": 85
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-07-28T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:10:01.265866Z",
+   "dataset_version": "ds_f98fcf111fe4776d",
+   "end": "2026-08-10T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3900,
+    "bars_1Min": 3900,
+    "bars_rejected": 93
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-07-28T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:10:01.903914Z",
+   "dataset_version": "ds_939ef4edaee165d7",
+   "end": "2026-08-10T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3511,
+    "bars_1Min": 3511,
+    "bars_rejected": 2
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-07-28T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:10:02.496923Z",
+   "dataset_version": "ds_c8db5990c9dea539",
+   "end": "2026-08-10T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3467,
+    "bars_1Min": 3467,
+    "bars_rejected": 79
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-07-28T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:10:03.102581Z",
+   "dataset_version": "ds_5c5558091039f2e9",
+   "end": "2026-08-10T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3757,
+    "bars_1Min": 3757,
+    "bars_rejected": 6
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-07-28T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:10:03.737320Z",
+   "dataset_version": "ds_d499253b13e61d6a",
+   "end": "2026-08-10T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 2225,
+    "bars_1Min": 2225,
+    "bars_rejected": 1
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-07-28T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:10:04.282650Z",
+   "dataset_version": "ds_41cf4de1976ac9a1",
+   "end": "2026-08-10T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 2061,
+    "bars_1Min": 2061
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-07-28T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:10:04.824379Z",
+   "dataset_version": "ds_573841465dfe1cb8",
+   "end": "2026-08-10T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3826,
+    "bars_1Min": 3826,
+    "bars_rejected": 6
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-07-28T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:10:05.500505Z",
+   "dataset_version": "ds_413ed87c5b152ec9",
+   "end": "2026-08-10T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3814,
+    "bars_1Min": 3814,
+    "bars_rejected": 2
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-07-28T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:10:06.143680Z",
+   "dataset_version": "ds_b0f25e0fccefbf83",
+   "end": "2026-08-10T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3576,
+    "bars_1Min": 3576,
+    "bars_rejected": 1
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-07-28T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:10:06.756604Z",
+   "dataset_version": "ds_a760518bf7f413cb",
+   "end": "2026-08-10T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3722,
+    "bars_1Min": 3722,
+    "bars_rejected": 1
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-07-28T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:10:07.375801Z",
+   "dataset_version": "ds_88bdde5b25f6bf4c",
+   "end": "2026-08-10T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3670,
+    "bars_1Min": 3670,
+    "bars_rejected": 2
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-07-28T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:10:07.979618Z",
+   "dataset_version": "ds_eb63846653a29fe9",
+   "end": "2026-07-27T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3899,
+    "bars_1Min": 3899,
+    "bars_rejected": 36
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-07-14T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:10:08.620078Z",
+   "dataset_version": "ds_7947ee67bb0e7db2",
+   "end": "2026-07-27T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 2746,
+    "bars_1Min": 2746,
+    "bars_rejected": 6
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-07-14T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:10:09.161936Z",
+   "dataset_version": "ds_10000984d097e0bf",
+   "end": "2026-07-27T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 2899,
+    "bars_1Min": 2899,
+    "bars_rejected": 27
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-07-14T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:10:09.753045Z",
+   "dataset_version": "ds_d6748b5c5bd6bc40",
+   "end": "2026-07-27T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3898,
+    "bars_1Min": 3898,
+    "bars_rejected": 88
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-07-14T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:10:10.375210Z",
+   "dataset_version": "ds_64f8567c7eb820b7",
+   "end": "2026-07-27T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3876,
+    "bars_1Min": 3876,
+    "bars_rejected": 28
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-07-14T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:10:11.020190Z",
+   "dataset_version": "ds_ed9832f85da8c186",
+   "end": "2026-07-27T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3445,
+    "bars_1Min": 3445,
+    "bars_rejected": 1
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-07-14T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:10:11.625761Z",
+   "dataset_version": "ds_836d4f4b5a831ec8",
+   "end": "2026-07-27T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3755,
+    "bars_1Min": 3755,
+    "bars_rejected": 2
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-07-14T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:10:12.253881Z",
+   "dataset_version": "ds_23518fafc9f6ff37",
+   "end": "2026-07-27T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3866,
+    "bars_1Min": 3866,
+    "bars_rejected": 1
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-07-14T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:10:13.110446Z",
+   "dataset_version": "ds_0f5601780b7f6a55",
+   "end": "2026-07-27T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3879,
+    "bars_1Min": 3879,
+    "bars_rejected": 25
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-07-14T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:10:13.793575Z",
+   "dataset_version": "ds_4365170d1e0f4467",
+   "end": "2026-07-27T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3900,
+    "bars_1Min": 3900,
+    "bars_rejected": 71
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-07-14T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:10:14.422302Z",
+   "dataset_version": "ds_52c61eed914dff2d",
+   "end": "2026-07-27T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3060,
+    "bars_1Min": 3060
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-07-14T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:10:15.002693Z",
+   "dataset_version": "ds_05415cd6833f77aa",
+   "end": "2026-07-27T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 2901,
+    "bars_1Min": 2901,
+    "bars_rejected": 23
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-07-14T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:10:15.592153Z",
+   "dataset_version": "ds_9cc791584a1b8db1",
+   "end": "2026-07-27T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3754,
+    "bars_1Min": 3754
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-07-14T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:10:16.201014Z",
+   "dataset_version": "ds_fca10943c27aef4d",
+   "end": "2026-07-27T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 1370,
+    "bars_1Min": 1370,
+    "bars_rejected": 2
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-07-14T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:10:16.716461Z",
+   "dataset_version": "ds_2bdd9faeb2237234",
+   "end": "2026-07-27T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 2310,
+    "bars_1Min": 2310
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-07-14T13:30:00Z"
+  },
+  {
+   "created_at": "2026-11-20T08:10:17.288244Z",
+   "dataset_version": "ds_1d0810dc3a406423",
+   "end": "2026-07-27T20:00:00Z",
+   "generator": {
+    "name": "services.market_data.pipeline",
+    "version": "1.0.0"
+   },
+   "kind": "pipeline_initial_bars",
+   "row_counts": {
+    "bars": 3841,
+    "bars_1Min": 3841,
+    "bars_rejected": 11
+   },
+   "source_id": "alpaca:iex",
+   "start": "2026-07-14T13:30:00Z"
+  }
+ ],
+ "note": "pipeline run mdpipe_01M7VZZH3MES0Y1B037C022P28",
+ "row_counts": {
+  "bars": 1376787,
+  "bars_1Min": 1376787
+ },
+ "row_counts_by_symbol": {
+  "AAPL": {
+   "bars": 195107
+  },
+  "AMZN": {
+   "bars": 35654
+  },
+  "DIA": {
+   "bars": 20905
+  },
+  "GLD": {
+   "bars": 29962
+  },
+  "GOOGL": {
+   "bars": 35844
+  },
+  "IWM": {
+   "bars": 35612
+  },
+  "JNJ": {
+   "bars": 29206
+  },
+  "JPM": {
+   "bars": 33164
+  },
+  "KO": {
+   "bars": 35360
+  },
+  "META": {
+   "bars": 35704
+  },
+  "MSFT": {
+   "bars": 189224
+  },
+  "NVDA": {
+   "bars": 35875
+  },
+  "PG": {
+   "bars": 31400
+  },
+  "QQQ": {
+   "bars": 187400
+  },
+  "SPY": {
+   "bars": 194283
+  },
+  "TLT": {
+   "bars": 30623
+  },
+  "V": {
+   "bars": 33985
+  },
+  "VOO": {
+   "bars": 19352
+  },
+  "VTI": {
+   "bars": 17796
+  },
+  "XLE": {
+   "bars": 35473
+  },
+  "XLF": {
+   "bars": 31006
+  },
+  "XLK": {
+   "bars": 26996
+  },
+  "XLV": {
+   "bars": 28765
+  },
+  "XOM": {
+   "bars": 28091
+  }
+ },
+ "rows_sha256": "b62094c349bee7d9a1a8ac88c5efd45ceee2ba09d349e01aab2c6f61baf4da34",
+ "series_mode": "research_snapshot",
+ "snapshot_id": "rs_95135dab40bccd81",
+ "snapshot_schema": "lat-research-snapshot/1",
+ "source_ids": [
+  "alpaca:iex"
+ ],
+ "start": "2024-11-13T14:30:00Z",
+ "symbols": [
+  "AAPL",
+  "AMZN",
+  "DIA",
+  "GLD",
+  "GOOGL",
+  "IWM",
+  "JNJ",
+  "JPM",
+  "KO",
+  "META",
+  "MSFT",
+  "NVDA",
+  "PG",
+  "QQQ",
+  "SPY",
+  "TLT",
+  "V",
+  "VOO",
+  "VTI",
+  "XLE",
+  "XLF",
+  "XLK",
+  "XLV",
+  "XOM"
+ ],
+ "symbols_requested": null,
+ "timeframe": "1Min",
+ "timeframes": [
+  "1Min"
+ ]
+}

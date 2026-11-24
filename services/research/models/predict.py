@@ -11,9 +11,10 @@ cost model's round trip, the training target). A zero-baseline selection forecas
 
 The service also implements ``services.research.signals.SignalModel`` (``predict_latest``) so
 ``QuantSignalEngine(cost_model, model=PredictionService(...))`` scores candidates with the selected model for the
-engine horizon. The engine subtracts its own round-trip cost, so the adapter passes a GROSS expected return =
-net forecast + (round-trip spread + fees + fixed slippage, excluding impact) - conservative: the engine's own impact
-term is then charged on top. With a zero-baseline selection the adapter returns 0 and the engine emits NO_TRADE.
+engine horizon. The adapter returns the NET forecast with ``basis="NET"`` and the training ``reference_notional``;
+the engine re-prices the training cost convention with the live inputs and charges the live round trip exactly once
+(``services.research.decision``). With a zero-baseline selection the adapter returns a zero GROSS forecast and the
+engine emits NO_TRADE.
 """
 
 from __future__ import annotations
@@ -325,7 +326,7 @@ class PredictionService:
         got = self._row(sym_bars)
         if got is None:
             return None
-        x, _v, adv = got
+        x, _v, _adv = got
         mid, model = self.registry.fitted.returns[self.signal_horizon_minutes]
         prob: float | None = None
         fitted = self.registry.fitted
@@ -338,10 +339,9 @@ class PredictionService:
         net = float(model.predict(x.reshape(1, -1))[0])
         if not math.isfinite(net):
             return None
-        sym = str(sym_bars["symbol"].iloc[0])
-        _est, _slip, rt_no_impact, _rt = self._costs(sym, sym_bars["close"].iloc[-1], adv, None, x)
-        return ModelPrediction(expected_return_bps=net + rt_no_impact, score=net, probability_up=prob,
-                               probability_calibrated=calibrated)
+        return ModelPrediction(expected_return_bps=net, score=net, probability_up=prob,
+                               probability_calibrated=calibrated, basis="NET",
+                               reference_notional=float(self.reference_notional))
 
 
 __all__ = ["MARKOV_2STATE", "STRATEGY_ID", "PredictionService"]

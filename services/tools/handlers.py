@@ -358,10 +358,22 @@ async def _get_portfolio(rt: ToolRuntime, inp: s.NoInput, actor: str) -> dict[st
     ledger = [{k: p.get(k) for k in ("symbol", "quantity", "avg_cost", "realized_pl")}
               for p in map(_dict, _list(data.get("ledger_positions"))[:50])]
     pnl = _dict(data.get("pnl"))
+    managed: list[dict[str, Any]] = []
+    trips: list[dict[str, Any]] = []
+    pv = _dict(await _call(rt.positions_view))
+    if pv:
+        for p in map(_dict, _list(pv.get("open"))[:20]):
+            safety = _dict(p.get("safety"))
+            managed.append({k: p.get(k) for k in ("symbol", "quantity", "avg_cost", "stop_price", "protected_quantity",
+                                                   "risk_to_stop", "exit_deadline", "exit_reason")}
+                           | {"safety_state": safety.get("state")})
+        trips = [{k: p.get(k) for k in ("symbol", "close_reason", "realized_pl", "entry_avg_price", "exit_avg_price",
+                                         "closed_at")} for p in map(_dict, _list(pv.get("closed"))[:20])]
     return {
         **_base(rt), "account": account, "broker_positions": positions, "ledger_positions": ledger,
         "pnl": {"daily_realized": pnl.get("daily_realized", "0"), "daily_unrealized": pnl.get("daily_unrealized", "0"),
                 "start_of_day_equity": pnl.get("start_of_day_equity")},
+        "managed_positions": managed, "recent_round_trips": trips,
     }
 
 
@@ -429,10 +441,16 @@ async def _get_risk_status(rt: ToolRuntime, inp: s.NoInput, actor: str) -> dict[
                           "reasons": [cast(str, truncate(r, 160)) for r in _list(d.get("reasons"))][:4],
                           "evaluated_at": d.get("evaluated_at")})
     locked = status.get("entries_locked")
+    xlocked = status.get("exits_locked")
+    safety = [{"symbol": str(x.get("symbol")), "state": str(x.get("state")), "reason": truncate(x.get("reason"), 200) or "",
+               "since": x.get("since")} for x in map(_dict, _list(status.get("position_safety")))][:20]
     return {
         **_base(rt), "mode": rt.settings.mode.value, "live_execution_compiled": bool(status.get("live_execution_compiled")),
         "policy_version": pol.version, "entries_locked": True if locked is None else bool(locked),
         "lock_reasons": [cast(str, truncate(r, 200)) for r in _list(status.get("lock_reasons"))][:10],
+        "exits_locked": True if xlocked is None else bool(xlocked),
+        "exit_lock_reasons": [cast(str, truncate(r, 200)) for r in _list(status.get("exit_lock_reasons"))][:10],
+        "position_safety": safety,
         "halts": halts, "limits": limits, "utilization": util, "recent_decisions": decisions,
         "agent_max_proposals_per_hour": int(rt.settings.agent_max_proposals_per_hour),
     }
@@ -817,6 +835,140 @@ async def _search_memory(rt: ToolRuntime, inp: s.SearchMemoryIn, actor: str) -> 
         rt.search_memory, inp.query, symbol=inp.symbol or None, kind=inp.kind or None, limit=inp.limit)}
 
 
+# ------------------------------------------------------------------------------------------------ quantlab
+def _fnum(value: Any) -> float | None:
+    try:
+        v = float(value)
+    except (TypeError, ValueError):
+        return None
+    return v if v == v and abs(v) != float("inf") else None
+
+
+def _strs(value: Any, limit: int = 8) -> list[str]:
+    return [truncate(str(x), 200) or "" for x in _list(value)[:limit]]
+
+
+async def _get_capabilities(rt: ToolRuntime, inp: s.NoInput, actor: str) -> dict[str, Any]:
+    d = _dict(await _call(rt.quantlab_view, "capabilities", None))
+    classes = []
+    for name, c in _dict(d.get("asset_classes")).items():
+        c = _dict(c)
+        classes.append({"asset_class": str(name), "research_eligible": bool(c.get("research_eligible")),
+                        "execution_eligible": bool(c.get("execution_eligible")),
+                        "api_schema": str(_dict(c.get("api_schema")).get("status")),
+                        "market_data": str(_dict(c.get("market_data")).get("status")),
+                        "account_permission": str(_dict(c.get("account_permission")).get("status")),
+                        "policy_execution": str(_dict(c.get("policy_execution")).get("status")),
+                        "policy_detail": truncate(_dict(c.get("policy_execution")).get("detail"), 240)})
+    acct = _dict(d.get("account"))
+    level = acct.get("options_trading_level")
+    notes = [truncate(acct.get("pdt_note"), 300)] if acct.get("pdt_note") else []
+    if d.get("status") != "OK":
+        notes.append(truncate(d.get("note"), 200))
+    return {**_base(rt), "snapshot_asof": _str(d.get("asof")), "content_hash": _str(d.get("content_hash")),
+            "account_type": _str(acct.get("type")), "crypto_status": _str(acct.get("crypto_status")),
+            "options_trading_level": int(level) if isinstance(level, int | float | str) and str(level).isdigit()
+            else None, "asset_classes": classes,
+            "data_entitlements": {str(k): str(_dict(v).get("status")) for k, v in _dict(d.get("market_data")).items()},
+            "option_roots": {str(k): [str(x) for x in _list(_dict(v).get("roots"))][:6]
+                             for k, v in _dict(d.get("option_underlyings")).items()},
+            "notes": notes}
+
+
+def _family_out(f: dict[str, Any], states: dict[str, str]) -> dict[str, Any]:
+    wf = _dict(f.get("wf_oos"))
+    bench = _dict(f.get("benchmark_wf_period"))
+    sid = f"{f.get('family')}:{f.get('selected_spec_hash')}"
+    return {"family": str(f.get("family")), "asset_class": _str(f.get("asset_class")),
+            "passed_dev_gate": bool(f.get("passed_dev_gate")), "selected_variant": truncate(f.get("selected_variant"), 200),
+            "wf_oos_sharpe": _fnum(wf.get("sharpe")), "wf_oos_cagr": _fnum(wf.get("cagr")),
+            "wf_oos_max_drawdown": _fnum(wf.get("max_drawdown")), "benchmark": _str(f.get("benchmark")),
+            "benchmark_sharpe": _fnum(bench.get("sharpe")), "dsr": _fnum(f.get("dsr")),
+            "n_trials": _fnum(f.get("n_trials")), "spa_p_vs_benchmark": _fnum(f.get("spa_p_vs_benchmark")),
+            "alpha_t": _fnum(f.get("alpha_t")), "pbo": _fnum(f.get("pbo")),
+            "stress_sharpe_2x_costs": _fnum(f.get("stress_sharpe_2x_costs")),
+            "turnover_annual": _fnum(f.get("turnover_annual")), "cost_drag_annual": _fnum(f.get("cost_drag_annual")),
+            "fail_reasons": _strs(f.get("fail_reasons")), "registry_state": states.get(sid)}
+
+
+async def _get_research_results(rt: ToolRuntime, inp: s.GetResearchResultsIn, actor: str) -> dict[str, Any]:
+    d = _dict(await _call(rt.quantlab_view, "research", inp.family or None))
+    reg = _dict(await _call(rt.quantlab_view, "strategies", None))
+    states = {str(_dict(x).get("strategy_id")): str(_dict(x).get("state")) for x in _list(reg.get("strategies"))}
+    fams = [_family_out(_dict(f), states) for f in _list(d.get("families"))][:20]
+    detail = None
+    if inp.family and d.get("status") == "OK":
+        fams = [_family_out(_dict(d.get("summary")), states)]
+        det = _dict(d.get("detail"))
+        detail = {k: det.get(k) for k in ("dev_period", "walk_forward", "dsr", "spa_vs_benchmark", "alpha_vs_benchmark",
+                                          "pbo", "stress", "selected_params", "execution_notes") if k in det}
+        wf = _dict(detail.get("walk_forward"))
+        if wf:
+            detail["walk_forward"] = {"choices": _list(wf.get("choices"))[-8:],
+                                      "metrics": _scalars(_dict(wf.get("metrics")), 24)}
+        stress = _dict(detail.get("stress"))
+        if stress:
+            detail["stress"] = {"cost_multiplier": stress.get("cost_multiplier"), "sharpe": stress.get("sharpe")}
+    looks = [{"strategy_id": _str(_dict(x).get("strategy_id")), "passed": bool(_dict(x).get("passed")),
+              "fail_reasons": _strs(_dict(x).get("fail_reasons"), 4),
+              "metrics": _scalars(_dict(_dict(x).get("metrics")), 12)} for x in _list(d.get("holdout_results"))[:10]]
+    return {**_base(rt), "status": str(d.get("status")), "updated_at": _str(d.get("updated_at")),
+            "holdout": [str(x) for x in _list(d.get("holdout"))], "families": fams, "holdout_results": looks,
+            "detail": detail, "no_edge_note": _str(d.get("no_edge_note"))}
+
+
+async def _get_opportunities(rt: ToolRuntime, inp: s.NoInput, actor: str) -> dict[str, Any]:
+    d = _dict(await _call(rt.quantlab_view, "opportunities", None))
+    scan = _dict(d.get("scan"))
+    lists = {}
+    for key in ("relative_strength", "sector_relative_strength", "unusual_volume", "gap_movers", "near_52w_high",
+                "vol_expansion", "vol_compression", "oversold_in_uptrend"):
+        lists[key] = [{"symbol": str(_dict(x).get("symbol")), "score": _fnum(_dict(x).get("score")),
+                       "why": truncate(_dict(x).get("why"), 120), "family": str(_dict(x).get("family"))}
+                      for x in _list(scan.get(key))[:6]]
+    sel = _dict(d.get("selection"))
+    ranked = []
+    for r in _list(sel.get("ranked"))[:10]:
+        r = _dict(r)
+        o = _dict(r.get("opportunity"))
+        ranked.append({"instrument": str(o.get("instrument")), "family": str(o.get("strategy_family")),
+                       "asset_class": str(o.get("asset_class")),
+                       "evidence": str(_dict(o.get("evidence")).get("status")),
+                       "expected_net_return": _fnum(r.get("expected_net_return")) or 0.0,
+                       "utility": _fnum(r.get("utility")) or 0.0, "weight": _fnum(r.get("weight")) or 0.0,
+                       "selectable": bool(r.get("selectable")), "reasons": _strs(r.get("reasons"), 4)})
+    regime = {str(k): _scalar(v) for k, v in _dict(scan.get("regime")).items()}
+    crypto = _dict(d.get("crypto"))
+    options = _dict(d.get("options"))
+    return {**_base(rt), "status": str(d.get("status")), "scan_asof": _str(scan.get("asof")), "regime": regime,
+            "lists": lists, "action": _str(sel.get("action")), "reason": truncate(sel.get("reason"), 200),
+            "ranked": ranked,
+            "crypto": {"asof": crypto.get("asof"), "regime": crypto.get("regime"),
+                       "pairs": _list(crypto.get("pairs"))[:8]} if crypto else {},
+            "options": {"asof": options.get("asof"),
+                        "underlyings": [{k: _dict(u).get(k) for k in ("underlying", "n_quotes")} |
+                                        {"surface": _scalars(_dict(_dict(u).get("surface")), 12)}
+                                        for u in _list(options.get("underlyings"))[:8]]} if options else {},
+            "notes": ["Scan lists are conditions, not trade signals.",
+                      "Only VALIDATED, executable candidates with positive evidence-weighted utility are selectable."]}
+
+
+async def _run_research_experiment(rt: ToolRuntime, inp: s.RunResearchExperimentIn, actor: str) -> dict[str, Any]:
+    spec = {"expression": inp.expression, "universe": inp.universe, "n": inp.n, "rebalance": inp.rebalance,
+            "regime": inp.regime}
+    d = _dict(await _call(rt.quantlab_experiment, spec, actor))
+    res = _dict(d.get("result"))
+    raw_spec = _dict(d.get("spec"))
+    return {**_base(rt), "accepted": bool(d.get("accepted")), "status": _str(d.get("status")),
+            "error": truncate(d.get("error"), 300) if d.get("error") else None,
+            "spec": {str(k): _scalar(v) for k, v in raw_spec.items()} or None,
+            "passed_dev_gate": res.get("passed_dev_gate") if res else None,
+            "wf_oos_sharpe": _fnum(res.get("wf_oos_sharpe")), "wf_oos_cagr": _fnum(res.get("wf_oos_cagr")),
+            "dsr": _fnum(res.get("dsr")), "n_trials": _fnum(res.get("n_trials")), "alpha_t": _fnum(res.get("alpha_t")),
+            "fail_reasons": _strs(res.get("fail_reasons")),
+            "note": "development period only; recorded in the trial ledger; a pass is not a validated strategy"}
+
+
 _HANDLERS: Final[dict[str, Handler]] = {
     "search_memory": _search_memory,
     "get_market_snapshot": _get_market_snapshot,
@@ -844,4 +996,8 @@ _HANDLERS: Final[dict[str, Handler]] = {
     "get_performance": _get_performance,
     "get_activity": _get_activity,
     "get_system_health": _get_system_health,
+    "get_capabilities": _get_capabilities,
+    "get_research_results": _get_research_results,
+    "get_opportunities": _get_opportunities,
+    "run_research_experiment": _run_research_experiment,
 }

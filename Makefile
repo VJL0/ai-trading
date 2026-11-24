@@ -10,6 +10,7 @@ export DOTNET_CLI_TELEMETRY_OPTOUT := 1
 export DOTNET_NOLOGO := 1
 
 .PHONY: help setup preflight dev test test-py test-dashboard test-lean lint typecheck backtest replay paper \
+        data-pipeline data-snapshots compare-feeds \
         status reconcile stop audit lean-build fixture gui-verify sbom clean-run models mcp register-mcp lean-live-sim lean-paper halt resume chat
 
 help: ## list targets
@@ -49,8 +50,11 @@ status: ## process + mode/entries-lock/feed/broker status
 
 test: test-py test-dashboard test-lean ## run all automated tests (no credentials required)
 
-test-py: ## python suites excluding GUI, broker and paid-model opt-ins
-	$(UV) pytest -q -m "not live_models and not paper_broker and not gui"
+TORCH_TESTS := tests/unit/research/test_kronos.py tests/unit/research/test_advanced_models.py
+
+test-py: ## python suites excluding GUI, broker and paid-model opt-ins (torch tests in their own process)
+	$(UV) pytest -q -m "not live_models and not paper_broker and not gui" $(addprefix --ignore=,$(TORCH_TESTS))
+	$(UV) pytest -q -m "not live_models and not paper_broker and not gui" $(TORCH_TESTS)
 
 test-dashboard: ## vitest unit tests for the dashboard
 	cd apps/dashboard && pnpm test
@@ -132,8 +136,32 @@ paper-sdk: ## start official Alpaca SDK paper execution (requires paper credenti
 	LAT_MODE=PAPER LAT_GATEWAY=ALPACA_PAPER $(PY) -m services.api.cli paper-plan
 	LAT_MODE=PAPER LAT_GATEWAY=ALPACA_PAPER LAT_FEED_MODE=IEX_FREE $(PY) scripts/supervisor.py start api dashboard
 
+data-pipeline: ## backfill/increment real Alpaca history for the eligible universe, then build the research snapshot
+	$(PY) -m services.market_data.cli pipeline
+
+data-snapshots: ## list immutable research snapshots (verify one: ... snapshot verify --id rs_...)
+	$(PY) -m services.market_data.cli snapshot list
+
+compare-feeds: ## IEX vs historical SIP minute bars for the last 5 sessions (read-only, free plan)
+	$(PY) -m services.market_data.cli compare-feeds --out var/reports/feed-compare.json
+
 research: ## start the autonomous local research service (no execution authority)
 	$(PY) scripts/supervisor.py start research
 
 research-status: ## inspect recorded research, validation screens and worker failures
 	$(PY) -m services.research.autonomous --status
+
+.PHONY: capabilities quantlab-data quantlab-research quantlab-daily
+QL := $(PY) -m services.quantlab.cli
+
+capabilities: ## read-only Alpaca capability snapshot (asset classes, permissions, data entitlements)
+	$(PY) -m services.capabilities probe
+
+quantlab-data: ## multi-asset research data: daily SIP equities (+delisted), crypto, spreads, panels, ORB bars
+	$(QL) fetch-equities && $(QL) fetch-crypto && $(QL) crypto-spreads && $(QL) build-panel && $(QL) orb-fetch
+
+quantlab-research: ## development-stage research for every family (walk-forward, DSR, SPA, PBO; holdout untouched)
+	$(QL) research --asset all
+
+quantlab-daily: ## after the close: incremental bars, panel, scan + cross-asset selection, shadow journal
+	$(QL) fetch-delta && $(QL) build-panel --what equity && $(QL) scan && $(QL) crypto-scan && $(QL) shadow

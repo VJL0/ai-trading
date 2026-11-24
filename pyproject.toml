@@ -97,7 +97,7 @@ ignore = [
 [tool.pyright]
 pythonVersion = "3.11"
 include = ["packages", "services", "apps/mac-agent/mac_agent", "scripts"]
-exclude = ["**/node_modules", "**/__pycache__", "trading", ".tools", "services/research/qlib_env", "services/research/foundation_env", "services/research/rd_env", ".venv", "services/research/advanced/vendor"]
+exclude = ["**/node_modules", "**/__pycache__", "trading", ".tools", "services/research/qlib_env", "services/research/foundation_env", "services/research/rd_env", ".venv", "services/research/advanced/vendor", "services/research/kronos/vendor"]
 venvPath = "."
 venv = ".venv"
 typeCheckingMode = "standard"

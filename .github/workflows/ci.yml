@@ -1,0 +1,50 @@
+# Offline CI: no broker, model-API or paid-data credentials exist here, and none are needed.
+# Paper-broker, live-model and GUI tests are opt-in markers and are excluded.
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  python:
+    runs-on: macos-14
+    timeout-minutes: 75
+    env:
+      LAT_USE_KEYCHAIN: "false"
+      LAT_FEED_MODE: SIMULATED
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+        with:
+          version: "0.9.x"
+      - run: uv sync --frozen --python 3.11
+      - name: lint
+        run: uv run --frozen ruff check .
+      - name: types (strict for contracts/core/risk)
+        run: uv run --frozen pyright
+      - name: model / dashboard contract freshness
+        run: uv run --frozen python scripts/gen_ts_types.py --check
+      - name: tests
+        # torch deadlocks when it runs late in one process that already loaded the other native ML libraries
+        # (docs/roadmap/PROGRESS.md), so the torch-based files run in their own pytest process.
+        run: make test-py
+
+  dependencies:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - name: audit locked Python dependencies for known vulnerabilities
+        run: |
+          uv export --frozen --no-hashes --format requirements-txt > requirements-audit.txt
+          uvx pip-audit --strict --no-deps --disable-pip -r requirements-audit.txt

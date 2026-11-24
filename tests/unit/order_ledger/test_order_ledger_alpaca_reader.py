@@ -222,6 +222,15 @@ def test_mapping_edge_cases() -> None:
     assert mask_account("1234") == "****1234"
 
 
+def test_position_keeps_daily_pnl_separate_from_lifetime_pnl() -> None:
+    position = map_position({**POSITION, "unrealized_pl": "240.75", "unrealized_intraday_pl": "-65.125"}, T0)
+    assert position.unrealized_pl == Decimal("240.75")
+    assert position.unrealized_intraday_pl == Decimal("-65.125")
+    assert map_position({**POSITION, "unrealized_intraday_pl": None}, T0).unrealized_intraday_pl is None
+    with pytest.raises(BrokerPayloadError, match="not finite"):
+        map_position({**POSITION, "unrealized_intraday_pl": "NaN"}, T0)
+
+
 async def test_malformed_list_payload_is_refused() -> None:
     routes = _default_routes()
     routes["/positions"] = [(200, {"unexpected": "object"})]

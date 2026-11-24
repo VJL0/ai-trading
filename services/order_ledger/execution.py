@@ -2,7 +2,8 @@
 
 ``submit(intent)``:
   1. the intent must already be in the ledger (RISK_APPROVED / HUMAN_APPROVED) and identical to the record;
-  2. entries lock + ``final_gate(intent)`` (signature, expiry, mode, policy, health ...). Any violation =>
+  2. entries lock (the narrower exit lock for risk-reducing SELLs) +
+     ``final_gate(intent)`` (signature, expiry, mode, policy, health ...). Any violation =>
      order REJECTED locally, audited, *nothing sent*;
   3. ``ledger.claim_for_submission`` (atomic CAS to SUBMITTING; an intent is never claimed twice);
   4. ``gateway.submit`` under an asyncio timeout.
@@ -20,7 +21,7 @@ import logging
 from collections.abc import Awaitable, Callable
 from typing import Any
 
-from packages.contracts.enums import EventSource, OrderState
+from packages.contracts.enums import EventSource, OrderState, Side
 from packages.contracts.interfaces import ExecutionGateway, GatewayRejected, SubmitTimeout
 from packages.contracts.models import ApprovedOrderIntent, BrokerOrder, OrderEvent
 from packages.core.audit import append_audit, record_failure
@@ -107,9 +108,15 @@ class ExecutionService:
         violations: list[str] = []
         if rec.intent_json != intent.model_dump_json():
             violations.append("intent differs from the ledger record (tampered or re-signed)")
-        locked, reasons = self.entries.is_locked()
-        if locked:
-            violations.extend(f"entries locked: {r}" for r in reasons)
+        if intent.side == Side.SELL:
+            # Long-only: a SELL always reduces risk. Only state uncertainty / an ALL-scope halt blocks it.
+            locked, reasons = self.entries.exits_locked()
+            if locked:
+                violations.extend(f"exits locked: {r}" for r in reasons)
+        else:
+            locked, reasons = self.entries.is_locked()
+            if locked:
+                violations.extend(f"entries locked: {r}" for r in reasons)
         try:
             violations.extend(self.final_gate(intent))
         except Exception as exc:  # fail closed

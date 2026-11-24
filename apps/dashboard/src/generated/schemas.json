@@ -173,6 +173,18 @@
           "default": false,
           "type": "boolean"
         },
+        "crypto_status": {
+          "anyOf": [
+            {
+              "type": "string"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "Alpaca crypto_status; crypto entries need ACTIVE"
+        },
         "asof": {
           "type": "string",
           "tsType": "UtcTimestamp",
@@ -200,6 +212,7 @@
         "account_blocked",
         "transfers_blocked",
         "shorting_enabled",
+        "crypto_status",
         "asof",
         "source"
       ],
@@ -258,7 +271,7 @@
           "$ref": "#/$defs/GatewayKind"
         },
         "symbol": {
-          "pattern": "^[A-Z][A-Z0-9.]{0,9}$",
+          "pattern": "^(?:[A-Z][A-Z0-9.]{0,9}|[A-Z0-9]{2,10}/(?:USD|USDT|USDC|BTC))$",
           "type": "string"
         },
         "side": {
@@ -324,6 +337,20 @@
           "description": "hex(r||s) over signing_string()",
           "pattern": "^[0-9a-f]{128}$",
           "type": "string"
+        },
+        "stop_price": {
+          "anyOf": [
+            {
+              "type": "string",
+              "tsType": "DecimalString",
+              "x-lat-kind": "decimal"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "STOP_LIMIT protective exits only; signed (lat-intent-v2). Not a guaranteed price."
         }
       },
       "required": [
@@ -349,10 +376,19 @@
         "human_approval_id",
         "key_id",
         "signature_alg",
-        "signature"
+        "signature",
+        "stop_price"
       ],
       "type": "object",
       "title": "ApprovedOrderIntent"
+    },
+    "AssetClass": {
+      "enum": [
+        "US_EQUITY",
+        "CRYPTO"
+      ],
+      "type": "string",
+      "title": "AssetClass"
     },
     "Bar": {
       "additionalProperties": false,
@@ -362,7 +398,7 @@
           "type": "string"
         },
         "symbol": {
-          "pattern": "^[A-Z][A-Z0-9.]{0,9}$",
+          "pattern": "^(?:[A-Z][A-Z0-9.]{0,9}|[A-Z0-9]{2,10}/(?:USD|USDT|USDC|BTC))$",
           "type": "string"
         },
         "timeframe": {
@@ -538,7 +574,7 @@
           "$ref": "#/$defs/GatewayKind"
         },
         "symbol": {
-          "pattern": "^[A-Z][A-Z0-9.]{0,9}$",
+          "pattern": "^(?:[A-Z][A-Z0-9.]{0,9}|[A-Z0-9]{2,10}/(?:USD|USDT|USDC|BTC))$",
           "type": "string"
         },
         "side": {
@@ -612,6 +648,19 @@
           "tsType": "UtcTimestamp",
           "x-lat-kind": "utc-datetime",
           "format": "date-time"
+        },
+        "stop_price": {
+          "anyOf": [
+            {
+              "type": "string",
+              "tsType": "DecimalString",
+              "x-lat-kind": "decimal"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null
         }
       },
       "required": [
@@ -631,7 +680,8 @@
         "broker_status",
         "state",
         "submitted_at",
-        "updated_at"
+        "updated_at",
+        "stop_price"
       ],
       "type": "object",
       "title": "BrokerOrder"
@@ -646,11 +696,34 @@
       "type": "string",
       "title": "ConfidenceLabel"
     },
+    "CryptoInstrument": {
+      "additionalProperties": false,
+      "description": "Execution increments for one crypto pair, pinned in the operator policy (never fetched during evaluation).\nDefaults come from Alpaca's asset metadata (2026-11-23): quantity increment 1e-9; prices are restricted to\nwhole cents here (a multiple of Alpaca's 1e-9 price increment).",
+      "properties": {
+        "symbol": {
+          "type": "string"
+        },
+        "qty_increment": {
+          "default": "0.000000001",
+          "type": "string"
+        },
+        "price_increment": {
+          "default": "0.01",
+          "type": "string"
+        }
+      },
+      "required": [
+        "symbol"
+      ],
+      "type": "object",
+      "title": "CryptoInstrument"
+    },
     "DataFeed": {
       "enum": [
         "IEX",
         "SIP",
         "SYNTHETIC",
+        "CRYPTO_US",
         "LEAN_SAMPLE"
       ],
       "type": "string",
@@ -951,7 +1024,8 @@
         "PRE",
         "REGULAR",
         "POST",
-        "CLOSED"
+        "CLOSED",
+        "CONTINUOUS"
       ],
       "type": "string",
       "title": "MarketSession"
@@ -967,7 +1041,7 @@
           "type": "string"
         },
         "symbol": {
-          "pattern": "^[A-Z][A-Z0-9.]{0,9}$",
+          "pattern": "^(?:[A-Z][A-Z0-9.]{0,9}|[A-Z0-9]{2,10}/(?:USD|USDT|USDC|BTC))$",
           "type": "string"
         },
         "feed": {
@@ -1436,7 +1510,8 @@
     "OrderType": {
       "enum": [
         "LIMIT",
-        "MARKET"
+        "MARKET",
+        "STOP_LIMIT"
       ],
       "type": "string",
       "title": "OrderType"
@@ -1449,7 +1524,7 @@
           "type": "string"
         },
         "symbol": {
-          "pattern": "^[A-Z][A-Z0-9.]{0,9}$",
+          "pattern": "^(?:[A-Z][A-Z0-9.]{0,9}|[A-Z0-9]{2,10}/(?:USD|USDT|USDC|BTC))$",
           "type": "string"
         },
         "quantity": {
@@ -1506,6 +1581,20 @@
           ],
           "default": null
         },
+        "unrealized_intraday_pl": {
+          "anyOf": [
+            {
+              "type": "string",
+              "tsType": "DecimalString",
+              "x-lat-kind": "decimal"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "P&L since the previous close (broker field); daily-loss input for multi-day holds"
+        },
         "asof": {
           "type": "string",
           "tsType": "UtcTimestamp",
@@ -1526,6 +1615,7 @@
         "market_value",
         "current_price",
         "unrealized_pl",
+        "unrealized_intraday_pl",
         "asof",
         "source"
       ],
@@ -1544,7 +1634,7 @@
           "type": "string"
         },
         "symbol": {
-          "pattern": "^[A-Z][A-Z0-9.]{0,9}$",
+          "pattern": "^(?:[A-Z][A-Z0-9.]{0,9}|[A-Z0-9]{2,10}/(?:USD|USDT|USDC|BTC))$",
           "type": "string"
         },
         "asof": {
@@ -1778,7 +1868,8 @@
         "AI_PIPELINE",
         "AGENT_TOOL",
         "HUMAN",
-        "TEST"
+        "TEST",
+        "POSITION_MANAGER"
       ],
       "type": "string",
       "title": "Proposer"
@@ -1800,7 +1891,7 @@
           "type": "string"
         },
         "symbol": {
-          "pattern": "^[A-Z][A-Z0-9.]{0,9}$",
+          "pattern": "^(?:[A-Z][A-Z0-9.]{0,9}|[A-Z0-9]{2,10}/(?:USD|USDT|USDC|BTC))$",
           "type": "string"
         },
         "side": {
@@ -1857,7 +1948,14 @@
           "x-lat-kind": "decimal"
         },
         "net_edge_bps": {
-          "description": "expected_return_bps minus total estimated costs",
+          "description": "expected_return_bps (GROSS) minus the live round-trip cost estimate, charged once, minus uncertainty_bps: the quantity the decision threshold applies to",
+          "type": "string",
+          "tsType": "DecimalString",
+          "x-lat-kind": "decimal"
+        },
+        "uncertainty_bps": {
+          "default": "0",
+          "description": "explicit forecast-uncertainty buffer (bps)",
           "type": "string",
           "tsType": "DecimalString",
           "x-lat-kind": "decimal"
@@ -1904,6 +2002,7 @@
         "est_fees_bps",
         "est_slippage_bps",
         "net_edge_bps",
+        "uncertainty_bps",
         "is_candidate",
         "reason",
         "features_asof",
@@ -1922,7 +2021,7 @@
           "type": "string"
         },
         "symbol": {
-          "pattern": "^[A-Z][A-Z0-9.]{0,9}$",
+          "pattern": "^(?:[A-Z][A-Z0-9.]{0,9}|[A-Z0-9]{2,10}/(?:USD|USDT|USDC|BTC))$",
           "type": "string"
         },
         "bid": {
@@ -2215,7 +2314,7 @@
           "type": "string"
         },
         "symbol": {
-          "pattern": "^[A-Z][A-Z0-9.]{0,9}$",
+          "pattern": "^(?:[A-Z][A-Z0-9.]{0,9}|[A-Z0-9]{2,10}/(?:USD|USDT|USDC|BTC))$",
           "type": "string"
         },
         "recommendation": {
@@ -2841,6 +2940,108 @@
           "default": false,
           "description": "always forced true in LIVE_APPROVAL",
           "type": "boolean"
+        },
+        "allow_overnight_positions": {
+          "default": false,
+          "description": "multi-day equity holding (DAY protective stops re-armed each session)",
+          "type": "boolean"
+        },
+        "max_holding_sessions": {
+          "default": 5,
+          "description": "cap on a proposal's holding_sessions",
+          "maximum": 20,
+          "minimum": 1,
+          "type": "integer"
+        },
+        "overnight_gap_budget_bps": {
+          "default": "1000",
+          "description": "assumed overnight gap for a multi-day entry: notional x gap must fit max_daily_loss",
+          "type": "string",
+          "tsType": "DecimalString",
+          "x-lat-kind": "decimal"
+        },
+        "crypto_enabled": {
+          "default": false,
+          "description": "PAPER crypto spot (long-only LIMIT GTC/IOC)",
+          "type": "boolean"
+        },
+        "crypto_allowlist": {
+          "default": [
+            "BTC/USD",
+            "ETH/USD"
+          ],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
+        },
+        "crypto_max_order_notional": {
+          "default": "500.00",
+          "type": "string",
+          "tsType": "DecimalString",
+          "x-lat-kind": "decimal"
+        },
+        "crypto_max_position_notional": {
+          "default": "1000.00",
+          "type": "string",
+          "tsType": "DecimalString",
+          "x-lat-kind": "decimal"
+        },
+        "crypto_max_positions": {
+          "default": 1,
+          "minimum": 0,
+          "type": "integer"
+        },
+        "crypto_max_spread_bps": {
+          "default": "30",
+          "type": "string",
+          "tsType": "DecimalString",
+          "x-lat-kind": "decimal"
+        },
+        "crypto_min_order_notional": {
+          "default": "10.00",
+          "type": "string",
+          "tsType": "DecimalString",
+          "x-lat-kind": "decimal"
+        },
+        "crypto_default_stop_loss_bps": {
+          "default": "500",
+          "type": "string",
+          "tsType": "DecimalString",
+          "x-lat-kind": "decimal"
+        },
+        "crypto_instruments": {
+          "default": [
+            {
+              "symbol": "BTC/USD",
+              "qty_increment": "0.000000001",
+              "price_increment": "0.01"
+            },
+            {
+              "symbol": "ETH/USD",
+              "qty_increment": "0.000000001",
+              "price_increment": "0.01"
+            }
+          ],
+          "items": {
+            "$ref": "#/$defs/CryptoInstrument"
+          },
+          "type": "array"
+        },
+        "crypto_fee_bps": {
+          "default": "25",
+          "description": "per-side fee charged in the received asset (Alpaca tier-1 taker); used in planned loss",
+          "type": "string",
+          "tsType": "DecimalString",
+          "x-lat-kind": "decimal"
+        },
+        "multi_day_strategy_allowlist": {
+          "default": [],
+          "description": "strategy ids allowed to hold across sessions (validated strategies only)",
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
         }
       },
       "type": "object",
@@ -2874,7 +3075,21 @@
         "default_stop_loss_bps",
         "intent_ttl_seconds",
         "duplicate_window_seconds",
-        "require_human_approval"
+        "require_human_approval",
+        "allow_overnight_positions",
+        "max_holding_sessions",
+        "overnight_gap_budget_bps",
+        "crypto_enabled",
+        "crypto_allowlist",
+        "crypto_max_order_notional",
+        "crypto_max_position_notional",
+        "crypto_max_positions",
+        "crypto_max_spread_bps",
+        "crypto_min_order_notional",
+        "crypto_default_stop_loss_bps",
+        "crypto_instruments",
+        "crypto_fee_bps",
+        "multi_day_strategy_allowlist"
       ]
     },
     "RiskVerdict": {
@@ -2887,7 +3102,8 @@
     },
     "SessionConstraint": {
       "enum": [
-        "REGULAR_ONLY"
+        "REGULAR_ONLY",
+        "CONTINUOUS"
       ],
       "type": "string",
       "title": "SessionConstraint"
@@ -2961,6 +3177,25 @@
         "permissions_ok": {
           "default": true,
           "type": "boolean"
+        },
+        "exits_locked": {
+          "anyOf": [
+            {
+              "type": "boolean"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "risk-reducing SELL exits locked? None => same as entries (fail closed). Halts and unprotected-position safety states lock entries but not exits; state uncertainty locks both."
+        },
+        "exit_lock_reasons": {
+          "default": [],
+          "items": {
+            "type": "string"
+          },
+          "type": "array"
         }
       },
       "required": [
@@ -2976,14 +3211,18 @@
         "entries_locked",
         "lock_reasons",
         "strategy_state_ok",
-        "permissions_ok"
+        "permissions_ok",
+        "exits_locked",
+        "exit_lock_reasons"
       ],
       "type": "object",
       "title": "SystemHealth"
     },
     "TimeInForce": {
       "enum": [
-        "DAY"
+        "DAY",
+        "GTC",
+        "IOC"
       ],
       "type": "string",
       "title": "TimeInForce"
@@ -3036,7 +3275,7 @@
         "symbol": {
           "anyOf": [
             {
-              "pattern": "^[A-Z][A-Z0-9.]{0,9}$",
+              "pattern": "^(?:[A-Z][A-Z0-9.]{0,9}|[A-Z0-9]{2,10}/(?:USD|USDT|USDC|BTC))$",
               "type": "string"
             },
             {
@@ -3118,6 +3357,20 @@
           ],
           "default": null
         },
+        "holding_sessions": {
+          "anyOf": [
+            {
+              "maximum": 20,
+              "minimum": 1,
+              "type": "integer"
+            },
+            {
+              "type": "null"
+            }
+          ],
+          "default": null,
+          "description": "multi-day holding request for a BUY entry (sessions incl. the entry session); None/1 = intraday. Honoured only when the risk policy allows overnight positions."
+        },
         "evidence_ids": {
           "default": [],
           "items": {
@@ -3190,6 +3443,7 @@
         "time_in_force",
         "session_constraint",
         "max_planned_loss",
+        "holding_sessions",
         "evidence_ids",
         "signal_id",
         "finding_ids",

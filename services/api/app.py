@@ -143,6 +143,31 @@ def create_app(settings: Settings | None = None, runtime_factory: Callable[[Sett
         rt = _rt(request)
         return queries.portfolio(rt.db, rt.execution_label.value)
 
+    @app.get("/api/v1/positions")
+    async def positions(request: Request) -> dict[str, Any]:
+        """Managed positions: plan (stop, deadline), protection, safety state, position risk, closed round trips."""
+        return await asyncio.to_thread(_rt(request).positions_view)
+
+    @app.get("/api/v1/research/no-trade")
+    async def no_trade_attribution(request: Request, since: str | None = None) -> dict[str, Any]:
+        """Why recent cycles did not trade: predictions, costs, uncertainty buffer, threshold, data, locks or risk."""
+        from services.research.opportunity import attribute_no_trades
+
+        rt = _rt(request)
+        return await asyncio.to_thread(attribute_no_trades, rt.db, since=since,
+                                       threshold_bps=float(rt.signal_engine.min_net_edge_bps))
+
+    @app.get("/api/v1/quantlab/{kind}")
+    async def quantlab(request: Request, kind: str, family: str | None = Query(None, pattern=r"^[A-Za-z0-9_]{1,41}$")
+                       ) -> dict[str, Any]:
+        """Read-only multi-asset research artifacts: capabilities | research | opportunities | strategies | trials
+        | options. Backtest/scan files produced by `python -m services.quantlab.cli`; never live trading data."""
+        from services.quantlab.views import KINDS, view
+
+        if kind not in KINDS:
+            raise HTTPException(404, f"unknown quantlab view {kind!r}; one of {list(KINDS)}")
+        return await asyncio.to_thread(view, _rt(request).settings.project_root, kind, family)
+
     @app.get("/api/v1/risk")
     async def risk(request: Request) -> dict[str, Any]:
         return await asyncio.to_thread(_rt(request).risk_view)
@@ -182,6 +207,12 @@ def create_app(settings: Settings | None = None, runtime_factory: Callable[[Sett
     async def halt(request: Request, body: HaltBody) -> dict[str, Any]:
         halt_id = await asyncio.to_thread(_rt(request).halt, body.reason, "dashboard")
         return {"halt_id": halt_id, "entries_locked": True}
+
+    @app.post("/api/v1/control/kill-switch")
+    async def kill_switch(request: Request, body: HaltBody, actor: str = Depends(operator_guard)) -> dict[str, Any]:
+        """Operator only: an ALL-scope halt also blocks protective exits (broker-held stops stay at the broker)."""
+        halt_id = await asyncio.to_thread(_rt(request).halt, body.reason, f"operator:{actor}", "ALL")
+        return {"halt_id": halt_id, "entries_locked": True, "exits_locked": True}
 
     @app.post("/api/v1/control/resume")
     async def resume(request: Request, body: ResumeBody, actor: str = Depends(operator_guard)) -> dict[str, Any]:

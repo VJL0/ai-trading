@@ -39,17 +39,19 @@ CLAUDE_TOOL_NAMES: tuple[str, ...] = READ_ONLY_TOOL_NAMES
 FORBIDDEN_TOOL_NAME_RE = re.compile(
     r"((?<!get_)order|submit|cancel|place|execute|broker|replace|modify|liquidat|withdraw|transfer|limit"
     r"|polic(y|ies)_?(set|update|write)|set_|update_|write|delete|secret|credential|key|shell|exec|file|approve|halt"
-    r"|unlock|resume|(^|_)modes?(_|$)|propose_paper|_cycle|token|login|oauth"
+    r"|unlock|resume|(^|_)modes?(_|$)|propose_paper|_cycle|token|login|oauth|experiment"
     r"|(^|_)(start|stop|schedule|pause|enable|disable)(_|$))",  # session/schedule control actions
     re.IGNORECASE,
 )
 
 
 def shared_read_only_tool_names() -> tuple[str, ...]:
-    """The shared registry's READ-ONLY tools (services.tools); its four mutating tools are never offered here."""
+    """The shared registry's READ-ONLY tools (services.tools); its mutating tools are never offered here, and the
+    multi-asset research views are left to operating agents (Anthropic allows at most 20 strict tools/request)."""
+    from services.tools.registry import QUANTLAB_READ_TOOL_NAMES
     from services.tools.registry import READ_ONLY_TOOL_NAMES as SHARED
 
-    return tuple(SHARED)
+    return tuple(n for n in SHARED if n not in QUANTLAB_READ_TOOL_NAMES)
 
 
 def pipeline_tool_names(*, shared: bool, deep_review: bool) -> tuple[str, ...]:
@@ -209,7 +211,8 @@ def market_tools(backend: Any | None, *, provider: str = "openai") -> list[Tool[
         return [Tool(get_market_snapshot, takes_ctx=True)]
     from services.tools.registry import TOOL_REGISTRY, pydantic_ai_tools
 
-    tools = pydantic_ai_tools(backend, include_mutating=False)
+    keep = set(shared_read_only_tool_names())
+    tools = [t for t in pydantic_ai_tools(backend, include_mutating=False) if t.name in keep]
     if any(TOOL_REGISTRY[t.name].mutating for t in tools):  # defence in depth: never offer a mutating tool
         raise RuntimeError("shared tool export returned a mutating tool for a read-only agent")
     if provider != "anthropic":

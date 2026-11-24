@@ -9,7 +9,7 @@ from __future__ import annotations
 import asyncio
 import contextlib
 import logging
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 from decimal import Decimal
 from typing import Any
 
@@ -20,8 +20,10 @@ from packages.contracts import (
     RiskContext,
     RiskPolicy,
     SystemHealth,
+    TradeProposal,
 )
-from packages.contracts.enums import DataFeed, ExecutionLabel, FeedMode, GatewayKind, ReconciliationStatus
+from packages.contracts.enums import DataFeed, ExecutionLabel, FeedMode, GatewayKind, ReconciliationStatus, Side
+from packages.contracts.models import PositionSnapshot
 from packages.core import modes
 from packages.core.audit import active_halts, add_halt, append_audit, clear_halt, get_state, record_failure, set_state
 from packages.core.clock import Clock, SystemClock
@@ -30,6 +32,7 @@ from packages.core.db import Database, utc_iso
 from packages.core.logging import configure_logging, log_event
 from packages.core.secrets import SecretName, SecretStore
 from packages.core.signing import IntentSigner
+from services.order_ledger.timeutil import trading_day
 
 from .events import DbTailer, EventBus
 from .security import AGENT_TOKEN_FILE, ENGINE_TOKEN_FILE, OPERATOR_TOKEN_FILE, ensure_token
@@ -82,6 +85,9 @@ class Runtime:
 
         self.activity = ActivityLog(self.db, self.bus, self.clock)
         self._cycle_lock = asyncio.Lock()
+        # Serializes "capture the single-use final-gate context + submit" across decision cycles, agent proposals
+        # and the position manager (each holds it only around prepare_gate + ExecutionService.submit).
+        self.submit_lock = asyncio.Lock()
         self.feed_monitor = FeedQualityMonitor(self.feed_mode, self.provider_name, self.clock,
                                                symbols=tuple(settings.symbols))
 
@@ -94,6 +100,7 @@ class Runtime:
         self.entries = EntriesLock(self.db, settings.mode)
         self._build_risk()
         self._build_execution()
+        self._build_positions()
         self._build_research()
         self._build_sessions()
         self._record_mode_decision()
@@ -151,6 +158,15 @@ class Runtime:
         self.reconciler = Reconciler(self.db, self.ledger, self.gateway, self.entries, self.clock)
         self.execution.on_reconnect = self.reconcile
 
+    def _build_positions(self) -> None:
+        from services.positions.manager import PositionManager
+        from services.positions.policy import PositionPolicy
+        from services.positions.store import PositionStore
+
+        self.position_policy = PositionPolicy()
+        self.position_store = PositionStore(self.db, self.settings.mode.value)
+        self.positions = PositionManager(RuntimePositionPort(self), self.position_store, self.position_policy)
+
     def _build_research(self) -> None:
         from services.ai.pipeline import ResearchPipeline
         from services.research.costs import CostModel
@@ -174,7 +190,9 @@ class Runtime:
                 (utc_iso(), None, self.settings.mode.value, "process-start", "ACCEPTED", detail),
             )
             append_audit(conn, event_type="RUNTIME_STARTED", source="api", mode=self.settings.mode.value,
-                         payload={"detail": detail, "dataset_version": self.dataset_version},
+                         payload={"detail": detail, "dataset_version": self.dataset_version,
+                                  "position_policy": self.position_policy.model_dump(mode="json"),
+                                  "position_policy_version": self.position_policy.version},
                          policy_version=self.policy.version, dataset_version=self.dataset_version)
 
         self.db.write(_w)
@@ -189,7 +207,11 @@ class Runtime:
     # ------------------------------------------------------------------ health / context
     def entries_status(self) -> tuple[bool, list[str]]:
         locked, reasons = self.entries.is_locked()
-        return bool(locked), list(reasons)
+        reasons = list(reasons)
+        pnl = get_state(self.db, "daily_pnl") or {}
+        if pnl.get("trading_day") == trading_day(self.now()).isoformat() and pnl.get("available") is False:
+            reasons.append("daily P&L unavailable: " + "; ".join(pnl.get("errors") or ["unverified opening marks"]))
+        return bool(locked or reasons), reasons
 
     def engine_health(self) -> tuple[bool, str, str | None]:
         if self.settings.gateway == GatewayKind.FAKE:
@@ -208,6 +230,7 @@ class Runtime:
 
     def health(self) -> SystemHealth:
         locked, reasons = self.entries_status()
+        exits_locked, exit_reasons = self.entries.exits_locked()
         feed = self.feed_monitor.status()
         feed_ok = feed.get("status") == "OK"
         engine_ok, engine_detail, _ = self.engine_health()
@@ -220,6 +243,7 @@ class Runtime:
             reconciled=reconciled, reconcile_detail=str(last.get("status")),
             engine_ok=engine_ok, engine_detail=engine_detail,
             entries_locked=locked, lock_reasons=tuple(reasons),
+            exits_locked=exits_locked, exit_lock_reasons=tuple(exit_reasons),
         )
 
     async def risk_context(self, market: Any) -> RiskContext:
@@ -231,16 +255,18 @@ class Runtime:
         except Exception as exc:  # fail closed: unknown account state blocks entries
             account, positions = None, []
             self._set_broker(False, f"{type(exc).__name__}: {exc}")
-        day_start = now.replace(hour=0, minute=0, second=0, microsecond=0)
-        sod = get_state(self.db, f"sod_equity:{day_start.date().isoformat()}")
+        day = trading_day(now)
+        sod = get_state(self.db, f"sod_equity:{day.isoformat()}")
         if sod is None and account is not None:
-            sod = format(account.equity, "f")
-            self.db.write(lambda c: set_state(c, f"sod_equity:{day_start.date().isoformat()}", sod))
-        unreal = sum((p.unrealized_pl or Decimal(0) for p in positions), Decimal(0))
-        realized = self.ledger.daily_realized_pl(day_start.date())
+            baseline = account.last_equity if account.last_equity is not None else account.equity
+            sod = format(baseline, "f")
+            self.db.write(lambda c: set_state(c, f"sod_equity:{day.isoformat()}", sod))
+        realized, unreal, pnl_errors = self._daily_position_pnl(day, positions)
         self.db.write(lambda c: set_state(c, "daily_pnl", {
             "daily_realized": format(realized, "f"), "daily_unrealized": format(unreal, "f"),
-            "start_of_day_equity": sod}))
+            "start_of_day_equity": sod, "trading_day": day.isoformat(), "asof": self.now_iso(),
+            "available": not pnl_errors and account is not None, "errors": pnl_errors,
+            "basis": "previous-close carried market value plus booked intraday cash flows"}))
         return RiskContext(
             now=now, mode=self.settings.mode, gateway=self.settings.gateway, account=account,
             positions=tuple(positions), open_orders=tuple(self.ledger.open_orders()),
@@ -251,6 +277,85 @@ class Runtime:
             start_of_day_equity=Decimal(sod) if sod else None,
             daily_realized_pl=realized, daily_unrealized_pl=unreal, market=market, health=self.health(),
         )
+
+    def _daily_position_pnl(self, day: date, positions: list[PositionSnapshot]) -> tuple[Decimal, Decimal, list[str]]:
+        """Rebase overnight holdings at the previous close, including shares sold during this session.
+
+        Lifetime cost-basis gains on an overnight SELL must not mask today's losses. The broker's intraday P&L
+        seeds a durable opening market value; cash flows then preserve that reference after partial/full exits
+        and process restarts. A missing or inconsistent reference blocks entries through ``entries_status``.
+        Protective exits stay available. No broker or ledger history is rewritten.
+        """
+        zero = Decimal(0)
+        fills = self.db.query("SELECT symbol, side, quantity, price FROM fills WHERE trading_day=?", (day.isoformat(),))
+        flow: dict[str, dict[str, Decimal]] = {}
+        for fill in fills:
+            item = flow.setdefault(fill["symbol"], {"buy_qty": zero, "sell_qty": zero, "buys": zero, "sells": zero})
+            qty, price = Decimal(fill["quantity"]), Decimal(fill["price"])
+            if fill["side"] == Side.BUY.value:
+                item["buy_qty"] += qty
+                item["buys"] += qty * price
+            else:
+                item["sell_qty"] += qty
+                item["sells"] += qty * price
+        key = f"daily_position_marks:{day.isoformat()}"
+        marks = get_state(self.db, key) or {}
+        held = {p.symbol: p for p in positions if p.quantity != zero}
+        ledger_qty = self.ledger.position_quantities()
+        errors: list[str] = []
+        total, unreal = zero, zero
+        for symbol in sorted(set(held) | set(flow) | set(marks) | set(ledger_qty)):
+            p = held.get(symbol)
+            qty = p.quantity if p is not None else zero
+            if qty != ledger_qty.get(symbol, zero):
+                errors.append(f"{symbol}: broker and ledger quantities differ")
+                continue
+            f = flow.get(symbol, {"buy_qty": zero, "sell_qty": zero, "buys": zero, "sells": zero})
+            carried = qty - f["buy_qty"] + f["sell_qty"]
+            if carried < zero or qty < zero:
+                errors.append(f"{symbol}: unsupported negative opening/current quantity")
+                continue
+            value = p.market_value if p is not None else zero
+            if value is None:
+                errors.append(f"{symbol}: current market value unavailable")
+                continue
+            opening_value = zero
+            if carried > zero:
+                if p is not None and p.unrealized_intraday_pl is None:
+                    errors.append(f"{symbol}: overnight position has no broker intraday P&L")
+                    continue
+                mark = marks.get(symbol)
+                if mark is None and p is not None and p.unrealized_intraday_pl is not None:
+                    if f["sell_qty"] == zero:
+                        opening_value = value - p.unrealized_intraday_pl - f["buys"]
+                    elif f["buy_qty"] == zero:
+                        opening_value = (value - p.unrealized_intraday_pl) / qty * carried
+                    else:
+                        errors.append(f"{symbol}: opening mark unavailable after mixed intraday buys/sells")
+                        continue
+                    if opening_value <= zero:
+                        errors.append(f"{symbol}: invalid previous-close market value")
+                        continue
+                    mark = {"quantity": format(carried, "f"), "market_value": format(opening_value, "f"),
+                            "source": "broker_unrealized_intraday_pl", "captured_at": self.now_iso()}
+                    marks[symbol] = mark
+                if mark is None:
+                    errors.append(f"{symbol}: opening mark unavailable after full overnight exit")
+                    continue
+                if Decimal(mark["quantity"]) != carried:
+                    errors.append(f"{symbol}: opening quantity changed; mark cannot be trusted")
+                    continue
+                opening_value = Decimal(mark["market_value"])
+            total += value + f["sells"] - f["buys"] - opening_value
+            if p is not None:
+                intraday = p.unrealized_intraday_pl if carried > zero else p.unrealized_pl
+                if intraday is None:
+                    errors.append(f"{symbol}: unrealized P&L unavailable")
+                else:
+                    unreal += intraday
+        self.db.write(lambda c: set_state(c, key, marks))
+        # Unknown contributions never become an authoritative zero: the availability flag locks new entries.
+        return total - unreal, unreal, errors
 
     def _set_broker(self, ok: bool, detail: str) -> None:
         def _w(c: Any) -> None:
@@ -272,7 +377,15 @@ class Runtime:
         if abs((self.now() - ctx.now).total_seconds()) > 5:
             return ["risk context for the final gate is stale"]
         active = self.policy_store.active().version
-        return list(self.risk.final_gate(intent, ctx, self.verifier, active))
+        row = self.db.query_one("SELECT payload_json FROM proposals WHERE proposal_id=?", (intent.proposal_id,))
+        proposal = None
+        if row is not None:
+            with contextlib.suppress(ValueError):
+                proposal = TradeProposal.model_validate_json(row["payload_json"])
+        if proposal is None and intent.side == Side.BUY:
+            return ["persisted BUY proposal missing or invalid at the final gate"]
+        return list(self.risk.final_gate(intent, ctx, self.verifier, active, proposal=proposal,
+                                        strategy_id=proposal.strategy_id if proposal is not None else None))
 
     async def prepare_gate(self, market: Any) -> RiskContext:
         self._gate_ctx = await self.risk_context(market)
@@ -283,6 +396,7 @@ class Runtime:
     # ------------------------------------------------------------------ views
     def status(self) -> dict[str, Any]:
         locked, reasons = self.entries_status()
+        exits_locked, exit_reasons = self.entries.exits_locked()
         feed = self.feed_monitor.status()
         engine_ok, engine_detail, hb_ts = self.engine_health()
         last = get_state(self.db, "last_reconciliation") or {}
@@ -297,6 +411,9 @@ class Runtime:
             "live_execution_compiled": status.live_execution_compiled,
             "entries_locked": locked,
             "lock_reasons": reasons,
+            "exits_locked": exits_locked,
+            "exit_lock_reasons": exit_reasons,
+            "position_safety": self.entries.position_safety(),
             "halts": active_halts(self.db),
             "startup": {"phase": self.startup_phase, "started_at": utc_iso(self.started_at), "detail": self.startup_detail},
             "feed": {**feed, "simulated_time": self.now_iso() if self.sim_clock else None,
@@ -364,7 +481,10 @@ class Runtime:
         util.append(_u("position_notional", pos_notional, pol.max_position_notional))
         pnl = get_state(self.db, "daily_pnl") or {}
         loss = -(Decimal(pnl.get("daily_realized", "0")) + Decimal(pnl.get("daily_unrealized", "0")))
-        util.append(_u("daily_loss", max(loss, Decimal(0)), pol.max_daily_loss))
+        loss_util = _u("daily_loss", max(loss, Decimal(0)), pol.max_daily_loss)
+        loss_util["available"] = pnl.get("available", True)
+        loss_util["errors"] = pnl.get("errors", [])
+        util.append(loss_util)
         today = self.now() - timedelta(days=1)
         util.append(_u("orders_today", Decimal(len(self.ledger.recent_submission_times(today))), Decimal(pol.max_orders_per_day)))
         return {
@@ -374,8 +494,10 @@ class Runtime:
         }
 
     # ------------------------------------------------------------------ control
-    def halt(self, reason: str, source: str) -> str:
-        return self.db.write(lambda c: add_halt(c, reason=reason, source=source, mode=self.settings.mode.value))
+    def halt(self, reason: str, source: str, scope: str = "ENTRIES") -> str:
+        """ENTRIES (default): stop new entries, protective exits continue. ALL: kill switch, exits blocked too."""
+        return self.db.write(lambda c: add_halt(c, reason=reason, source=source, mode=self.settings.mode.value,
+                                                scope=scope))
 
     def resume(self, halt_id: str, reason: str, actor: str) -> dict[str, Any]:
         last = get_state(self.db, "last_reconciliation") or {}
@@ -571,6 +693,32 @@ class Runtime:
 
         return queries.signals(self.db, limit)
 
+    async def fresh_snapshot(self, symbol: str) -> Any:
+        """Point-in-time snapshot for a decision right now (replay cutoffs in REPLAY), recorded in the ledger."""
+        if self.sim_clock is None:
+            snapshot = await self.market_snapshot(symbol)
+        else:
+            from services.market_data.snapshot import build_market_snapshot
+
+            snapshot = await build_market_snapshot(self.provider, symbol, self.now(), self.feed_mode,
+                                                   dataset_version=self.dataset_version)
+        self.ledger.record_market_snapshot(snapshot)
+        return snapshot
+
+    def quantlab_view(self, kind: str, family: str | None = None) -> dict[str, Any]:
+        from services.quantlab.views import view
+
+        return view(self.settings.project_root, kind, family)
+
+    def quantlab_experiment(self, spec: dict[str, Any], actor: str) -> dict[str, Any]:
+        from services.quantlab.views import run_agent_experiment
+
+        return run_agent_experiment(self.settings.project_root, spec, actor)
+
+    def positions_view(self) -> dict[str, Any]:
+        return {"execution_label": self.execution_label.value, "is_simulated": self.sim_clock is not None
+                or self.execution_label == ExecutionLabel.SIMULATED, **self.positions.view()}
+
     async def market_snapshot(self, symbol: str) -> Any:
         from services.market_data.snapshot import build_market_snapshot
 
@@ -685,8 +833,9 @@ class Runtime:
         if intent.requires_human_approval:
             out["outcome"] = "AWAITING_HUMAN_APPROVAL"
             return out
-        await self.prepare_gate(snapshot)
-        await self.execution.submit(intent)
+        async with self.submit_lock:
+            await self.prepare_gate(snapshot)
+            await self.execution.submit(intent)
         order = self.ledger.get_order(intent.client_order_id)
         state = getattr(getattr(order, "state", None), "value", getattr(order, "state", None))
         out["order"] = order.model_dump(mode="json") if order is not None else None
@@ -819,8 +968,12 @@ class Runtime:
         tasks.append(asyncio.create_task(self._startup(stop), name="startup-recovery"))
         tasks.append(asyncio.create_task(self._status_loop(stop), name="status-broadcast"))
         tasks.append(asyncio.create_task(self.execution.run_event_consumer(stop), name="order-events"))
+        tasks.append(asyncio.create_task(
+            self.positions.run(stop, interval_s=0.5 if self.sim_clock is not None else 1.0), name="position-manager"))
         if self.sim_clock is not None:
             tasks.append(asyncio.create_task(self.sim_clock.run(stop, self._on_sim_tick), name="sim-clock"))
+        elif self.settings.data_pipeline_enabled:
+            tasks.append(asyncio.create_task(self._data_pipeline_loop(stop), name="data-pipeline"))
         if self.sessions is not None:
             tasks.append(asyncio.create_task(self.sessions.run(stop), name="session-manager"))
         return tasks
@@ -864,6 +1017,29 @@ class Runtime:
             except Exception as exc:
                 self.db.write(lambda c, e=exc: record_failure(c, component="reconcile", kind=type(e).__name__, detail=str(e)))
 
+    async def _data_pipeline_loop(self, stop: asyncio.Event) -> None:
+        """After every XNYS close (+ settle time) run one bounded history-pipeline pass, then hourly until the
+        planned windows are exhausted. Real feeds only; never upgrades or purchases a feed."""
+        from packages.contracts.policy import RiskPolicy as _Policy
+        from services.market_data.pipeline import HistoryPipeline, PipelineConfig
+
+        config = PipelineConfig(symbols=tuple(dict.fromkeys((*self.settings.symbols, *_Policy().symbol_allowlist))),
+                                history_days=self.settings.data_pipeline_history_days,
+                                max_requests=self.settings.data_pipeline_max_requests)
+        pipe = HistoryPipeline(self.provider, self.store, self.db, self.clock, config)
+        while not stop.is_set():
+            try:
+                pending = await asyncio.to_thread(pipe.plan)
+                if pending:
+                    run = await pipe.run()
+                    self.activity.activity("info", f"Data pipeline: {len(run.done)} window(s), {run.rows_accepted} bars, "
+                                           f"snapshot {run.snapshot_id}; research input {run.research.get('ready')}")
+            except Exception as exc:
+                self.db.write(lambda c, e=exc: record_failure(c, component="data_pipeline", kind=type(e).__name__,
+                                                              detail=str(e)))
+            with contextlib.suppress(TimeoutError):
+                await asyncio.wait_for(stop.wait(), timeout=3600)
+
     async def _status_loop(self, stop: asyncio.Event) -> None:
         tick = 0
         while not stop.is_set():
@@ -896,6 +1072,55 @@ class Runtime:
 
 def build_runtime(settings: Settings) -> Runtime:
     return Runtime(settings)
+
+
+class RuntimePositionPort:
+    """Adapter giving the position manager exactly the runtime surface it needs (all orders via the risk engine)."""
+
+    def __init__(self, rt: Runtime) -> None:
+        self._rt = rt
+
+    @property
+    def mode(self) -> Any:
+        return self._rt.settings.mode
+
+    @property
+    def ledger(self) -> Any:
+        return self._rt.ledger
+
+    @property
+    def entries(self) -> Any:
+        return self._rt.entries
+
+    @property
+    def dataset_version(self) -> str:
+        return self._rt.dataset_version
+
+    def now(self) -> datetime:
+        return self._rt.now()
+
+    def risk_policy(self) -> RiskPolicy:
+        return self._rt.policy
+
+    async def snapshot(self, symbol: str) -> Any:
+        return await self._rt.fresh_snapshot(symbol)
+
+    async def submit_proposal(self, proposal: Any, snapshot: Any) -> dict[str, Any]:
+        result = await self._rt.execute_proposal(proposal, snapshot)
+        self._rt.activity.activity(
+            "submit" if result.get("outcome") == "SUBMITTED" else "reject",
+            f"Position manager {proposal.strategy_id}: {proposal.side} {proposal.quantity} {proposal.symbol} "
+            f"{proposal.order_type.value} @ {proposal.limit_price}"
+            + (f" stop {proposal.stop_price}" if proposal.stop_price is not None else "")
+            + f" -> {result.get('outcome')}" + (f" ({result.get('reason')})" if result.get("reason") else ""),
+            actor="position-manager", causal_id=proposal.causal_id)
+        return result
+
+    async def cancel_order(self, client_order_id: str) -> Any:
+        return await self._rt.execution.cancel(client_order_id)
+
+    async def request_reconcile(self) -> Any:
+        return await self._rt.reconcile()
 
 
 def _sessions_from_manifest(manifest: dict[str, Any]) -> list[tuple[datetime, datetime]]:

@@ -26,11 +26,12 @@ from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from decimal import ROUND_FLOOR, Decimal
-from typing import Final, TypeVar
+from typing import Final, TypeVar, cast
 
 from pydantic import BaseModel, ValidationError
 
 from packages.contracts.enums import (
+    PROTECTIVE_ORDER_TYPES,
     TERMINAL_ORDER_STATES,
     DataFeed,
     DecisionAction,
@@ -127,6 +128,8 @@ CHECK_HEALTH_PERMISSIONS: Final = "health_permissions"
 CHECK_DUPLICATE: Final = "duplicate_order"
 CHECK_EVIDENCE: Final = "evidence_present"
 CHECK_MAX_QTY: Final = "max_allowable_quantity"
+CHECK_ENTRY_WINDOW: Final = "entry_window"
+CHECK_HOLDING_PERIOD: Final = "holding_period_authorized"
 
 REQUIRED_TRADE_CHECKS: Final[frozenset[str]] = frozenset(
     {
@@ -141,6 +144,7 @@ REQUIRED_TRADE_CHECKS: Final[frozenset[str]] = frozenset(
         CHECK_EQUITY_FLOOR, CHECK_PENDING, CHECK_RATE_MINUTE, CHECK_RATE_DAY, CHECK_HEALTH_FEED,
         CHECK_HEALTH_BROKER, CHECK_HEALTH_RECONCILED, CHECK_HEALTH_ENGINE, CHECK_HEALTH_ENTRIES,
         CHECK_HEALTH_STRATEGY, CHECK_HEALTH_PERMISSIONS, CHECK_DUPLICATE, CHECK_EVIDENCE, CHECK_MAX_QTY,
+        CHECK_ENTRY_WINDOW, CHECK_HOLDING_PERIOD,
     }
 )
 """Every one of these must have run *and* passed for an APPROVED verdict (guards against code paths
@@ -199,6 +203,20 @@ def _remaining(order: BrokerOrder) -> Decimal:
 def _on_tick(price: Decimal) -> bool:
     tick = price_tick(price)
     return price == price.quantize(tick)
+
+
+def _is_protective(order: BrokerOrder) -> bool:
+    """A working protective exit (STOP_LIMIT SELL). It can only reduce a long, never add exposure."""
+    return order.side == Side.SELL and order.order_type in PROTECTIVE_ORDER_TYPES
+
+
+def _halt_blocks_exits(halt: object) -> bool:
+    """Only an ALL-scope halt (operator kill switch) blocks exits. A halt of unknown shape counts as ALL."""
+    if isinstance(halt, dict):
+        scope: object = cast("dict[str, object]", halt).get("scope")
+    else:
+        scope = getattr(halt, "scope", None)
+    return scope != "ENTRIES"
 
 
 def _floor_div(numerator: Decimal, denominator: Decimal) -> Decimal:
@@ -643,7 +661,7 @@ class RiskEngine:
         c.run(CHECK_CONTEXT_FRESH, lambda: self._chk_context_fresh(ctx, now))
         c.run(CHECK_MODE, lambda: self._chk_mode(ctx))
         c.run(CHECK_EVIDENCE, lambda: self._chk_evidence(proposal))
-        self._health_checks(c, ctx)
+        self._health_checks(c, ctx, proposal.side)
 
         missing = [n for n in ("symbol", "side", "quantity", "limit_price") if getattr(proposal, n) is None]
         if missing:
@@ -666,17 +684,21 @@ class RiskEngine:
         c.run(CHECK_SYMBOL_FORMAT, lambda: self._chk_symbol_format(x.symbol))
         c.run(CHECK_ALLOWLIST, lambda: self._chk_allowlist(x.symbol))
         c.run(CHECK_DENYLIST, lambda: self._chk_denylist(x.symbol))
-        c.run(CHECK_ORDER_TYPE, lambda: self._chk_order_type(proposal.order_type))
+        c.run(CHECK_ORDER_TYPE, lambda: self._chk_order_type(proposal.order_type, x.side))
         c.run(CHECK_TIF, lambda: self._chk_tif(proposal.time_in_force))
         c.run(CHECK_WHOLE_SHARES, lambda: self._chk_whole_shares(x.quantity))
-        c.run(CHECK_PRICE_TICK, lambda: self._chk_tick(x.limit_price))
+        c.run(CHECK_PRICE_TICK, lambda: self._chk_tick(x.limit_price, proposal.stop_price))
         c.run(CHECK_MARKET_PRESENT, lambda: self._chk_market_present(ctx, x.symbol))
         c.run(CHECK_QUOTE_PRESENT, lambda: self._chk_quote_present(ctx, x.symbol))
         c.run(CHECK_DATA_PROVENANCE, lambda: self._chk_provenance(ctx))
         c.run(CHECK_MIN_PRICE, lambda: self._chk_min_price(x))
         c.run(CHECK_SESSION, lambda: self._chk_session(ctx, proposal.session_constraint, now))
-        c.run(CHECK_LIMIT_BAND, lambda: self._chk_limit_band(x))
-        c.run(CHECK_LIMIT_TOUCH, lambda: self._chk_limit_touch(ctx, x))
+        if proposal.order_type in PROTECTIVE_ORDER_TYPES:
+            c.run(CHECK_LIMIT_BAND, lambda: self._chk_stop_band(x, proposal.stop_price))
+            c.run(CHECK_LIMIT_TOUCH, lambda: self._chk_stop_touch(ctx, x, proposal.stop_price))
+        else:
+            c.run(CHECK_LIMIT_BAND, lambda: self._chk_limit_band(x))
+            c.run(CHECK_LIMIT_TOUCH, lambda: self._chk_limit_touch(ctx, x))
         c.run(CHECK_SPREAD, lambda: self._chk_spread(x))
         c.run(CHECK_QUOTE_AGE, lambda: self._chk_quote_age(ctx, x.symbol, now))
         c.run(CHECK_DATA_ASOF, lambda: self._chk_data_asof(proposal, ctx, now))
@@ -695,7 +717,9 @@ class RiskEngine:
         c.run(CHECK_PLANNED_LOSS, lambda: self._chk_planned_loss(x))
         c.run(CHECK_PROPOSAL_ARITHMETIC, lambda: self._chk_proposal_arithmetic(x))
         c.run(CHECK_EQUITY_FLOOR, lambda: self._chk_equity_floor(ctx, x))
-        c.run(CHECK_PENDING, lambda: self._chk_pending(ctx))
+        c.run(CHECK_PENDING, lambda: self._chk_pending(ctx, x))
+        c.run(CHECK_ENTRY_WINDOW, lambda: self._chk_entry_window(x, now))
+        c.run(CHECK_HOLDING_PERIOD, lambda: self._chk_holding_period(proposal, ctx, x))
         c.run(CHECK_RATE_MINUTE, lambda: self._chk_rate_minute(ctx, now))
         c.run(CHECK_RATE_DAY, lambda: self._chk_rate_day(ctx, now))
         c.run(CHECK_DUPLICATE, lambda: self._chk_duplicate(proposal, ctx, x))
@@ -739,7 +763,7 @@ class RiskEngine:
             return False, "TRADE requires non-empty evidence ids", str(len(ids)), ">=1"
         return True, f"{len(ids)} evidence id(s) present", str(len(ids)), ">=1"
 
-    def _health_checks(self, c: _Checks, ctx: RiskContext) -> None:
+    def _health_checks(self, c: _Checks, ctx: RiskContext, side: Side | None) -> None:
         h = ctx.health
         c.add(
             CHECK_HEALTH_FEED, h.feed_ok,
@@ -754,12 +778,24 @@ class RiskEngine:
             "broker state reconciled" if h.reconciled else f"broker state not reconciled: {h.reconcile_detail or 'unknown'}",
         )
         c.add(CHECK_HEALTH_ENGINE, h.engine_ok, "engine OK" if h.engine_ok else f"engine not OK: {h.engine_detail or 'unknown'}")
-        locked = h.entries_locked or bool(h.lock_reasons)  # any stated lock reason locks (fail closed)
-        c.add(
-            CHECK_HEALTH_ENTRIES, not locked,
-            "entries unlocked" if not locked
-            else "new entries locked: " + ("; ".join(h.lock_reasons) or "reason unknown"),
-        )
+        if side == Side.SELL:
+            # Long-only: every SELL reduces risk. Halts (ENTRIES scope) and unprotected-position safety states lock
+            # entries, not exits; state uncertainty locks both (SystemHealth.exits_blocked, fail closed when unset).
+            blocked = h.exits_blocked
+            entries_note = " (new entries locked; risk-reducing exit permitted)" if (
+                h.entries_locked or h.lock_reasons) else ""
+            c.add(
+                CHECK_HEALTH_ENTRIES, not blocked,
+                f"exits unlocked{entries_note}" if not blocked
+                else "exits locked: " + ("; ".join(h.exit_block_reasons) or "reason unknown"),
+            )
+        else:
+            locked = h.entries_locked or bool(h.lock_reasons)  # any stated lock reason locks (fail closed)
+            c.add(
+                CHECK_HEALTH_ENTRIES, not locked,
+                "entries unlocked" if not locked
+                else "new entries locked: " + ("; ".join(h.lock_reasons) or "reason unknown"),
+            )
         c.add(
             CHECK_HEALTH_STRATEGY, h.strategy_state_ok,
             "strategy state OK" if h.strategy_state_ok else "strategy state unknown/bad",
@@ -780,9 +816,14 @@ class RiskEngine:
         detail = "leveraged/inverse/volatility product denied" if denied else "not denylisted"
         return not denied, detail, symbol, None
 
-    def _chk_order_type(self, order_type: OrderType) -> CheckResult:
-        ok = order_type == OrderType.LIMIT and order_type in self._policy.allowed_order_types
-        return ok, "LIMIT order" if ok else f"order type {order_type} not allowed (LIMIT only)", str(order_type), "LIMIT"
+    def _chk_order_type(self, order_type: OrderType, side: Side) -> CheckResult:
+        if order_type == OrderType.LIMIT and order_type in self._policy.allowed_order_types:
+            return True, "LIMIT order", str(order_type), "LIMIT"
+        if order_type in PROTECTIVE_ORDER_TYPES and side == Side.SELL:
+            return (True, "protective STOP_LIMIT exit (risk-reducing SELL; a trigger, not a guaranteed exit price)",
+                    str(order_type), "LIMIT | STOP_LIMIT exit")
+        return (False, f"order type {order_type} not allowed (LIMIT only; STOP_LIMIT only for protective SELL exits)",
+                str(order_type), "LIMIT")
 
     @staticmethod
     def _chk_tif(tif: TimeInForce) -> CheckResult:
@@ -795,10 +836,14 @@ class RiskEngine:
         return ok, "whole positive shares" if ok else "quantity must be a positive whole number of shares", _f(qty), None
 
     @staticmethod
-    def _chk_tick(limit: Decimal) -> CheckResult:
+    def _chk_tick(limit: Decimal, stop: Decimal | None = None) -> CheckResult:
         ok = _on_tick(limit)
         tick = price_tick(limit)
-        return ok, "limit on a valid tick" if ok else f"limit price not on a {tick} tick", _f(limit), _f(tick)
+        if not ok:
+            return False, f"limit price not on a {tick} tick", _f(limit), _f(tick)
+        if stop is not None and not _on_tick(stop):
+            return False, f"stop price not on a {price_tick(stop)} tick", _f(stop), _f(price_tick(stop))
+        return True, "limit on a valid tick" if stop is None else "limit and stop on valid ticks", _f(limit), _f(tick)
 
     @staticmethod
     def _chk_market_present(ctx: RiskContext, symbol: str) -> CheckResult:
@@ -871,6 +916,38 @@ class RiskEngine:
         ok = through <= limits.MAX_THROUGH_TOUCH_BPS
         detail = _pick(ok, f"{what} by {_fq(max(through, ZERO))} bps", f"{what} by too much")
         return ok, detail, _fq(through), _f(limits.MAX_THROUGH_TOUCH_BPS)
+
+    @staticmethod
+    def _chk_stop_band(x: Exposure, stop: Decimal | None) -> CheckResult:
+        """Protective STOP_LIMIT geometry: stop meaningfully below the mid (but not absurdly far), limit at or below
+        the stop and within MAX_STOP_LIMIT_GAP_BPS of it."""
+        limit = _f(limits.MAX_PROTECTIVE_STOP_DISTANCE_BPS)
+        if stop is None or stop <= ZERO:
+            return False, "STOP_LIMIT exit without a positive stop price", None, limit
+        if x.mid is None or x.mid <= ZERO:
+            return False, "mid price unavailable", _f(stop), limit
+        if x.limit_price > stop:
+            return False, "STOP_LIMIT SELL limit above its stop", _f(x.limit_price), _f(stop)
+        gap = (stop - x.limit_price) / stop * BPS
+        if gap > limits.MAX_STOP_LIMIT_GAP_BPS:
+            return False, "stop-limit gap too wide (limit far below the stop)", _fq(gap), _f(limits.MAX_STOP_LIMIT_GAP_BPS)
+        distance = (x.mid - stop) / x.mid * BPS
+        if distance > limits.MAX_PROTECTIVE_STOP_DISTANCE_BPS:
+            return False, "protective stop too far below the mid to be protection", _fq(distance), limit
+        return True, f"protective stop {_fq(distance)} bps below mid, limit gap {_fq(gap)} bps", _fq(distance), limit
+
+    def _chk_stop_touch(self, ctx: RiskContext, x: Exposure, stop: Decimal | None) -> CheckResult:
+        """The stop must rest below the bid: at/above the bid it would trigger at once (use a marketable exit)."""
+        quote = self._quote_for(ctx, x.symbol)
+        if quote is None:
+            return False, "quote unavailable", None, None
+        if stop is None:
+            return False, "STOP_LIMIT exit without a stop price", None, _f(quote.bid)
+        distance = (quote.bid - stop) / quote.bid * BPS
+        if distance < limits.MIN_STOP_DISTANCE_BPS:
+            return (False, "stop at/too close to the bid: it would trigger immediately (submit a marketable exit "
+                    "instead)", _fq(distance), _f(limits.MIN_STOP_DISTANCE_BPS))
+        return True, f"stop rests {_fq(distance)} bps below the bid", _fq(distance), _f(limits.MIN_STOP_DISTANCE_BPS)
 
     def _chk_spread(self, x: Exposure) -> CheckResult:
         if x.spread_bps is None:
@@ -1095,11 +1172,62 @@ class RiskEngine:
         ok = a.equity >= limit
         return ok, "equity above floor" if ok else "account equity below floor", _f(a.equity), _f(limit)
 
-    def _chk_pending(self, ctx: RiskContext) -> CheckResult:
+    def _chk_pending(self, ctx: RiskContext, x: Exposure) -> CheckResult:
+        open_orders = [o for o in ctx.open_orders if _is_open(o)]
+        if x.side == Side.SELL:
+            sells = sum(1 for o in open_orders if o.side == Side.SELL and o.symbol == x.symbol)
+            if len(open_orders) >= limits.HARD_MAX_PENDING_ORDERS:
+                return False, "too many working orders overall", str(len(open_orders)), str(limits.HARD_MAX_PENDING_ORDERS)
+            ok = sells < limits.MAX_OPEN_SELLS_PER_SYMBOL
+            return (ok, "risk-reducing SELLs within the per-symbol cap" if ok else "too many working SELLs for this symbol",
+                    str(sells), str(limits.MAX_OPEN_SELLS_PER_SYMBOL))
+        # Working protective exits cannot add exposure, so they do not consume entry pending-order slots.
         limit = self._policy.max_pending_orders
-        n = sum(1 for o in ctx.open_orders if _is_open(o))
+        n = sum(1 for o in open_orders if not _is_protective(o))
         ok = n < limit
         return ok, "pending orders within limit" if ok else "too many pending orders", str(n), str(limit)
+
+    def _chk_holding_period(self, proposal: TradeProposal, ctx: RiskContext, x: Exposure) -> CheckResult:
+        sessions = proposal.holding_sessions or 1
+        if sessions == 1:
+            return True, "intraday holding (or risk-reducing exit)", str(sessions), "1"
+        pol = self._policy
+        if not pol.allow_overnight_positions:
+            return False, "overnight positions disabled by the active risk policy", str(sessions), "1"
+        if proposal.strategy_id not in pol.multi_day_strategy_allowlist:
+            return False, "strategy not on multi_day_strategy_allowlist", proposal.strategy_id, None
+        if sessions > pol.max_holding_sessions:
+            return False, "holding request exceeds the session cap", str(sessions), str(pol.max_holding_sessions)
+        if x.daily_pl_worst is None or x.pending_buy_notional is None:
+            return False, "overnight gap budget unknown; fail closed", None, None
+        # Count all held and pending exposure conservatively. A protective DAY stop cannot bound an overnight
+        # gap; include that stress independently of stop-distance loss and never resize the request.
+        held = ZERO
+        for position in ctx.positions:
+            if position.quantity == ZERO:
+                continue
+            if position.market_value is None:
+                return False, "position valuation missing for overnight gap stress", position.symbol, None
+            held += max(abs(position.market_value), abs(position.quantity * position.avg_entry_price))
+        stress = (held + x.pending_buy_notional + x.notional) * pol.overnight_gap_budget_bps / BPS
+        budget = max(ZERO, pol.max_daily_loss + min(x.daily_pl_worst, ZERO))
+        ok = stress <= budget
+        return (ok, "holding period and overnight gap stress authorized" if ok else
+                "overnight gap stress exceeds the remaining daily-loss budget", _f(stress), _f(budget))
+
+    @staticmethod
+    def _chk_entry_window(x: Exposure, now: datetime) -> CheckResult:
+        """No new entries in the last ENTRY_CUTOFF_BEFORE_CLOSE_SECONDS of the session (early closes included)."""
+        if x.side == Side.SELL:
+            return True, "not applicable: exits are allowed until the close", None, None
+        bounds = market_hours.session_bounds(now)
+        if bounds is None:
+            return False, "no XNYS session today; fail closed", now.isoformat(), None
+        cutoff = bounds[1] - timedelta(seconds=limits.ENTRY_CUTOFF_BEFORE_CLOSE_SECONDS)
+        ok = now < cutoff
+        detail = _pick(ok, "entry before the pre-close cutoff",
+                       "inside the pre-close entry cutoff: no new positions that could not be exited in regular hours")
+        return ok, detail, now.isoformat(), cutoff.isoformat()
 
     def _chk_rate_minute(self, ctx: RiskContext, now: datetime) -> CheckResult:
         limit = self._policy.max_orders_per_minute
@@ -1194,8 +1322,9 @@ class RiskEngine:
             symbol=proposal.symbol,
             side=proposal.side,
             quantity=proposal.quantity,
-            order_type=OrderType.LIMIT,
+            order_type=proposal.order_type,
             limit_price=proposal.limit_price,
+            stop_price=proposal.stop_price if proposal.order_type in PROTECTIVE_ORDER_TYPES else None,
             time_in_force=TimeInForce.DAY,
             extended_hours=False,
             policy_version=self._policy_version,
@@ -1228,6 +1357,7 @@ class RiskEngine:
         active_halts: Sequence[object] = (),
         self_recorded: bool = True,
         strategy_id: str | None = None,
+        proposal: TradeProposal | None = None,
     ) -> list[str]:
         """Last check at the order boundary, immediately before gateway submission.
 
@@ -1240,7 +1370,7 @@ class RiskEngine:
             return self._final_gate(
                 intent, ctx, verifier, active_policy_version, human_approval=human_approval,
                 approval_verifier=approval_verifier, active_halts=active_halts, self_recorded=self_recorded,
-                strategy_id=strategy_id,
+                strategy_id=strategy_id, proposal=proposal,
             )
         except Exception as exc:  # fail closed
             return [f"final gate internal error ({type(exc).__name__}: {exc}); fail closed"]
@@ -1257,6 +1387,7 @@ class RiskEngine:
         active_halts: Sequence[object],
         self_recorded: bool,
         strategy_id: str | None,
+        proposal: TradeProposal | None,
     ) -> list[str]:
         fails: list[str] = []
         now = self._now()
@@ -1327,21 +1458,27 @@ class RiskEngine:
         if self._policy_violations:
             fails.append("policy: active policy violates hard limits")
 
-        # -- health, halts, entries lock
+        # -- health, halts, entries lock (exits: the narrower exit lock; see SystemHealth.exits_blocked)
         h = ctx.health
+        is_exit = intent.side == Side.SELL
+        lock_ok = not h.exits_blocked if is_exit else not (h.entries_locked or h.lock_reasons)
+        lock_label = ("exits locked: " + ("; ".join(h.exit_block_reasons) or "reason unknown")) if is_exit else (
+            "entries locked: " + ("; ".join(h.lock_reasons) or "reason unknown"))
         for ok, label in (
             (h.feed_ok, f"feed not OK ({h.feed_detail or 'unknown'})"),
             (h.broker_connected, f"broker not connected ({h.broker_detail or 'unknown'})"),
             (h.reconciled, f"not reconciled ({h.reconcile_detail or 'unknown'})"),
             (h.engine_ok, f"engine not OK ({h.engine_detail or 'unknown'})"),
-            (not (h.entries_locked or h.lock_reasons), "entries locked: " + ("; ".join(h.lock_reasons) or "reason unknown")),
+            (lock_ok, lock_label),
             (h.strategy_state_ok, "strategy state not OK"),
             (h.permissions_ok, "permissions not OK"),
         ):
             if not ok:
                 fails.append(f"health: {label}")
-        if active_halts:
-            fails.append(f"halt: {len(active_halts)} active trading halt(s)")
+        blocking_halts = [x for x in active_halts if _halt_blocks_exits(x)] if is_exit else list(active_halts)
+        if blocking_halts:
+            fails.append(f"halt: {len(blocking_halts)} active trading halt(s)"
+                         + (" with scope ALL (exits blocked)" if is_exit else ""))
 
         # -- account
         a = ctx.account
@@ -1357,7 +1494,16 @@ class RiskEngine:
                 fails.append("account: not a paper account")
 
         # -- order shape (defence in depth; the intent is signed but the policy may have changed)
-        if intent.order_type != OrderType.LIMIT or intent.order_type not in pol.allowed_order_types:
+        if intent.order_type in PROTECTIVE_ORDER_TYPES:
+            stop = intent.stop_price
+            if intent.side != Side.SELL or stop is None:
+                fails.append("order: STOP_LIMIT only as a protective SELL exit with a stop price")
+            else:
+                if not _on_tick(stop):
+                    fails.append("order: stop price not on a valid tick")
+                if intent.limit_price > stop or (stop - intent.limit_price) / stop * BPS > limits.MAX_STOP_LIMIT_GAP_BPS:
+                    fails.append("order: stop-limit geometry invalid (limit above stop or gap too wide)")
+        elif intent.order_type != OrderType.LIMIT or intent.order_type not in pol.allowed_order_types:
             fails.append("order: LIMIT only")
         if intent.time_in_force != TimeInForce.DAY:
             fails.append("order: DAY only")
@@ -1376,9 +1522,33 @@ class RiskEngine:
             fails.append(f"session: {detail}")
         others = [o for o in ctx.open_orders if _is_open(o) and o.client_order_id != intent.client_order_id]
         if intent.side == Side.BUY:
+            # The broker intent identifies the immutable proposal; holding instructions remain in that durable
+            # proposal, not the broker order. Recheck them using the active policy before sending an entry.
+            if proposal is None:
+                if pol.allow_overnight_positions:
+                    fails.append("holding: originating proposal required when overnight holding is enabled")
+            else:
+                proposal, proposal_problem = _revalidate_one(proposal, "originating proposal")
+                if proposal_problem:
+                    fails.append(f"holding: {proposal_problem}")
+                elif (proposal.proposal_id != intent.proposal_id or proposal.causal_id != intent.causal_id
+                      or proposal.symbol != intent.symbol or proposal.side != intent.side
+                      or proposal.quantity != intent.quantity or proposal.limit_price != intent.limit_price
+                      or proposal.order_type != intent.order_type or proposal.time_in_force != intent.time_in_force):
+                    fails.append("holding: originating proposal does not match the signed intent")
+                else:
+                    holding_ctx = ctx.model_copy(update={"open_orders": tuple(others)})
+                    ok, detail, _, _ = self._chk_holding_period(
+                        proposal, holding_ctx, self.recompute(proposal, holding_ctx))
+                    if not ok:
+                        fails.append(f"holding: {detail}")
             if intent.quantity * intent.limit_price > pol.max_order_notional:
                 fails.append("order: notional exceeds max_order_notional")
             fails.extend(self._entry_money_failures(intent, ctx, others))
+            bounds = market_hours.session_bounds(now)
+            cutoff = None if bounds is None else bounds[1] - timedelta(seconds=limits.ENTRY_CUTOFF_BEFORE_CLOSE_SECONDS)
+            if cutoff is None or now >= cutoff:
+                fails.append("session: inside the pre-close entry cutoff (no new entries)")
         else:
             held = sum((p.quantity for p in ctx.positions if p.symbol == intent.symbol), ZERO)
             pending_sells = sum(
@@ -1386,8 +1556,17 @@ class RiskEngine:
             )
             if intent.quantity > held - pending_sells:
                 fails.append("long-only: SELL exceeds the existing long position (no shorting)")
-        if len(others) >= pol.max_pending_orders:
-            fails.append(f"orders: {len(others)} other pending order(s) (max {pol.max_pending_orders})")
+        if intent.side == Side.SELL:
+            sells = sum(1 for o in others if o.side == Side.SELL and o.symbol == intent.symbol)
+            if sells >= limits.MAX_OPEN_SELLS_PER_SYMBOL:
+                fails.append(f"orders: {sells} other working SELL(s) for {intent.symbol} "
+                             f"(max {limits.MAX_OPEN_SELLS_PER_SYMBOL})")
+            if len(others) >= limits.HARD_MAX_PENDING_ORDERS:
+                fails.append(f"orders: {len(others)} other working order(s) (hard max {limits.HARD_MAX_PENDING_ORDERS})")
+        else:
+            entry_others = [o for o in others if not _is_protective(o)]
+            if len(entry_others) >= pol.max_pending_orders:
+                fails.append(f"orders: {len(entry_others)} other pending order(s) (max {pol.max_pending_orders})")
 
         # -- duplicates
         variants = fingerprint_variants(

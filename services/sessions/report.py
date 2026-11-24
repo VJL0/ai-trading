@@ -11,6 +11,7 @@ from decimal import Decimal
 from typing import Any, Final
 
 from packages.core.db import Database
+from services.order_ledger.timeutil import iso as ledger_iso
 
 from .calendar import et_label, parse_utc
 from .explain import failed_checks
@@ -103,9 +104,22 @@ def build_report(db: Database, session: dict[str, Any], cycles: list[dict[str, A
         "session": session, "performance": perf, "cycles": len(cycles),
         "decisions": dict(decisions), "top_no_trade_reasons": top_reasons, "top_risk_rejections": top_rej,
         "trades": trades, "api_cost_usd": format(cost, "f"),
+        "round_trips": round_trips(db, started=started, cut=cut),
     }
     report["narrative"] = narrative(session, report, started=started, cut=cut)
     return report
+
+
+def round_trips(db: Database, *, started: datetime, cut: datetime) -> list[dict[str, Any]]:
+    """Positions the position manager opened inside the session window: exit reason and realized P&L from fills."""
+    try:
+        rows = db.query(
+            "SELECT symbol, status, opened_at, closed_at, close_reason, exit_reason, entry_quantity, entry_avg_price,"
+            " exit_quantity, exit_avg_price, realized_pl, stop_price FROM position_plans"
+            " WHERE opened_at >= ? AND opened_at <= ? ORDER BY opened_at LIMIT 100", (ledger_iso(started), ledger_iso(cut)))
+    except Exception:  # position tables absent in an old database: report without round trips
+        return []
+    return [dict(r) for r in rows]
 
 
 def narrative(session: dict[str, Any], rep: dict[str, Any], *, started: datetime, cut: datetime) -> str:

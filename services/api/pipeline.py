@@ -157,8 +157,9 @@ class DecisionCycle:
             act.stage(stage, "running", item=intent.client_order_id)
             act.activity("submit", f"Submitting {intent.side} {intent.quantity} {intent.symbol} limit {intent.limit_price} "
                          f"to {rt.settings.gateway.value} ({rt.execution_label.value})", actor=actor, causal_id=causal_id)
-            await rt.prepare_gate(snapshot)
-            order = await rt.execution.submit(intent)
+            async with rt.submit_lock:
+                await rt.prepare_gate(snapshot)
+                order = await rt.execution.submit(intent)
             refreshed = rt.ledger.get_order(intent.client_order_id)
             state = getattr(getattr(refreshed, "state", None), "value", None)
             summary["order"] = _jsonable(refreshed if refreshed is not None else order)

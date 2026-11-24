@@ -48,6 +48,7 @@ from packages.core.ids import new_id
 from packages.core.money import D, floor_shares
 
 from .costs import CostModel
+from .decision import GROSS, NET, decide_edge
 from .frames import (
     float_to_dec,
     horizon_bars,
@@ -72,10 +73,17 @@ DEFAULT_HORIZON_MINUTES = 60
 
 
 class ModelPrediction(NamedTuple):
+    """One model forecast. ``basis`` says whether ``expected_return_bps`` is GROSS or already NET of the training
+    cost convention (round trip at ``reference_notional``); the engine then charges live costs exactly once
+    (``services.research.decision``). ``uncertainty_bps`` is an explicit buffer subtracted before the threshold."""
+
     expected_return_bps: float
     score: float
     probability_up: float | None
     probability_calibrated: bool
+    basis: str = "GROSS"
+    reference_notional: float | None = None
+    uncertainty_bps: float = 0.0
 
 
 class SignalModel(Protocol):
@@ -129,6 +137,7 @@ class _Scored:
     fees_bps: Decimal
     slippage_bps: Decimal
     net_edge_bps: Decimal
+    uncertainty_bps: Decimal
     features_asof: pd.Timestamp
     dataset_version: str
     is_simulated: bool
@@ -295,6 +304,7 @@ class QuantSignalEngine:
                     est_fees_bps=s.fees_bps,
                     est_slippage_bps=s.slippage_bps,
                     net_edge_bps=s.net_edge_bps,
+                    uncertainty_bps=s.uncertainty_bps,
                     is_candidate=is_candidate,
                     reason=reason[:2000],
                     features_asof=s.features_asof.to_pydatetime(),
@@ -319,6 +329,9 @@ class QuantSignalEngine:
         h = horizon_bars(self.horizon_minutes, tf)
         tstat = mom / (sigma * math.sqrt(self.lookback))
         expected = self.shrinkage * (mom / self.lookback) * h * 10_000.0
+        basis = GROSS
+        reference_notional: float | None = None
+        uncertainty = 0.0
         probability: float | None = None
         calibrated = False
         score = tstat
@@ -334,6 +347,9 @@ class QuantSignalEngine:
                 expected = float("nan")
             else:
                 expected = pred.expected_return_bps
+                basis = NET if str(pred.basis).upper() == NET else GROSS
+                reference_notional = pred.reference_notional
+                uncertainty = max(float(pred.uncertainty_bps or 0.0), 0.0)
                 score = pred.score
                 probability = pred.probability_up
                 # a calibrated label needs BOTH the prediction's claim and the model's evaluated calibration
@@ -353,6 +369,16 @@ class QuantSignalEngine:
         adv = Decimal(f"{adv_raw:.0f}") if math.isfinite(adv_raw) and adv_raw > 0 else None
         qty = max(Decimal(1), floor_shares(self.order_notional / price))
         rt = self.cost_model.estimate_round_trip(sym, qty, price, spread_bps=spread_bps, adv_shares=adv)
+        assumed = 0.0
+        if basis == NET and math.isfinite(expected):
+            # undo exactly the cost the model was trained to deduct (same function, same live inputs, training notional)
+            ref = D(str(reference_notional)) if reference_notional else self.order_notional
+            ref_qty = max(Decimal(1), floor_shares(ref / price))
+            assumed = float(self.cost_model.estimate_round_trip(sym, ref_qty, price, spread_bps=spread_bps,
+                                                                adv_shares=adv).total_bps)
+        edge = decide_edge(expected if math.isfinite(expected) else float("nan"), basis=basis,
+                           live_cost_bps=float(rt.total_bps), assumed_cost_bps=assumed, uncertainty_bps=uncertainty,
+                           threshold_bps=float(self.min_net_edge_bps), horizon_minutes=self.horizon_minutes)
         blockers: list[str] = []
         age = asof - last["end_ts"]
         max_age = self._max_age(tf)
@@ -385,21 +411,31 @@ class QuantSignalEngine:
             blockers.append(f"model horizon {self.model.horizon_bars} bars != engine horizon {h} bars")
         if not math.isfinite(expected):
             blockers.append("no expected return")
-            expected = 0.0
-        elif expected <= 0:
-            blockers.append("expected return not positive (long-only)")
-        exp_dec = float_to_dec(expected, 4)
-        net = (exp_dec - rt.total_bps).quantize(Decimal("0.0001"))
+            gross = 0.0
+            unc_dec = Decimal(0)
+        else:
+            gross = edge.gross_bps
+            unc_dec = float_to_dec(edge.uncertainty_bps, 4)
+            if gross <= 0:
+                blockers.append("expected return not positive (gross, long-only)")
+        exp_dec = float_to_dec(gross, 4)
+        # the decision quantity: gross - live round trip (charged once) - explicit uncertainty buffer
+        net = (exp_dec - rt.total_bps - unc_dec).quantize(Decimal("0.0001"))
+        if basis == NET and math.isfinite(expected):
+            note += f"; {edge.explain()}"
+        elif uncertainty:
+            note += f"; uncertainty buffer {uncertainty:.2f} bps"
         return _Scored(
             symbol=sym,
             score=score,
-            expected_bps=expected,
+            expected_bps=gross,
             probability=probability,
             calibrated=calibrated,
             spread_bps=rt.spread_bps,
             fees_bps=rt.fees_bps,
             slippage_bps=rt.slippage_bps,
             net_edge_bps=net,
+            uncertainty_bps=unc_dec,
             features_asof=last["available_at_ts"],
             dataset_version=str(last["dataset_version"]),
             is_simulated=bool(sb["is_synthetic"].any()),

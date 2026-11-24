@@ -39,6 +39,8 @@ EXPECTED_TOOLS = {
     # PAPER sessions + operations (services.sessions; see tests/unit/tools/test_tools_sessions_*.py)
     "start_paper_session", "stop_session", "schedule_session", "cancel_schedule", "get_session_status",
     "list_schedules", "get_session_report", "explain_decisions", "get_performance", "get_activity", "get_system_health",
+    # quantlab multi-asset research (services.quantlab): read views + one development-only experiment tool
+    "get_capabilities", "get_research_results", "get_opportunities", "run_research_experiment",
 }
 SERVICES_TOOLS = Path(__file__).resolve().parents[3] / "services" / "tools"
 
@@ -46,10 +48,11 @@ SERVICES_TOOLS = Path(__file__).resolve().parents[3] / "services" / "tools"
 def test_exact_tool_set_and_categories() -> None:
     assert set(TOOL_NAMES) == EXPECTED_TOOLS
     assert set(MUTATING_TOOL_NAMES) == {"propose_paper_trade", "request_halt", "cancel_paper_order", "run_quant_cycle",
-                                        "start_paper_session", "stop_session", "schedule_session", "cancel_schedule"}
+                                        "start_paper_session", "stop_session", "schedule_session", "cancel_schedule",
+                                        "run_research_experiment"}
     for t in TOOL_REGISTRY.values():
         assert t.category in registry.CATEGORIES
-        assert (t.category == "paper_trading") == t.mutating
+        assert (t.category in ("paper_trading", "research")) == t.mutating
     assert set(handlers._HANDLERS) == set(TOOL_REGISTRY)  # pyright: ignore[reportPrivateUsage]
 
 
@@ -229,7 +232,7 @@ def test_descriptions_are_compact_and_paper_scoped(name: str) -> None:
 def test_catalog_is_token_economical() -> None:
     blob = json.dumps(openai_function_tools(), separators=(",", ":"))
     # The whole tool surface stays a few thousand tokens (budget 14,000 chars for the original 14 tools; 16,000 since
-    # the 11 session/operations tools were added).
-    assert len(blob) < 16_000
+    # the 11 session/operations tools were added; 19,000 since the 4 quantlab research tools were added).
+    assert len(blob) < 19_000
     sig = inspect.signature(registry.catalog)
     assert not sig.parameters

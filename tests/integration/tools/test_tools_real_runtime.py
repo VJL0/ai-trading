@@ -68,7 +68,8 @@ async def test_every_read_tool_validates_against_the_real_runtime(rt: Any) -> No
             "get_model_report": {}, "get_signals": {"limit": 5},
             "get_portfolio": {}, "get_orders": {}, "get_risk_status": {},
             "get_session_status": {}, "list_schedules": {}, "explain_decisions": {"limit": 5}, "get_performance": {},
-            "get_activity": {"limit": 5}, "get_system_health": {}}
+            "get_activity": {"limit": 5}, "get_system_health": {}, "get_capabilities": {},
+            "get_research_results": {}, "get_opportunities": {}}
     # get_order needs an order (covered below); get_session_report needs a session
     # (tests/integration/sessions/test_sessions_api_e2e.py).
     assert set(args) == set(READ_ONLY_TOOL_NAMES) - {"get_order", "get_session_report"}

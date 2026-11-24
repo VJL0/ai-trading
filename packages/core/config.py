@@ -55,6 +55,10 @@ class Settings(BaseSettings):
     sol_effort: Literal["low", "medium", "high"] = "medium"
     model_timeout_s: float = 120.0
     reconcile_interval_s: float = 30.0
+    data_pipeline_enabled: bool = Field(
+        default=False, description="run the history pipeline in the API process after each XNYS close (real feeds only)")
+    data_pipeline_history_days: int = 730
+    data_pipeline_max_requests: int = 200
     use_keychain: bool = True
     log_level: str = "INFO"
 

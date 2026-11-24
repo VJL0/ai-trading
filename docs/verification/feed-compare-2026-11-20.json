@@ -1,0 +1,153 @@
+{
+ "errors": {},
+ "real_alpaca_data": true,
+ "source": "alpaca historical bars: feed=iex vs feed=sip (read-only)",
+ "summary": {
+  "interpretation": [
+   "Coverage below 1.0 means minutes with no IEX trade: IEX minute bars are missing there, never filled.",
+   "Close differences are the price error of using IEX prints instead of consolidated prints for the same minute; compare them with the strategy's expected edge and cost estimates before deciding.",
+   "Training on historical SIP while trading on real-time IEX breaks research/runtime parity (Phase 3); real-time SIP needs the paid Algo Trader Plus plan, which this system never purchases or enables."
+  ],
+  "median_close_diff_bps_p95": 3.2458,
+  "median_iex_minute_coverage": 0.9946,
+  "median_iex_volume_share": 0.0538
+ },
+ "symbols": {
+  "AAPL": {
+   "close_diff_bps": {
+    "max": 9.4151,
+    "median": 0.4289,
+    "p95": 2.2702
+   },
+   "common_minutes": 1950,
+   "expected_regular_minutes": 1950,
+   "iex_minute_coverage": 1.0,
+   "iex_minutes": 1950,
+   "iex_volume_share": 0.0498,
+   "minutes_missing_in_iex_present_in_sip": 0,
+   "realized_vol_ratio_iex_over_sip": 0.9911,
+   "return_correlation_1m": 0.9758,
+   "sessions": 5,
+   "sip_minute_coverage": 1.0,
+   "sip_minutes": 1950,
+   "vwap_diff_bps": {
+    "median": 0.3805,
+    "p95": 1.6227
+   }
+  },
+  "KO": {
+   "close_diff_bps": {
+    "max": 11.1789,
+    "median": 0.5048,
+    "p95": 3.0022
+   },
+   "common_minutes": 1930,
+   "expected_regular_minutes": 1950,
+   "iex_minute_coverage": 0.9897,
+   "iex_minutes": 1930,
+   "iex_volume_share": 0.0864,
+   "minutes_missing_in_iex_present_in_sip": 20,
+   "realized_vol_ratio_iex_over_sip": 0.975,
+   "return_correlation_1m": 0.9344,
+   "sessions": 5,
+   "sip_minute_coverage": 1.0,
+   "sip_minutes": 1950,
+   "vwap_diff_bps": {
+    "median": 0.3819,
+    "p95": 1.8331
+   }
+  },
+  "MSFT": {
+   "close_diff_bps": {
+    "max": 14.1381,
+    "median": 0.7681,
+    "p95": 3.9595
+   },
+   "common_minutes": 1949,
+   "expected_regular_minutes": 1950,
+   "iex_minute_coverage": 0.9995,
+   "iex_minutes": 1949,
+   "iex_volume_share": 0.0579,
+   "minutes_missing_in_iex_present_in_sip": 1,
+   "realized_vol_ratio_iex_over_sip": 0.9971,
+   "return_correlation_1m": 0.9638,
+   "sessions": 5,
+   "sip_minute_coverage": 1.0,
+   "sip_minutes": 1950,
+   "vwap_diff_bps": {
+    "median": 0.5813,
+    "p95": 2.8709
+   }
+  },
+  "QQQ": {
+   "close_diff_bps": {
+    "max": 18.5823,
+    "median": 1.079,
+    "p95": 5.7948
+   },
+   "common_minutes": 1893,
+   "expected_regular_minutes": 1950,
+   "iex_minute_coverage": 0.9708,
+   "iex_minutes": 1893,
+   "iex_volume_share": 0.0134,
+   "minutes_missing_in_iex_present_in_sip": 57,
+   "realized_vol_ratio_iex_over_sip": 1.0082,
+   "return_correlation_1m": 0.9057,
+   "sessions": 5,
+   "sip_minute_coverage": 1.0,
+   "sip_minutes": 1950,
+   "vwap_diff_bps": {
+    "median": 0.8704,
+    "p95": 3.8929
+   }
+  },
+  "SPY": {
+   "close_diff_bps": {
+    "max": 8.9916,
+    "median": 0.4248,
+    "p95": 2.3192
+   },
+   "common_minutes": 1949,
+   "expected_regular_minutes": 1950,
+   "iex_minute_coverage": 0.9995,
+   "iex_minutes": 1949,
+   "iex_volume_share": 0.0354,
+   "minutes_missing_in_iex_present_in_sip": 1,
+   "realized_vol_ratio_iex_over_sip": 1.0037,
+   "return_correlation_1m": 0.9697,
+   "sessions": 5,
+   "sip_minute_coverage": 1.0,
+   "sip_minutes": 1950,
+   "vwap_diff_bps": {
+    "median": 0.4045,
+    "p95": 1.7339
+   }
+  },
+  "XLF": {
+   "close_diff_bps": {
+    "max": 12.4224,
+    "median": 0.8567,
+    "p95": 3.4895
+   },
+   "common_minutes": 1888,
+   "expected_regular_minutes": 1950,
+   "iex_minute_coverage": 0.9682,
+   "iex_minutes": 1888,
+   "iex_volume_share": 0.0814,
+   "minutes_missing_in_iex_present_in_sip": 62,
+   "realized_vol_ratio_iex_over_sip": 1.0002,
+   "return_correlation_1m": 0.9018,
+   "sessions": 5,
+   "sip_minute_coverage": 1.0,
+   "sip_minutes": 1950,
+   "vwap_diff_bps": {
+    "median": 0.4848,
+    "p95": 2.2614
+   }
+  }
+ },
+ "window": {
+  "end": "2026-11-19T21:00:00Z",
+  "start": "2026-11-13T14:30:00Z"
+ }
+}

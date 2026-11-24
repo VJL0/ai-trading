@@ -206,6 +206,41 @@ class FakeToolRuntime:
         ).model_dump(mode="json") for i, s in enumerate(universe)]
         return {"predictions": preds, "asof": _iso(now), "is_simulated": True, "registry_version": "reg_test_1"}
 
+    def quantlab_view(self, kind: str, family: str | None = None) -> dict[str, Any]:
+        self._rec("quantlab_view")
+        if kind == "capabilities":
+            return {"status": "OK", "asof": _iso(NOW), "content_hash": "abc", "account": {"type": "margin",
+                    "crypto_status": "ACTIVE", "options_trading_level": 3, "pdt_note": "PDT retired"},
+                    "asset_classes": {"crypto_spot": {"research_eligible": True, "execution_eligible": False,
+                                                      "api_schema": {"status": "OK"}, "market_data": {"status": "OK"},
+                                                      "account_permission": {"status": "OK"},
+                                                      "policy_execution": {"status": "NOT_IMPLEMENTED",
+                                                                           "detail": "research only"}}},
+                    "market_data": {"crypto_bars": {"status": "OK"}}, "option_underlyings": {"SPX": {"roots": ["SPX"]}}}
+        if kind == "research":
+            fam = {"family": "A_momentum", "asset_class": "us_equity", "passed_dev_gate": False,
+                   "selected_variant": "n=10", "selected_spec_hash": "h", "wf_oos": {"sharpe": 0.4, "cagr": 0.08,
+                   "max_drawdown": -0.3}, "benchmark": "SPY buy-and-hold", "benchmark_wf_period": {"sharpe": 0.7},
+                   "dsr": 0.5, "n_trials": 120, "fail_reasons": ["DSR 0.500 < 0.95"]}
+            if family:
+                return {"status": "OK", "summary": fam, "detail": {"dsr": {"dsr": 0.5}, "walk_forward": {
+                    "choices": [{"year": 2020}], "metrics": {"sharpe": 0.4}}}}
+            return {"status": "OK", "updated_at": _iso(NOW), "holdout": ["2025-11-21", "2026-11-20"],
+                    "families": [fam], "holdout_results": [], "no_edge_note": "backtests"}
+        if kind == "strategies":
+            return {"status": "OK", "strategies": [{"strategy_id": "A_momentum:h", "state": "REJECTED"}]}
+        if kind == "opportunities":
+            return {"status": "OK", "scan": {"asof": "2026-11-20", "regime": {"label": "RISK_ON"},
+                    "relative_strength": [{"symbol": "AAPL", "score": 1.2, "why": "rs", "family": "A_momentum"}]},
+                    "selection": {"action": "NO_TRADE", "reason": "no executable candidate", "ranked": []},
+                    "crypto": {}, "options": {}}
+        return {"status": "MISSING"}
+
+    def quantlab_experiment(self, spec: dict[str, Any], actor: str) -> dict[str, Any]:
+        self._rec("quantlab_experiment")
+        return {"accepted": True, "status": "DONE", "spec": spec, "result": {"passed_dev_gate": False, "dsr": 0.1,
+                "wf_oos_sharpe": 0.2, "fail_reasons": ["DSR 0.100 < 0.95"], "n_trials": 3}}
+
     def model_report(self) -> dict[str, Any]:
         self._rec("model_report")
         return {
@@ -273,6 +308,10 @@ class FakeToolRuntime:
                                 {"from_state": "PROPOSED", "to_state": row["state"], "at": _iso(NOW), "reason": "gateway"}],
                 "fills": ([{"fill_id": "fill_1", "quantity": row["filled_quantity"], "price": row["avg_fill_price"],
                             "ts": _iso(NOW), "broker_exec_id": "x1"}] if row["avg_fill_price"] else [])}
+
+    def positions_view(self) -> dict[str, Any]:
+        self._rec("positions_view")
+        return {"open": [], "closed": [], "safety": [], "note": "a protective stop is a trigger, not a guaranteed price"}
 
     def risk_view(self) -> dict[str, Any]:
         self._rec("risk_view")

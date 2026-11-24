@@ -42,6 +42,27 @@ Only `ALPACA_PAPER_KEY_ID` and `ALPACA_PAPER_SECRET_KEY` are required for broker
 LEAN is used for research/backtesting; no QuantConnect deployment license or credentials are needed.
 See [SDK paper onboarding](docs/runbooks/broker-paper-onboarding.md).
 
+## Roadmap work (2026-11)
+
+* [Roadmap](docs/roadmap/README.md) and [progress / evidence](docs/roadmap/PROGRESS.md).
+* [Position lifecycle](docs/architecture/position-lifecycle.md): autonomous protective stops and exits, exit-aware
+  locks, explicit unprotected-position safety states. A stop is a trigger, never a guaranteed exit price.
+* [Data pipeline, research snapshots and research/runtime parity](docs/architecture/data-pipeline-and-parity.md):
+  `make data-pipeline`, `make data-snapshots`, `make compare-feeds`.
+
+## Multi-asset research (2026-11)
+
+* [Design](docs/architecture/multi-asset-research.md), [runbook](docs/runbooks/quantlab.md) and the
+  [results report](docs/verification/multi-asset-research-2026-11-23.md).
+* `make capabilities` verifies what the Alpaca account and this build's risk policy actually allow per asset
+  class (equities, short, margin, leveraged ETPs, crypto, options). Research eligibility never implies execution.
+* `make quantlab-data`, `make quantlab-research`, `make quantlab-daily`: point-in-time daily SIP panels including
+  delisted names, crypto, stocks-in-play intraday bars; strategy families compared after costs with walk-forward
+  selection, deflated Sharpe, SPA, PBO and a one-use protected holdout; evidence-weighted cross-asset selection
+  that returns `NO_TRADE` unless a validated, executable opportunity exists.
+* Read-only API `GET /api/v1/quantlab/*`, MCP tools `get_capabilities`, `get_research_results`,
+  `get_opportunities`, `run_research_experiment`, and the dashboard's "Multi-asset research" panel.
+
 ## Persistent trading memory
 
 The API automatically journals decisions and projects searchable history into a local SQLite memory store.

@@ -102,6 +102,23 @@ Exits are deliberately exempt from entry-only limits: order and position notiona
 loss, equity floor, cash and max positions. These are SELLs that reduce a long. Exits still need
 everything else, including health, session, quote, spread and band.
 
+Position lifecycle additions (Phase 1, see [position lifecycle](../../docs/architecture/position-lifecycle.md)):
+
+* `order_type_limit_only` also accepts `STOP_LIMIT` for a **protective SELL** only. For it, `limit_vs_mid` and
+  `limit_vs_touch` check the stop geometry instead: the stop at least `MIN_STOP_DISTANCE_BPS` below the bid (a stop at
+  the bid would trigger at once), at most `MAX_PROTECTIVE_STOP_DISTANCE_BPS` below the mid, and the limit at or below
+  the stop within `MAX_STOP_LIMIT_GAP_BPS`. `limit_price_tick` covers the stop too. The stop is signed
+  (`lat-intent-v2`); a stop is a trigger, never a guaranteed price.
+* `health_entries_unlocked` for a SELL reads the exit lock (`SystemHealth.exits_locked/exit_lock_reasons`; unset =>
+  same as entries, fail closed): ENTRIES-scope halts and position safety states do not block exits; state
+  uncertainty and ALL-scope halts do. `final_gate` applies the same rule and ignores ENTRIES-scope `active_halts`
+  for SELLs.
+* `entry_window` (new required check): no BUY in the last `ENTRY_CUTOFF_BEFORE_CLOSE_SECONDS` (30 min) of the
+  session, early closes included; also enforced at the final gate. Exits are never cut off.
+* `max_pending_orders`: working protective STOP_LIMIT SELLs do not consume entry slots. SELLs are capped
+  structurally at `MAX_OPEN_SELLS_PER_SYMBOL` (2) working SELLs per symbol and `HARD_MAX_PENDING_ORDERS` overall;
+  `long_only` still bounds their total quantity by the long.
+
 ## `authorize` and `final_gate`
 
 `authorize` signs only an APPROVED decision that this engine instance issued. A digest registry covers
