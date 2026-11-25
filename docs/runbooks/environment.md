@@ -1,34 +1,29 @@
-# Environment variable and secret schema
+# Local configuration
 
-## Secrets (Keychain service `local-ai-trader`, account = name; or git-ignored `.env`)
-| Name | Used by | Notes |
-|---|---|---|
-| `ALPACA_PAPER_KEY_ID` | market data, read-only reconciliation, LEAN paper launcher | must start with `PK` |
-| `ALPACA_PAPER_SECRET_KEY` | same | never logged, never in prompts/GUI env |
-| `ANTHROPIC_API_KEY` | `services/ai` Claude adapter | used only when `LAT_AI_TRANSPORT=real` |
-| `OPENAI_API_KEY` | `services/ai` Sol adapter | used only when `LAT_AI_TRANSPORT=real` |
-| `ALPACA_LIVE_KEY_ID` / `ALPACA_LIVE_SECRET_KEY` | nothing in this build | presence-only; `SecretStore.get` refuses them |
-| *(ignored)* `APCA_API_KEY_ID`, `APCA_API_SECRET_KEY`, `ALPACA_API_KEY`, `ALPACA_SECRET_KEY` | — | ambiguous paper/live names are never read |
+With the project MCP server connected, tell the AI “start trading.” Use [`.env.example`](../../.env.example)
+as the reference for the git-ignored `.env` file. The operator-facing `LAT_TRADING_MODE` accepts `PAPER` or
+`LIVE`. A Live selection is refused in this build.
 
-Generated local secrets (per namespace, `var/<ns>/keys/`, mode 0600, git-ignored):
-`intent_signing.pem` (risk engine private key), `intent_signing.pub.pem` (gateway/LEAN verification),
-`operator.token` (human operator: resume, policy edits, run-cycle), `engine.token` (local LEAN bridge only).
+To place Alpaca paper orders, set `LAT_TRADING_MODE=PAPER` and add `ALPACA_PAPER_KEY_ID` and
+`ALPACA_PAPER_SECRET_KEY`. The key ID starts with `PK`. With the selection omitted, broker credentials alone
+permit market-data reads. Paper without credentials uses internal simulation. The feed defaults to IEX with
+paper credentials and synthetic data otherwise.
 
-## Settings (`LAT_` prefix)
-| Variable | Default | Values |
-|---|---|---|
-| `LAT_MODE` | `PAPER` | `RESEARCH_ONLY`, `REPLAY`, `PAPER`, `LIVE_APPROVAL`*, `BOUNDED_LIVE`* (*always denied in this build) |
-| `LAT_GATEWAY` | `FAKE` | `FAKE` (SIMULATED), `LEAN_PAPER_SIM` (SIMULATED), `LEAN_ALPACA_PAPER` (PAPER) |
-| `LAT_FEED_MODE` | auto | `IEX_FREE` (default with paper keys), `SIP_PAID` (only if you bought it), `SIMULATED` |
-| `LAT_AI_TRANSPORT` | `fake` | `fake` (explicit fake HTTP transports), `real` (paid API calls) |
-| `LAT_CLAUDE_MODEL` / `LAT_CLAUDE_EFFORT` | `claude-opus-5-5` / `high` | effort `high`, `xhigh`, `max` |
-| `LAT_SOL_MODEL` / `LAT_SOL_EFFORT` | `gpt-6.1-sol` / `medium` | effort `low`, `medium`, `high` |
-| `LAT_API_HOST` / `LAT_API_PORT` | `127.0.0.1` / `8765` | non-loopback hosts are rejected |
-| `LAT_DASHBOARD_PORT` | `5173` | |
-| `LAT_SYMBOLS` | `["SPY","QQQ","AAPL","MSFT"]` | JSON list |
-| `LAT_RECONCILE_INTERVAL_S` | `30` | |
-| `LAT_USE_KEYCHAIN` | `true` | |
-| `LAT_LOG_LEVEL` | `INFO` | |
+The credential lookup order is macOS Keychain, the process environment, then `.env`. To use Keychain, add
+each variable as the account under the `local-ai-trader` service. The command prompts for the value.
 
-Namespaces: `RESEARCH_ONLY→var/research`, `REPLAY→var/replay`, `PAPER→var/paper`, live modes→`var/live`.
-Switching `LAT_MODE` therefore switches ledger DB, keys and tokens — paper state is never reused for live.
+```sh
+security add-generic-password -s local-ai-trader -a ALPACA_PAPER_KEY_ID -w
+security add-generic-password -s local-ai-trader -a ALPACA_PAPER_SECRET_KEY -w
+```
+
+The authenticated operator owns the active, versioned risk policy and any halt or resume decision.
+`LAT_AGENT_MAX_PROPOSALS_PER_HOUR` optionally sets the direct-agent proposal ceiling. Sessions also pass the
+policy, signed-intent and final execution gates on every order. Live execution remains compiled off.
+Operator and agent tokens and intent-signing keys are generated under `var/<mode>/keys/`.
+
+Restart the API and reconnect MCP after changing the local configuration. Existing advanced runtime
+overrides continue to work, with explicit process variables taking precedence over `.env`.
+For example, developers can set `LAT_API_PORT` for a local port conflict or
+`LAT_PROJECT_ROOT` to an absolute path for an isolated workspace. Demo and replay are internal verification
+paths. The start-session tool uses the quant workflow without in-app inference by default.

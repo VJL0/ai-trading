@@ -18,9 +18,9 @@ Status: **Accepted (frozen by the project owner)**. This ADR records decisions; 
 | Execution engine language | C# (LEAN) | .NET SDK 10.0.403 (project-local `.tools/dotnet`) |
 | Structured store | SQLite WAL, single writer, migrations, strict transactions | stdlib sqlite3 |
 | Analytical store | DuckDB + Parquet with provenance manifests | duckdb 2.0.0, pyarrow |
-| Dashboard | React 19 + TypeScript + Vite + TradingView Lightweight Charts (attribution shown) | see `apps/dashboard/package.json` |
-| Tooling | uv, pnpm, make, local supervisor (`scripts/supervisor.py`), optional local Docker | uv 0.13.0, pnpm 12.11.2 |
-| Testing | pytest, hypothesis, ruff, pyright, Vitest, Playwright, .NET tests | lock files |
+| Monitor | Dependency-free HTML served on the local API | `/monitor` |
+| Tooling | uv, make, local supervisor (`scripts/supervisor.py`), optional local Docker | uv 0.13.0 |
+| Testing | pytest, hypothesis, ruff, pyright, .NET tests | lock files |
 | Telemetry | structured JSON logs, SQLite hash-chained audit events | no hosted observability |
 
 ## Engineering decisions made while implementing (within the frozen architecture)

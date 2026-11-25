@@ -24,7 +24,7 @@ def main(argv: list[str] | None = None) -> int:
         print(json.dumps(snap, indent=2) if snap else "no snapshot")
         return 0 if snap else 2
     try:
-        http = ReadOnlyAlpacaHttp.from_secrets(settings.project_root)
+        http = ReadOnlyAlpacaHttp.from_secrets(settings.project_root, use_keychain=settings.use_keychain)
     except MissingAlpacaCredentials as exc:
         print(str(exc), file=sys.stderr)
         return 2

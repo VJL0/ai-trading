@@ -1,4 +1,4 @@
-"""Read-only views of quantlab artifacts for the API, dashboard and agent tools (files only; no computation that
+"""Read-only views of quantlab artifacts for the API and agent tools (files only; no computation that
 could touch the holdout, no broker access). ``run_agent_experiment`` launches a bounded development-only
 evaluation of a declarative factor spec in a separate process."""
 
@@ -58,7 +58,12 @@ def research(root: Path, family: str | None = None) -> dict[str, Any]:
             return {"status": "UNKNOWN_FAMILY", "families": sorted(fams)}
         detail = _read(out / "runs" / str(info.get("run_id")) / f"{family}.json") or {}
         detail.pop("variants", None)
-        return {"status": "OK", "summary": info, "detail": detail}
+        result: dict[str, Any] = {"status": "OK", "summary": info, "detail": detail}
+        if family == "K_xs_rank":
+            diag = _read(out / "xs_rank_diagnostics.json")
+            if diag:
+                result["diagnostics"] = xs_rank_digest(diag)
+        return result
     looks = []
     holdouts = out / "holdout_results"
     if holdouts.is_dir():
@@ -67,6 +72,27 @@ def research(root: Path, family: str | None = None) -> dict[str, Any]:
             "gate": latest.get("gate"), "no_edge_note": latest.get("no_edge_note"),
             "families": sorted(fams.values(), key=lambda f: (not f.get("passed_dev_gate"), -(f.get("dsr") or 0))),
             "holdout_results": looks}
+
+
+def xs_rank_digest(diag: dict[str, Any]) -> dict[str, Any]:
+    """Compact view of family K's diagnostics file (the full file stays under experiments/quantlab)."""
+    per = {}
+    for key, row in (diag.get("per_model_horizon") or {}).items():
+        ic = row.get("rank_ic") or {}
+        dec = row.get("decile_excess_bps") or {}
+        per[key] = {"ic_mean": ic.get("mean"), "ic_t": ic.get("t"), "ic_pct_positive_years": ic.get("pct_positive_years"),
+                    "top_minus_bottom_bps": dec.get("top_minus_bottom_mean"), "top_decile_bps": dec.get("top_mean"),
+                    "top_decile_round_trip_cost_bps": row.get("top_decile_median_round_trip_cost_bps"),
+                    "top_decile_minus_cost_bps": row.get("top_decile_minus_cost_bps"),
+                    "top20_turnover": row.get("top20_turnover_per_rebalance")}
+    ports = {k: {"oos_sharpe": (v.get("oos") or {}).get("sharpe"), "oos_cagr": (v.get("oos") or {}).get("cagr"),
+                 "turnover_annual": (v.get("full_dev") or {}).get("turnover_annual"),
+                 "cost_drag_annual": (v.get("full_dev") or {}).get("cost_drag_annual")}
+             for k, v in (diag.get("portfolios") or {}).items()}
+    return {"generated_at": diag.get("generated_at"), "run_id": diag.get("run_id"),
+            "dev_period": diag.get("dev_period"), "oos_start_year": diag.get("oos_start_year"),
+            "per_model_horizon": per, "paired_ic_tests": diag.get("paired_ic_tests"), "portfolios": ports,
+            "benchmarks_oos": diag.get("benchmarks_oos"), "note": diag.get("note")}
 
 
 def opportunities(root: Path) -> dict[str, Any]:
@@ -148,6 +174,10 @@ def run_agent_experiment(root: Path, spec: dict[str, Any], actor: str) -> dict[s
     except subprocess.TimeoutExpired:
         return {"accepted": True, "status": "TIMEOUT", "spec": clean}
     lines = [ln for ln in proc.stdout.splitlines() if ln.startswith("{")]
+    if proc.returncode == 3 and lines:
+        refusal = json.loads(lines[-1])
+        return {"accepted": False, "status": refusal.get("reason", "DUPLICATE_HYPOTHESIS"), "spec": clean,
+                "error": refusal.get("detail"), "prior": refusal.get("prior")}
     if proc.returncode != 0 or not lines:
         return {"accepted": True, "status": "ERROR", "spec": clean, "error": proc.stderr[-400:]}
     return {"accepted": True, "status": "DONE", "spec": clean, "result": json.loads(lines[-1])}

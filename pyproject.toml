@@ -78,7 +78,7 @@ filterwarnings = ["ignore::DeprecationWarning:exchange_calendars.*"]
 [tool.ruff]
 line-length = 130
 target-version = "py311"
-extend-exclude = ["trading/lean/Lean", "trading/alpaca_plugin", "apps/dashboard", ".tools", "services/research/qlib_env", "services/research/foundation_env", "services/research/rd_env", "services/research/kronos/vendor", "services/research/advanced/vendor"]
+extend-exclude = ["trading/lean/Lean", "trading/alpaca_plugin", ".tools", "services/research/qlib_env", "services/research/foundation_env", "services/research/rd_env", "services/research/kronos/vendor", "services/research/advanced/vendor"]
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "B", "UP", "S", "ASYNC", "DTZ", "RUF", "PT", "SIM"]

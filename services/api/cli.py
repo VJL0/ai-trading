@@ -14,7 +14,7 @@ import urllib.request
 from datetime import UTC, datetime
 from typing import Any
 
-from packages.contracts.enums import FeedMode, GatewayKind, TradingMode
+from packages.contracts.enums import AiRuntimeMode, FeedMode, GatewayKind, TradingMode
 from packages.core import modes
 from packages.core.audit import verify_chain
 from packages.core.config import Settings
@@ -48,8 +48,9 @@ def _api(settings: Settings, method: str, path: str, body: Any = None, operator:
     if operator:
         headers["X-LAT-Operator-Token"] = read_token(settings.keys_dir, OPERATOR_TOKEN_FILE)
     data = json.dumps(body).encode() if body is not None else None
-    req = urllib.request.Request(f"http://127.0.0.1:{settings.api_port}{path}", data=data, headers=headers, method=method)
-    with urllib.request.urlopen(req, timeout=120) as r:  # noqa: S310 - fixed loopback URL
+    url = f"{settings.api_url}{path}"
+    req = urllib.request.Request(url, data=data, headers=headers, method=method)  # noqa: S310 - Settings validates loopback
+    with urllib.request.urlopen(req, timeout=120) as r:  # noqa: S310 - Settings validates loopback
         return json.loads(r.read())
 
 
@@ -141,7 +142,7 @@ def cmd_paper_plan(settings: Settings) -> int:
         print("BLOCKED: LAT_GATEWAY=ALPACA_PAPER needs Alpaca PAPER keys (docs/runbooks/broker-paper-onboarding.md)")
         return 2
     label = modes.execution_label(settings.mode, settings.gateway)
-    feed = settings.feed_mode or (FeedMode.IEX_FREE if keys else FeedMode.SIMULATED)
+    feed = settings.market_data_feed(secrets)
     print(f"execution label: {label}   feed: {feed}")
     if not keys:
         print("Alpaca paper keys absent -> running the explicitly SIMULATED fake broker on the synthetic replay feed.")
@@ -156,6 +157,13 @@ def cmd_replay(settings: Settings, cycles: int, step_min: int) -> int:
     if settings.mode != TradingMode.REPLAY:
         print("replay requires LAT_MODE=REPLAY (isolated var/replay namespace)")
         return 2
+    settings = settings.model_copy(update={
+        "gateway": GatewayKind.FAKE,
+        "feed_mode": FeedMode.SIMULATED,
+        "ai_runtime": AiRuntimeMode.API_KEYS,
+        "ai_transport": "fake",
+        "use_keychain": False,
+    })
     import shutil
 
     if settings.var_dir.exists():

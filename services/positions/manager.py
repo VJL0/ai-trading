@@ -718,7 +718,7 @@ class PositionManager:
 
     # ================================================================== read-only view
     def view(self) -> dict[str, Any]:
-        """Position-level state and risk for the API/dashboard/agents (read-only, JSON-safe)."""
+        """Position-level state and risk for the API and agent tools (read-only, JSON-safe)."""
         ledger = self.port.ledger
         positions = {p.symbol: p for p in ledger.positions()}
         records = ledger.records(sorted(OPEN, key=lambda st: st.value))

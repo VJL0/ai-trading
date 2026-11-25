@@ -11,14 +11,15 @@ from decimal import Decimal
 from typing import Any
 
 from fastapi import Body, Depends, FastAPI, HTTPException, Query, Request
-from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, StreamingResponse
 from pydantic import BaseModel, Field, ValidationError
 
 from packages.contracts import RiskPolicy
 from packages.core.config import Settings
 
-from . import queries
+from . import monitor, queries
 from .events import sse_format
+from .launcher import workspace_id
 from .runtime import Runtime, build_runtime
 from .security import (
     AGENT_TOKEN_FILE,
@@ -81,9 +82,25 @@ def create_app(settings: Settings | None = None, runtime_factory: Callable[[Sett
                     await t
             await rt.aclose()
 
-    app = FastAPI(title="local-ai-trader", version=VERSION, lifespan=lifespan, docs_url="/api/docs",
+    app = FastAPI(title="local-ai-trader", version=VERSION, lifespan=lifespan, docs_url=None, redoc_url=None,
                   openapi_url="/api/openapi.json")
-    app.state.allowed_origins = allowed_origins(settings.api_port, settings.dashboard_port)
+    app.state.allowed_origins = allowed_origins(settings.api_port, settings.api_url)
+
+    def require_monitor_host(request: Request) -> None:
+        if f"http://{request.headers.get('host', '').lower()}" not in app.state.allowed_origins:
+            raise HTTPException(403, "monitor is available on the local API address")
+
+    @app.get("/", include_in_schema=False, dependencies=[Depends(require_monitor_host)])
+    async def home() -> RedirectResponse:
+        return RedirectResponse("/monitor")
+
+    @app.get("/monitor", include_in_schema=False, dependencies=[Depends(require_monitor_host)])
+    async def monitor_page() -> HTMLResponse:
+        return monitor.page()
+
+    @app.get("/monitor/status", dependencies=[Depends(require_monitor_host)])
+    async def monitor_status(request: Request) -> JSONResponse:
+        return JSONResponse(await asyncio.to_thread(monitor.snapshot, _rt(request)), headers=monitor.NO_STORE)
 
     @app.exception_handler(ValidationError)
     async def _validation(_: Request, exc: ValidationError) -> JSONResponse:
@@ -93,7 +110,10 @@ def create_app(settings: Settings | None = None, runtime_factory: Callable[[Sett
     @app.get("/api/v1/health/live")
     async def health(request: Request) -> dict[str, Any]:
         rt = _rt(request)
-        return {"status": "ok", "mode": rt.settings.mode.value, "execution_label": rt.execution_label.value,
+        return {"status": "ok", "service": "local-ai-trader", "workspace_id": workspace_id(settings),
+                "mode": rt.settings.mode.value,
+                "gateway": rt.settings.gateway.value, "startup_phase": getattr(rt, "startup_phase", None),
+                "execution_label": rt.execution_label.value,
                 "version": VERSION, "time": rt.now_iso()}
 
     @app.get("/api/v1/status")
@@ -205,7 +225,7 @@ def create_app(settings: Settings | None = None, runtime_factory: Callable[[Sett
     # ------------------------------------------------------------------ control
     @app.post("/api/v1/control/halt", dependencies=[Depends(csrf_guard)])
     async def halt(request: Request, body: HaltBody) -> dict[str, Any]:
-        halt_id = await asyncio.to_thread(_rt(request).halt, body.reason, "dashboard")
+        halt_id = await asyncio.to_thread(_rt(request).halt, body.reason, "local-control")
         return {"halt_id": halt_id, "entries_locked": True}
 
     @app.post("/api/v1/control/kill-switch")

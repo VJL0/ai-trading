@@ -87,12 +87,100 @@ results: [verification report](../verification/multi-asset-research-2026-11-23.m
 11. **Interfaces/tests**: read-only `GET /api/v1/quantlab/*`, MCP tools (3 read + bounded experiment), dashboard
     panel; unit + integration tests for every module (synthetic data only); full suite run.
 
+## Stocks/ETF program (2026-11-24) — session timing, hypothesis memory, after-close automation
+
+Scope narrowed by the operator to U.S. stocks and ETFs (no new crypto/options work; existing research-only modules
+untouched). Results: [session-timing report](../verification/session-timing-research-2026-11-24.md).
+
+**Verdict (development period 2016-01-04 … 2025-11-20, real Alpaca SIP data, runtime cost model): no family passed;
+holdout not opened (0 vault looks); registry empty; selection stays `NO_TRADE`.** 376 trials recorded. Walk-forward
+OOS Sharpe: H1 −0.48, H2 −1.10, H3 −0.96, I1 −0.08, I2 −0.18 (gross edges 0.2–5.9 bps per trade, not significant,
+below ≈ 7 bps modelled cost; I2 21 bps gross but PBO 0.61). J_vol_managed (QQQ, 15 % target vol): Sharpe 1.14 vs
+SPY 0.89 / QQQ 0.95, max DD −23.5 % vs −33.8 % / −35 %, DSR 0.991 — fails on edge vs benchmark (SPA p 0.23,
+alpha t 1.81) and PBO 0.54; a risk-reducing overlay, not a validated edge. Open, evidence-gated: prospective
+journal for near-miss candidates (J; the AAPL open→10:00 drift found descriptively); a strategy-horizon exit for
+multi-day plans (only needed if an overnight rule ever validates); measured slippage needs live fills (not
+authorized).
+
+* **Multi-day lifecycle (already in the tree, now recorded here)**: commit `2abb1ce` added the opt-in multi-day
+  equity lifecycle (`RiskPolicy.allow_overnight_positions`, `max_holding_sessions`, `overnight_gap_budget_bps`,
+  `multi_day_strategy_allowlist`; `holding_period_authorized` check incl. final gate; session deadline fixed once,
+  DAY stops re-armed at the open, gap-through-stop exit, `POLICY_REVOKED` exits). Defaults keep it disabled.
+  Verified 2026-11-24 in the baseline run: `tests/unit/risk/test_holding_period.py`,
+  `tests/integration/positions/test_multi_day_lifecycle.py` pass (backend baseline 2,179 passed, 1 skipped).
+* **Session-timing research** (`services/quantlab/intraday.py`, `strategies/session.py`): 5-minute SIP panel for the
+  24 allowlisted symbols (dev period only; the fetch end date is clamped before the holdout), a simulator that
+  mirrors the runtime lifecycle (marketable LIMIT entries with non-fills, no entry in the last 30 minutes, flatten
+  10 minutes before the close incl. early closes, protective stop on every position incl. overnight gap exits,
+  runtime cost model once per leg, one position per symbol, concurrency cap), families H1–H3 (intraday) and I1/I2
+  (overnight / turn-of-month), execution tier under today's policy, trade-level diagnostics, descriptive time-of-day
+  profile, observed SIP NBBO spreads vs the cost model. CLI: `session-fetch`, `build-panel --what session`,
+  `session-profile`, `research --asset session`, `session-diagnostics`, `spread-sample`, `report --session`;
+  `make quantlab-session`.
+* **Hypothesis memory**: `TrialLedger.prior_outcomes/evaluated_with`; agent factor specs already evaluated on the
+  same development data are refused (`DUPLICATE_HYPOTHESIS`, not counted); family re-runs on identical data+code are
+  skipped (`--force` to override). Development-content fingerprint (`EquityPanel.content_fingerprint`) so a delta
+  that only adds post-holdout rows is not mistaken for new evidence.
+* **After-close automation** (`services/quantlab/daily.py`, opt-in `LAT_QUANTLAB_DAILY_ENABLED=1`): the API schedules
+  fetch-delta → build-panel → scan → shadow once per completed session in `nice`-d child processes with timeouts,
+  only in the quiet window (close + 30 min … 90 min before the next open, re-checked before every step), at most
+  60 data requests/minute, ≤ 3 attempts per session, wall-clock re-checks every ≤ 30 min (a sleeping Mac stops the
+  monotonic clock), the child killed if the task is cancelled. Durable state prevents repeats after restarts; a
+  missed period is caught up once. Default off.
+* **Independent review before any trial was recorded** (2 rounds, 6 read-only reviewers; research was paused until
+  it finished). Fixed: multi-session P&L was booked in one lump on the exit day (biased beta → 0 and inflated alpha t,
+  hid drawdowns) → marked to market every session; stops filled at the stop even when a bar traded through the
+  STOP_LIMIT's limit → `STOP_BREACH` at min(limit, bar close); I1's next-open exit is not something the multi-day
+  lifecycle can do → added the executable `next_eod` form and `NOT_EXECUTABLE`/`NOT_PERMITTED` execution tiers;
+  family re-run skip could hide an interrupted family and shrink BH-FDR → run-completion markers and BH across all
+  recorded families; incomplete skip keys (ORB/news, crypto spreads, daily panel, cost/stats code); development
+  fingerprint unstable under adjusted re-basing and new listings → raw levels + adjustment events per present
+  symbol; whitespace-only factor canonicalization → AST canonical form with legacy-spelling matching; holdout path:
+  separately back-adjusted downloads → overlap re-basing, look id validation, resumable looks with a process lease,
+  atomic result write; all-skipped runs wiped the disclaimer. Every fix has a regression test (one verified by
+  mutation).
+
+## Ranking / cost-aware program (2026-11-25) — family K implemented and run on development data; nothing promoted
+
+Prompted by an external research brief (ranking objectives, 1/5/20-session horizons, cost-aware selection,
+calibration, originality-screened factor discovery). Report: [xs-rank research](../verification/xs-rank-research-2026-11-25.md).
+
+**Verdict: K_xs_rank fails the development gate (DSR 0.195, WF OOS Sharpe 0.35 vs SPY 0.76, SPA p 1.00, alpha t
+−1.73, WF max DD −45.5 %); holdout not opened (0 looks); registry empty; selection stays `NO_TRADE`.** 30 trials.
+Ranking objectives did not beat LightGBM regression (LambdaRank/pairwise IC significantly lower at h=1; YetiRank
+ties). Rank IC is small and persistent at h=5 (0.016–0.024, t ≈ 3, all years positive for ridge/YetiRank) but the
+top decile earns 4–9 bps vs ≈ 13 bps round-trip cost; h=1 top-N loses 8–17 %/yr to costs; best top-N (LightGBM
+reg h=20) Sharpe 0.66 vs SPY 0.76. The cost-aware rule bought no stock in 13 of 15 variants (held SPY).
+
+* `services/quantlab/ranking.py`: executable open(t+1)→open(t+1+h) labels, group demeaning, relevance grades, rank
+  IC, decile spreads, paired tests, top-set turnover.
+* `services/quantlab/calibration.py`: Fama-MacBeth binned edge with date-level standard errors (overlap-adjusted),
+  isotonic smoothing; Mondrian split-conformal bands and realized coverage.
+* `services/quantlab/portfolio.py`: cost-aware selector (edge lower bound vs round-trip cost at intended size,
+  held names exempt from re-entry cost, unused slots in SPY) and round-trip cost surface.
+* `services/quantlab/strategies/xs_rank.py`: family K (ridge, LightGBM reg, LightGBM lambdarank, XGBoost
+  rank:pairwise, CatBoost YetiRank × h 1/5/20 × top_n/cost_aware), 24 PIT features incl. inferred-sector-relative
+  returns, purged walk-forward per year, diagnostics with SPY / equal-weight / sector-momentum / cash benchmarks.
+  CLI `research --asset xsrank`, `xsrank-diagnostics`; `make quantlab-xsrank`; `holdout --family` now dispatches
+  G and K (G previously failed with StopIteration).
+* `services/quantlab/novelty.py`: agent factors refused as `REDUNDANT_HYPOTHESIS` (no trial) when |mean rank
+  correlation| ≥ 0.9 with a reference library of already-searched signals or the 25 latest agent factors (≈ 5 s on
+  the real panel); accepted experiments report their novelty.
+* Interfaces: `GET /api/v1/quantlab/research?family=K_xs_rank` and `get_research_results(family=K_xs_rank)` add a
+  compact `diagnostics` digest (optional field in the free-form `detail`; no schema change).
+* Verification (SIMULATED unit/integration): 27 new tests; `make test-py` 2,257 passed, 1 skipped (+20 torch);
+  `make lint`, `make typecheck` clean.
+* Open, evidence-gated: new information sources with availability timestamps (SEC EDGAR filings / XBRL
+  fundamentals — needs an operator SEC User-Agent and download authorization); newer foundation models (TimesFM
+  3.0, Toto 2.0, TabPFN 3.5) only after licence review and only if a cheaper model shows an edge to improve.
+
 ## Phase 4 — opportunity analysis: started
 
 * `services/research/opportunity.py` + `GET /api/v1/research/no-trade`: every NO_TRADE cycle attributed to LOCKED,
   DATA, NO_FORECAST, PREDICTION, COSTS, UNCERTAINTY, THRESHOLD, RISK or NO_SIGNALS; near misses; cost/edge medians.
-* Open: cross-sectional/sector ranking, regime-aware selection, calibration, 5/15/60 horizon experiments, symbolic
-  regression / GP / Qlib / RD-Agent(Q) discovery, ensembles, mean-reversion / relative-value / event families.
+* Cross-sectional ranking, calibration and multi-horizon experiments: done for daily stocks (family K, above).
+* Open: regime-aware selection, symbolic regression / GP / Qlib / RD-Agent(Q) discovery, ensembles, relative-value /
+  event families.
 
 ## Phase 5 — full-lifecycle backtesting: not started
 

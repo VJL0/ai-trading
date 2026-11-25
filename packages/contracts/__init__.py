@@ -1,4 +1,4 @@
-"""Versioned Pydantic contracts shared by every service (and exported to TypeScript for the dashboard)."""
+"""Versioned Pydantic contracts shared by every service and structured tool."""
 
 from .enums import *  # noqa: F403
 from .interfaces import (

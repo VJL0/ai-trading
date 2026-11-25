@@ -150,13 +150,48 @@ def evaluate_expression(expr: str, panel: EquityPanel, mask: np.ndarray) -> np.n
     return out
 
 
+def canonical_expression(tree: ast.Expression) -> str:
+    """One spelling per expression (spacing, redundant parentheses and 21 vs 21.0 normalized), so the hypothesis
+    memory recognizes a resubmitted factor."""
+    class _Num(ast.NodeTransformer):
+        def visit_Constant(self, node: ast.Constant) -> ast.Constant:
+            v = node.value
+            if isinstance(v, float) and v.is_integer() and abs(v) < 1e15:
+                return ast.copy_location(ast.Constant(int(v)), node)
+            return node
+
+    out = ast.unparse(_Num().visit(ast.parse(ast.unparse(tree), mode="eval")))
+    validate_expression(out)  # the canonical spelling must itself be a valid spec (length, node budget)
+    return out
+
+
+def agent_family(dev: EquityPanel, spec: dict[str, Any], actor: str) -> Any:
+    """The single-variant development family an agent spec is evaluated as (targets, config, SPY benchmark).
+    Lives here so that :func:`services.quantlab.ledger.methodology_hash` covers it."""
+    from .backtest import BacktestConfig, apply_rebalance_schedule, hold_schedule
+    from .research import FamilySpec
+    from .strategies import momentum as A
+
+    cache = A.ScoreCache(dev)
+
+    def targets(p: dict[str, Any]) -> np.ndarray:
+        uni = cache.universe(p["universe"])
+        sc = evaluate_expression(p["expression"], dev, uni)
+        w = A.top_n_weights(sc, uni, int(p["n"])) * cache.regime(p["regime"])[:, None]
+        return apply_rebalance_schedule(w, hold_schedule(len(dev.dates), int(p["rebalance"])))
+
+    return FamilySpec(FAMILY, "us_equity", f"agent factor ({actor}): {spec['expression']}", [spec], targets,
+                      "SPY buy-and-hold", A.buy_and_hold(dev, "SPY"), BacktestConfig(),
+                      execution_notes=["agent-proposed; same gates as every family"])
+
+
 def validate_spec(spec: dict[str, Any]) -> dict[str, Any]:
     allowed = {"expression", "universe", "n", "rebalance", "regime"}
     extra = set(spec) - allowed
     if extra:
         raise SpecError(f"unknown spec fields: {sorted(extra)}")
-    validate_expression(str(spec.get("expression", "")))
-    clean = {"expression": " ".join(str(spec["expression"]).split()),
+    tree = validate_expression(str(spec.get("expression", "")))
+    clean = {"expression": canonical_expression(tree),
              "universe": spec.get("universe", "liquid1000"), "n": int(spec.get("n", 20)),
              "rebalance": int(spec.get("rebalance", 21)), "regime": spec.get("regime", "none")}
     if clean["universe"] not in ("liquid1000", "large300"):

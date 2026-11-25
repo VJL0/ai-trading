@@ -17,15 +17,14 @@ starts the MCP server as its own child process. The server receives no model or 
 only the local agent token (`var/<ns>/keys/agent.token`), which the local API accepts for the agent tool routes
 and nothing else. The token is never shown to the model.
 
-## 1. Start the app
+## 1. Start trading
 
-```bash
-make dev          # or: make paper. The API listens on 127.0.0.1:8765 and creates var/paper/keys/agent.token
-```
+Tell the connected AI “start trading” and approve the `start_paper_session` tool call if prompted. The tool
+starts the configured local API on demand and generates the agent token as part of API startup. The API picks
+the regular-hours session window and eligible symbols. It keeps running after the client disconnects.
 
-The MCP server forwards every call to this API. The API process stays the only SQLite writer and the risk
-engine stays in charge of every order. If the API is down, the tools are still listed and each call returns
-`error 503: local trading API is not reachable … start it with make dev`.
+`make dev` starts the API and local monitor for manual inspection. The API remains the only SQLite writer and the
+deterministic risk engine stays in charge of every order.
 
 ## 2. Claude Code
 
@@ -126,8 +125,8 @@ lists the server as pending your approval, and Codex is not installed.
 
 | Symptom | Fix |
 |---|---|
-| `error 503: agent token unavailable` | Start the API once (`make dev`). The next call picks up the new token. |
-| `error 503: local trading API is not reachable` | Start the API. Check `LAT_API_PORT` if you changed it. |
+| `error 503: agent token unavailable` | Run the start-session tool or `make dev` to launch the API and provision the token. |
+| `error 503: the local API could not prepare a paper session` | Check `var/logs/api.log` and the configured API address. |
 | `error 401: … rejected the agent token` | The token file changed while the API kept the old one. Restart the API (and the MCP server). |
 | `error 403` | The API runs outside PAPER/REPLAY or with a LIVE label. Agents are not allowed there. |
 | `error 422` | Input was invalid. The message names the field. Send money as strings such as `"412.35"`. |

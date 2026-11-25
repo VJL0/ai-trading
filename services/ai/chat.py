@@ -48,13 +48,13 @@ from pathlib import Path
 from typing import Any, Final, Protocol, cast
 
 from pydantic import Field
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import SettingsConfigDict
 
 from packages.contracts import ModelRunRecord
 from packages.contracts.enums import AiRuntimeMode, ModelProvider, ModelRunStatus, ModelTransport
 from packages.core.canonical import canonical_json, sha256_hex
 from packages.core.clock import Clock, SystemClock
-from packages.core.config import Settings, load_settings
+from packages.core.config import ProjectSettings, Settings, load_settings
 from packages.core.ids import new_causal_id, new_id
 from packages.core.logging import JsonFormatter, log_event, redact
 from packages.core.secrets import SecretStore
@@ -87,10 +87,10 @@ _TOOL_NAME_RE: Final = re.compile(r"^[A-Za-z][A-Za-z0-9_]{0,63}$")
 _TERMINAL_UNSAFE: Final = re.compile(r"[\x00-\x08\x0b-\x1f\x7f-\x9f​-‏‪-‮⁠-⁤⁦-⁩﻿]")
 
 
-class ChatConfig(BaseSettings):
+class ChatConfig(ProjectSettings):
     """Chat tunables (env prefix ``LAT_CHAT_``)."""
 
-    model_config = SettingsConfigDict(env_prefix="LAT_CHAT_", env_file=None, extra="ignore", frozen=True)
+    model_config = SettingsConfigDict(env_prefix="LAT_CHAT_")
 
     max_requests_per_message: int = Field(default=8, ge=1, le=30, description="model requests per owner message")
     max_tool_calls_per_message: int = Field(default=12, ge=0, le=60)
@@ -886,8 +886,9 @@ def build_session(settings: Settings, secrets: SecretStore, console: Console, *,
 
     cfg = config or ChatConfig()
     if backend is None:
-        backend = HttpToolBackend(f"http://{settings.api_host}:{settings.api_port}",
-                                  settings.keys_dir / "agent.token", actor="chat", lazy_token=True)
+        backend = HttpToolBackend(settings.api_url,
+                                  settings.keys_dir / "agent.token", actor="chat", lazy_token=True,
+                                  startup_settings=settings)
     caller = ToolCaller(backend)
     mode = settings.ai_runtime
     model: ChatModel | None = None

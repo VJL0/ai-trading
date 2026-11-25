@@ -9,11 +9,13 @@ from __future__ import annotations
 from decimal import Decimal
 
 from pydantic import Field
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import SettingsConfigDict
+
+from packages.core.config import ProjectSettings
 
 
-class AiConfig(BaseSettings):
-    model_config = SettingsConfigDict(env_prefix="LAT_AI_", env_file=None, extra="ignore", frozen=True)
+class AiConfig(ProjectSettings):
+    model_config = SettingsConfigDict(env_prefix="LAT_AI_")
 
     # ---- invocation gating (never per tick) -------------------------------------------------
     min_interval_per_symbol_s: float = Field(default=900.0, ge=0, description="decision-clock seconds")

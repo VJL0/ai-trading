@@ -9,6 +9,7 @@ docs/runbooks/live-readiness.md. Every gateway constructor and the final order b
 
 from __future__ import annotations
 
+from enum import StrEnum
 from typing import Final
 
 from packages.contracts.enums import ExecutionLabel, GatewayKind, TradingMode
@@ -17,6 +18,17 @@ LIVE_EXECUTION_COMPILED: Final[bool] = False
 BOUNDED_LIVE_COMPILED: Final[bool] = False
 
 DEFAULT_MODE: Final[TradingMode] = TradingMode.PAPER
+
+
+class OperatorTradingMode(StrEnum):
+    PAPER = "PAPER"
+    LIVE = "LIVE"
+
+
+def operator_trading_mode(mode: TradingMode, label: ExecutionLabel) -> OperatorTradingMode:
+    if mode in (TradingMode.LIVE_APPROVAL, TradingMode.BOUNDED_LIVE) or label == ExecutionLabel.LIVE:
+        return OperatorTradingMode.LIVE
+    return OperatorTradingMode.PAPER
 
 _ALLOWED: Final[dict[TradingMode, frozenset[GatewayKind]]] = {
     TradingMode.RESEARCH_ONLY: frozenset(),

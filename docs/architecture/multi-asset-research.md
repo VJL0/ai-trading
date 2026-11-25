@@ -17,7 +17,7 @@ flowchart LR
   PANEL --> SCAN[scanner] --> OPP[opportunity.select<br/>evidence-weighted utility]
   REG --> OPP
   CAP --> OPP
-  OPP -->|TRADE / NO_TRADE + reasons| VIEWS[views → API · MCP · dashboard]
+  OPP -->|TRADE / NO_TRADE + reasons| VIEWS[views → API · MCP]
 ```
 
 ## 1. Capability verification (`services/capabilities`)
@@ -69,7 +69,14 @@ Nothing was enabled by this work; enabling any `NO` above is an operator decisio
 | C2_pullback / C3_etf_pullback | RSI(2) pullback in an uptrend (stocks / index ETFs) | 24 / 12 | multi-day |
 | D1/D2 crypto | time-series momentum with vol targeting; cross-sectional momentum across pairs | 48 / 36 | research / shadow only |
 | E options | BS/Black-76 + CRR American pricing, IV, Greeks, HAR-RV forecast, IV−RV premium, skew, term structure, defined-risk verticals at executable touch | prospective scan | research only |
-| F_agent | agent-proposed factor specs in a closed expression language (no code execution) | per request | development only |
+| F_agent | agent-proposed factor specs in a closed expression language (no code execution); originality-screened (below) | per request | development only |
+| G_ml_rank | LightGBM vs ridge regression on 14 ranked PIT features, 21-session close-to-close label, top 10/30 | 16 | multi-day |
+| K_xs_rank | learning-to-rank tournament: ridge / LightGBM regression vs LightGBM `lambdarank`, XGBoost `rank:pairwise`, CatBoost `YetiRank` (one query per date) on 24 ranked PIT features incl. inferred-sector-relative returns; risk-adjusted sector-relative executable (open→open) label; horizons 1/5/20 sessions; top-N vs cost-aware construction | 30 | multi-day (every horizon holds overnight) |
+| H1_intraday_momentum | move-so-far (prior close or open → 10:00…15:25) predicts the rest of the session (Gao et al. 2018); executable windows only, exit 15:50 | 84 | intraday (current lifecycle) |
+| H2_vwap_reversion | price below the session VWAP by k trailing standard deviations, optional daily uptrend, 60-minute or EOD exit | 72 | intraday |
+| H3_opening_gap | fade gap-downs / follow gap-ups z-scored by trailing gap volatility, decided 09:35 or 10:00 | 48 | intraday |
+| I1_overnight | buy 15:25, sell after the next open (overnight return premium; research form) or at 15:50 of the next session (the only exit the multi-day lifecycle performs) | 36 | overnight (needs operator authorization; next-open exit needs a horizon exit for multi-day plans) |
+| I2_turn_of_month | enter on the k-th last session, exit on the m-th first session of the next month, k+m ≤ 5 | 64 | multi-day (needs operator authorization) |
 
 ## 4. Validation (`quantlab.validation`, `quantlab.gates`, `quantlab.ledger`)
 
@@ -79,6 +86,20 @@ vs the passive benchmark **or** Newey-West alpha t ≥ 2, PBO ≤ 0.5, Sharpe > 
 ≥ 50 trades, and Benjamini-Hochberg survival across families. Holdout (2025-11-21 … 2026-11-20, registered once,
 immutable): one look per spec, three per family, committed before evaluation; positive net return and Sharpe,
 drawdown within 1.5× development. Then SHADOW (prospective journal) for ≥ 20 sessions before a PAPER request.
+
+**Cost-aware construction and calibration (family K).** `quantlab.calibration.BinnedEdge` maps a score percentile
+to the expected *excess* executable return of its bin, Fama-MacBeth style (per-date bin means; standard error over
+dates, effective sample `n_dates / h` for overlapping labels; weighted isotonic smoothing), fitted for each year
+only on earlier out-of-sample predictions whose labels completed before that year. `quantlab.portfolio.select_cost_aware`
+buys a name only when `edge − z·se` (z = 1) exceeds its round-trip cost at the intended size (the backtester's
+cost model); held names compete without re-paying entry (a no-trade region) and unused slots hold SPY, so "no stock
+beats its costs" degrades to the index. Mondrian split-conformal bands (80 %) are reported with their realized
+coverage per year as a diagnostic of single-position uncertainty, not used as a gate.
+
+**Agent-factor originality (`quantlab.novelty`).** Before an agent spec is evaluated, its mean per-date rank
+correlation with a reference library of already-searched signals (families A, C, G) and the 25 most recent distinct
+agent factors is measured on development data; `|ρ| ≥ 0.9` is refused as `REDUNDANT_HYPOTHESIS` without a trial.
+Complexity stays bounded by the expression language (≤ 40 AST nodes). The screen never relaxes a gate.
 
 ## 5. Unified opportunity contract (`quantlab.opportunity`)
 
@@ -92,7 +113,8 @@ positive utility are selectable; otherwise `NO_TRADE` with per-candidate reasons
 ## 6. Interfaces
 
 * CLI: `python -m services.quantlab.cli fetch-equities | fetch-crypto | crypto-spreads | build-panel | research
-  [--asset equity|crypto|orb] | holdout --family F | scan | crypto-scan | options-scan | orb-fetch | experiment`.
+  [--asset equity|crypto|orb|session|xsrank] [--force] | xsrank-diagnostics | holdout --family F | scan | crypto-scan |
+  options-scan | orb-fetch | session-fetch | session-profile | experiment`.
 * API (read-only): `GET /api/v1/quantlab/{capabilities|research|opportunities|strategies|trials|options}`.
 * MCP / agent tools: `get_capabilities`, `get_research_results`, `get_opportunities` (read) and
   `run_research_experiment` (development-only, budgeted, recorded; category `research`).

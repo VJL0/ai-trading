@@ -18,6 +18,7 @@ import hashlib
 import json
 import logging
 import re
+import threading
 from collections.abc import Callable, Iterable, Sequence
 from concurrent.futures import ThreadPoolExecutor
 from datetime import UTC, date, datetime, timedelta
@@ -280,6 +281,104 @@ def fetch_intraday_symbol_days(http: ReadOnlyAlpacaHttp, plan: dict[date, list[s
     man.data["complete"] = True
     man.flush()
     return man
+
+
+def fetch_intraday_range(http: ReadOnlyAlpacaHttp, symbols: Sequence[str], out_dir: Path, *, start: date,
+                         end: date, timeframe: str = "5Min", adjustment: str = "all", batch_size: int = 12,
+                         workers: int = 4, progress: Callable[[int, int], None] | None = None) -> Manifest:
+    """Continuous SIP bars for a fixed symbol list over [start, end], one resumable batch per (calendar year,
+    symbol batch). ``adjustment='all'`` back-adjusts splits and dividends with ONE factor per ex-date, so intraday
+    percentage moves are unchanged and close->next-open returns include the dividend (correct for an overnight
+    holder). Price LEVELS of adjusted bars depend on the fetch date; costs therefore use the daily RAW panel.
+
+    Bars outside the regular session are kept as delivered; :class:`services.quantlab.intraday.IntradayPanel`
+    keeps only regular-session slots (early closes included). ``end`` is inclusive; callers pass the last
+    development session so the protected holdout is never downloaded by research code."""
+    params = {"kind": "intraday_range", "feed": "sip", "timeframe": timeframe, "adjustment": adjustment,
+              "start": start.isoformat(), "end": end.isoformat(), "symbols": list(symbols),
+              "batch_size": batch_size}
+    man = Manifest(out_dir, params)
+    batches = [list(symbols[i:i + batch_size]) for i in range(0, len(symbols), batch_size)]
+    years = list(range(start.year, end.year + 1))
+    jobs = [(y, b) for y in years for b in range(len(batches))]
+    lock = threading.Lock()
+    finished = [0]
+
+    def work(job: tuple[int, int]) -> None:
+        y, b = job
+        key = f"y{y}_b{b:03d}"
+        with lock:
+            skip = man.done(key) or man.data["batches"].get(key, {}).get("rows") == 0
+        if not skip:
+            lo = max(start, date(y, 1, 1))
+            hi = min(end, date(y, 12, 31))
+            data = http.paginate(f"{DATA_BASE}/v2/stocks/bars",
+                                 {"symbols": ",".join(batches[b]), "timeframe": timeframe,
+                                  "start": datetime(lo.year, lo.month, lo.day, tzinfo=UTC).isoformat(),
+                                  "end": (datetime(hi.year, hi.month, hi.day, tzinfo=UTC)
+                                          + timedelta(days=1)).isoformat(),
+                                  "feed": "sip", "adjustment": adjustment, "limit": 10000, "sort": "asc"},
+                                 items_key="bars")
+            df = _bars_frame(data if isinstance(data, dict) else {})
+            file = f"{key}.parquet"
+            if not df.empty:
+                df.to_parquet(out_dir / file, index=False)
+            with lock:
+                man.record(key, file, len(df), _nunique(df), {"requested": len(batches[b]), "year": y})
+        with lock:
+            finished[0] += 1
+            if progress:
+                progress(finished[0], len(jobs))
+
+    with ThreadPoolExecutor(max_workers=max(1, workers)) as pool:
+        list(pool.map(work, jobs))
+    man.data["complete"] = all(man.done(f"y{y}_b{b:03d}") or man.data["batches"].get(f"y{y}_b{b:03d}", {})
+                               .get("rows") == 0 for y, b in jobs)
+    man.flush()
+    return man
+
+
+def sample_quoted_spreads(http: ReadOnlyAlpacaHttp, symbols: Sequence[str], days: Sequence[date],
+                          clocks: Sequence[str] = ("09:35", "10:00", "12:00", "15:25"), *,
+                          window_s: int = 2) -> pd.DataFrame:
+    """Consolidated (SIP) NBBO spreads at fixed New York clock times: every quote in a ``window_s``-second window,
+    crossed/locked/empty quotes dropped, median full spread in bps of the mid per (day, clock, symbol). Used to check
+    the cost model's spread assumptions against observed spreads; it never changes the runtime cost model."""
+    from zoneinfo import ZoneInfo
+
+    ny = ZoneInfo("America/New_York")
+    rows: list[dict[str, Any]] = []
+    for d in days:
+        for clock in clocks:
+            h, m = (int(x) for x in clock.split(":"))
+            t0 = datetime(d.year, d.month, d.day, h, m, tzinfo=ny).astimezone(UTC)
+            data = http.paginate(f"{DATA_BASE}/v2/stocks/quotes",
+                                 {"symbols": ",".join(symbols), "start": t0.isoformat(),
+                                  "end": (t0 + timedelta(seconds=window_s)).isoformat(), "feed": "sip",
+                                  "limit": 10000, "sort": "asc"}, items_key="quotes", max_pages=20)
+            if not isinstance(data, dict):
+                continue
+            for sym, quotes in data.items():
+                bps = []
+                for q in quotes:
+                    bid, ask = float(q.get("bp") or 0.0), float(q.get("ap") or 0.0)
+                    if bid > 0 and ask > bid:
+                        bps.append((ask - bid) / ((ask + bid) / 2) * 1e4)
+                if bps:
+                    rows.append({"day": d.isoformat(), "clock": clock, "symbol": sym,
+                                 "median_spread_bps": float(np.median(bps)), "quotes": len(bps)})
+    return pd.DataFrame(rows, columns=["day", "clock", "symbol", "median_spread_bps", "quotes"])
+
+
+def rebase_onto(base: pd.DataFrame, newer: pd.DataFrame, symbols: Sequence[str]) -> tuple[pd.DataFrame, list[str]]:
+    """Join an older adjusted download with a newer one on the NEWER split/dividend basis (adjusted levels depend on
+    the fetch date). Requires overlapping bars for every symbol; returns (bars, symbols without overlap). Callers
+    must refuse to use the result while the second element is non-empty."""
+    ov = base.merge(newer[["symbol", "t"]], on=["symbol", "t"])
+    missing = sorted(set(symbols) - set(ov["symbol"].astype(str)))
+    if missing:
+        return base.iloc[0:0], missing
+    return merge_with_deltas(base, [newer], adjusted=True), []
 
 
 def merge_with_deltas(base: pd.DataFrame, deltas: list[pd.DataFrame], *, adjusted: bool) -> pd.DataFrame:

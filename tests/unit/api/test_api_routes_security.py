@@ -36,7 +36,16 @@ class StubRuntime:
         return "2026-11-05T15:00:00Z"
 
     def status(self) -> dict[str, Any]:
-        return {"mode": "PAPER", "execution_label": "SIMULATED", "entries_locked": True}
+        return {"mode": "PAPER", "execution_label": "SIMULATED", "entries_locked": True, "exits_locked": True,
+                "lock_reasons": ["operator halt"], "exit_lock_reasons": ["operator halt"],
+                "startup": {"phase": "READY"}, "broker": {"connected": False}, "engine": {"status": "UP"},
+                "feed": {"status": "OK"}, "position_safety": [{"symbol": "SPY", "state": "UNPROTECTED"}]}
+
+    sessions = None
+
+    def performance(self, *, summary_only: bool = False) -> dict[str, Any]:
+        payload = {"portfolio_value": "98765.43", "daily_pnl": "-20.01", "total_pnl": "103.98"}
+        return payload if summary_only else {**payload, "equity_curve": [1]}
 
     def health_report(self) -> dict[str, Any]:
         return {"overall": "DEGRADED", "components": [
@@ -53,9 +62,9 @@ class StubRuntime:
     def risk_view(self) -> dict[str, Any]:
         return {"policy": {}, "utilization": []}
 
-    def halt(self, reason: str, source: str) -> str:
+    def halt(self, reason: str, source: str, scope: str = "ENTRIES") -> str:
         self.calls.append(("halt", reason))
-        return self.db.write(lambda c: add_halt(c, reason=reason, source=source, mode="PAPER"))
+        return self.db.write(lambda c: add_halt(c, reason=reason, source=source, mode="PAPER", scope=scope))
 
     def resume(self, halt_id: str, reason: str, actor: str) -> dict[str, Any]:
         self.calls.append(("resume", halt_id))
@@ -122,10 +131,43 @@ def test_halt_requires_csrf_header_and_local_origin(client: Any) -> None:
     r = client.post("/api/v1/control/halt", json={"reason": "x"},
                     headers={"X-LAT-Request": "1", "Origin": "https://evil.example"})
     assert r.status_code == 403
+    assert client.post("/api/v1/control/halt", json={"reason": "x"},
+                       headers={"X-LAT-Request": "1", "Origin": "http://127.0.0.1:5173"}).status_code == 403
     r = client.post("/api/v1/control/halt", json={"reason": "manual stop"},
-                    headers={"X-LAT-Request": "1", "Origin": "http://127.0.0.1:5173"})
+                    headers={"X-LAT-Request": "1", "Origin": "http://127.0.0.1:8765"})
     assert r.status_code == 200 and r.json()["entries_locked"] is True
     assert client.rt.calls[-1] == ("halt", "manual stop")
+
+
+def test_monitor_serves_only_supported_local_surface(client: Any) -> None:
+    assert client.get("/", follow_redirects=False).headers["location"] == "/monitor"
+    page = client.get("/monitor")
+    assert page.status_code == 200 and page.headers["cache-control"] == "no-store"
+    assert "frame-ancestors 'none'" in page.headers["content-security-policy"]
+    assert "Trading monitor" in page.text and "Halt entries and exits" in page.text
+    assert client.op not in page.text and client.eng not in page.text
+    assert client.get("/monitor", headers={"Host": "example.com:8765"}).status_code == 403
+    assert client.get("/monitor/status", headers={"Host": "example.com:8765"}).status_code == 403
+    assert client.get("/monitor/status").json() == {
+        "trading_status": "IDLE / ENTRIES LOCKED", "mode": "Paper", "equity": "98765.43",
+        "daily_pnl": "-20.01", "total_pnl": "103.98",
+        "alerts": ["Broker disconnected.", "New entries locked.", "operator halt", "Protective exits locked.",
+                   "SPY: UNPROTECTED"],
+    }
+    assert client.get("/api/docs").status_code == 404
+    assert "/api/v1/stream" in client.get("/api/openapi.json").json()["paths"]
+    assert client.get("/api/v1/performance").json()["equity_curve"] == [1]
+
+
+def test_monitor_kill_switch_keeps_operator_authorization(client: Any) -> None:
+    headers = {"X-LAT-Request": "1", "Origin": "http://127.0.0.1:8765"}
+    path, body = "/api/v1/control/kill-switch", {"reason": "operator emergency"}
+    assert client.post(path, json=body, headers=headers).status_code == 401
+    assert client.post(path, json=body, headers={**headers, "X-LAT-Operator-Token": client.eng}).status_code == 401
+    allowed = {**headers, "X-LAT-Operator-Token": client.op}
+    assert client.post(path, json=body, headers={**allowed, "Origin": "http://127.0.0.1:4173"}).status_code == 403
+    assert client.post(path, json=body, headers=allowed).json()["exits_locked"] is True
+    assert client.rt.db.query_one("SELECT scope FROM trading_halts")["scope"] == "ALL"
 
 
 def test_operator_endpoints_need_token(client: Any) -> None:

@@ -699,7 +699,7 @@ class ChatGptAuth:
         for hook in list(self.on_signed_in):
             with contextlib.suppress(Exception):
                 hook()
-        return 200, "Signed in with ChatGPT. You can close this tab and return to the local dashboard.", True
+        return 200, "Signed in with ChatGPT. You can close this tab and return to your client.", True
 
     async def _complete(self, pending: _PendingLogin, query: Mapping[str, str]) -> None:
         if "error" in query:

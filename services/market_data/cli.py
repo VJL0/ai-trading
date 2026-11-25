@@ -284,10 +284,8 @@ def _effective_feed_mode() -> FeedMode:
     from packages.core.secrets import SecretStore
 
     settings = load_settings()
-    if settings.feed_mode is not None:
-        return settings.feed_mode
     secrets = SecretStore(settings.project_root, use_keychain=settings.use_keychain)
-    return FeedMode.IEX_FREE if secrets.alpaca_paper_available() else FeedMode.SIMULATED
+    return settings.market_data_feed(secrets)
 
 
 def _effective_feed() -> DataFeed:
@@ -305,7 +303,7 @@ def cmd_status(args: argparse.Namespace) -> int:
     store = MarketDataStore(_datasets_dir(args))
     secrets = SecretStore(settings.project_root, use_keychain=settings.use_keychain)
     paper = secrets.alpaca_paper_available()
-    effective = settings.feed_mode or (FeedMode.IEX_FREE if paper else FeedMode.SIMULATED)
+    effective = settings.market_data_feed(secrets)
     _emit({
         "datasets_dir": str(store.datasets_dir),
         "datasets": [_summary(m) for m in store.list_manifests()],

@@ -1,7 +1,6 @@
 """Live operations log: pipeline stage transitions, human-readable activity and decision cards.
 
-Every record is persisted (append-only ``activity_events``) *and* published on the SSE bus, so the read-only dashboard
-always shows real backend state and the timeline survives restarts. Writes go through the single DB writer.
+The single DB writer persists records in append-only ``activity_events``. The SSE bus publishes them to structured clients.
 """
 
 from __future__ import annotations

@@ -18,8 +18,8 @@ flowchart TD
     RK[services/risk<br/>deterministic policy gate · ECDSA intent signer]
     LG[services/order_ledger<br/>state machine · execution · reconciliation]
     DB[(SQLite WAL<br/>single writer · hash-chained audit)]
-    API[services/api FastAPI 127.0.0.1:8765<br/>SSE stream]
-    UI[apps/dashboard React 19 read-only live operations<br/>127.0.0.1:5173]
+    API[services/api FastAPI 127.0.0.1:8765<br/>MCP tool API and SSE stream]
+    UI[Minimal local monitor at /monitor]
     LEAN[LEAN engine C#<br/>GatedBrokerageModel · IntentBridge algorithm]
     GUI[apps/mac-agent<br/>Peekaboo + Playwright MCP · allowlist]
   end
@@ -40,7 +40,6 @@ flowchart TD
   AI --> DB
   RK --> DB
   DB --> API --> UI
-  GUI -. optional, deferred .-> UI
 ```
 
 ## Order path and trust boundaries
@@ -77,5 +76,5 @@ sequenceDiagram
 | Paper ↔ live | Compile-time `LIVE_EXECUTION_COMPILED=False`; separate namespaces, keys, DBs, secret names; live gateway always denied; paper key ids `PK…` required. |
 | Operator ↔ automation | Operator token (human only) for resume/policy/cycle; engine token (LEAN only) for the bridge; neither given to models or the GUI agent. |
 | GUI agent | App/domain allowlist, element-level denial of order controls, scrubbed subprocess env, no shell access. |
-| Network | API and dashboard bind `127.0.0.1`; CSRF header + origin checks on POST. |
+| Network | API and monitor share the loopback listener; CSRF header + origin checks on POST. |
 | Restart/sleep | Entries locked until broker-authoritative reconciliation is CLEAN; SUBMITTING-at-crash ⇒ UNKNOWN ⇒ resolved by client order id, never resubmitted. |

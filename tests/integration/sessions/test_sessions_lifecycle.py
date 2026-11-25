@@ -2,11 +2,12 @@
 from __future__ import annotations
 
 import asyncio
-from datetime import timedelta
+from datetime import datetime, timedelta
 from typing import Any
 
 import pytest
 
+from packages.contracts.enums import ExecutionLabel
 from services.sessions.errors import SessionError
 from services.sessions.manager import SessionManager
 from services.tools.handlers import dispatch
@@ -90,6 +91,50 @@ async def test_single_active_session_and_validation(rt: Any) -> None:
         rt.sessions.start(10, requested_by="test")
     with pytest.raises(SessionError, match="allowlist"):
         rt.sessions.start(10, symbols=["BAD"], requested_by="test")
+
+
+async def test_plain_start_queues_once_and_runs_only_in_the_next_regular_window(rt: Any, monkeypatch: Any) -> None:
+    now = datetime.fromisoformat("2026-11-26T14:00:00+00:00")  # Thanksgiving, XNYS closed
+    opening = datetime.fromisoformat("2026-11-27T14:30:00+00:00")
+    monkeypatch.setattr(rt, "now", lambda: now)
+    monkeypatch.setattr(rt, "policy", rt.policy.model_copy(update={"symbol_allowlist": ("SPY",)}))
+    calls = []
+
+    async def cycle(**kwargs: Any) -> dict[str, Any]:
+        calls.append(kwargs)
+        return {"outcome": "NO_TRADE", "reason": "test"}
+
+    monkeypatch.setattr(rt, "run_cycle", cycle)
+    await rt.sessions.recover(clean=True)
+    result = await dispatch(rt, "start_paper_session", {}, actor="test")
+    assert result["outcome"] == "SCHEDULED"
+    scheduled = result["session"]
+    assert scheduled["state"] == "SCHEDULED" and scheduled["started_at"] is None
+    assert scheduled["next_cycle_at"] == "2026-11-27T14:30:00Z"
+    assert scheduled["symbols"] == ["SPY"]
+    sid = scheduled["session_id"]
+    with pytest.raises(SessionError, match="already active"):
+        rt.sessions.start(requested_by="test")
+
+    rt.sessions = SessionManager(rt)
+    assert sid in (await rt.sessions.recover(clean=True))["resumed"]
+    await rt.sessions.tick()
+    assert not calls and rt.sessions.get(sid)["state"] == "SCHEDULED"
+    now = opening
+    await rt.sessions.tick()
+    assert len(calls) == 1 and calls[0]["use_ai"] is False
+    assert rt.sessions.get(sid)["state"] == "RUNNING"
+
+
+async def test_queued_session_cannot_move_to_a_different_execution_environment(rt: Any, monkeypatch: Any) -> None:
+    monkeypatch.setattr(rt, "now", lambda: datetime.fromisoformat("2026-11-26T14:00:00+00:00"))
+    result = await dispatch(rt, "start_paper_session", {}, actor="test")
+    assert result["outcome"] == "SCHEDULED"
+    sid = result["session"]["session_id"]
+    monkeypatch.setattr(rt, "execution_label", ExecutionLabel.PAPER)
+    replacement = SessionManager(rt)
+    assert sid in (await replacement.recover(clean=True))["interrupted"]
+    assert replacement.get(sid)["state"] == "INTERRUPTED"
 
 
 async def test_schedule_once_and_cancel(rt: Any) -> None:

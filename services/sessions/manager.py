@@ -9,8 +9,8 @@ only degrades that cycle's GPT_REVIEW; the slot is re-run quant-only and AI revi
 Safety properties:
 
 * sessions start only in PAPER/REPLAY with a non-LIVE execution label; symbols must be in the active risk policy
-  allowlist and the configured universe; caps: duration 1..480 min, cadence 1..60 min, one active session (also a
-  partial UNIQUE index in SQLite);
+  allowlist and the configured universe; caps: duration 1..480 min, cadence 1..60 min, one queued or active session
+  (also enforced by a partial UNIQUE index in SQLite);
 * stopping is always allowed (fail-safe direction); an in-flight cycle is never cancelled mid-order, the session
   goes STOPPING and becomes STOPPED as soon as that cycle returns;
 * cycles run only inside XNYS regular hours (exchange_calendars; unknown -> closed), at most one per cadence slot
@@ -18,8 +18,8 @@ Safety properties:
 * a scheduled start happens at most once per schedule and trading day (primary key of
   ``session_schedule_runs``), also across restarts; a window that passed while the service was down is MISSED and
   never run late;
-* on restart ``recover(clean=...)`` resumes a RUNNING session only after a CLEAN broker-authoritative startup
-  reconciliation and only inside its window; otherwise it becomes INTERRUPTED with the reason;
+* on restart ``recover(clean=...)`` restores a queued or running session only after CLEAN broker-authoritative
+  reconciliation, with the same execution label and time remaining in its window;
 * every state change is persisted through the single SQLite writer, audited (hash chain), written to the activity
   log (kind ``session``) and published on the bus (``session`` / ``schedule`` events).
 """
@@ -31,6 +31,7 @@ import builtins
 import contextlib
 import json
 import logging
+import math
 import re
 import sqlite3
 import threading
@@ -62,10 +63,11 @@ from .schedules import (
 
 log = logging.getLogger("lat.sessions")
 
-ACTIVE_STATES: Final[tuple[str, ...]] = ("RUNNING", "STOPPING")
+ACTIVE_STATES: Final[tuple[str, ...]] = ("SCHEDULED", "RUNNING", "STOPPING")
 TERMINAL_STATES: Final[tuple[str, ...]] = ("COMPLETED", "STOPPED", "INTERRUPTED", "FAILED")
 SESSION_MODES: Final[frozenset[TradingMode]] = frozenset({TradingMode.PAPER, TradingMode.REPLAY})
 DURATION_RANGE: Final = (1, 480)
+DEFAULT_DURATION_MINUTES: Final = 60
 CADENCE_RANGE: Final = (1, 60)
 MAX_SYMBOLS: Final = 10
 MAX_SCHEDULES: Final = 20
@@ -168,7 +170,7 @@ class SessionManager:
         return rows[0] if rows else None
 
     def _active_row(self) -> dict[str, Any] | None:
-        rows = self._query("SELECT * FROM trading_sessions WHERE state IN ('RUNNING','STOPPING')")
+        rows = self._query("SELECT * FROM trading_sessions WHERE state IN ('SCHEDULED','RUNNING','STOPPING')")
         return rows[0] if rows else None
 
     def active(self) -> dict[str, Any] | None:
@@ -243,15 +245,18 @@ class SessionManager:
 
     def _resolve_symbols(self, symbols: Sequence[str] | None) -> builtins.list[str]:
         universe = [str(s) for s in self.rt.settings.symbols]
+        pol = self._policy()
         if symbols is None:
-            syms = universe
+            syms = [s for s in dict.fromkeys(universe) if s in pol.symbol_allowlist and s not in pol.symbol_denylist]
+            if not syms:
+                raise SessionError(422, "the active risk policy allows none of the configured symbols")
+            return syms[:MAX_SYMBOLS]
         else:
             if isinstance(symbols, str) or not symbols:
                 raise SessionError(422, "symbols must be a non-empty list such as ['SPY'] (or null for all)")
             syms = builtins.list(dict.fromkeys(str(s).strip().upper() for s in symbols))
         if not syms or len(syms) > MAX_SYMBOLS:
             raise SessionError(422, f"a session trades 1..{MAX_SYMBOLS} symbols")
-        pol = self._policy()
         bad = [s for s in syms if not _SYMBOL_RE.fullmatch(s)]
         if bad:
             raise SessionError(422, f"invalid symbols: {bad}")
@@ -317,16 +322,17 @@ class SessionManager:
             self.rt.db.write(lambda c: record_failure(c, component=f"sessions:{component}", kind=kind, detail=detail))
 
     # ================================================================== lifecycle: start
-    def start(self, duration_minutes: int, *, symbols: Sequence[str] | None = None, cadence_minutes: int = 5,
+    def start(self, duration_minutes: int | None = None, *, symbols: Sequence[str] | None = None, cadence_minutes: int = 5,
               use_ai: bool = True, requested_by: str) -> dict[str, Any]:
-        """Start a PAPER session now. Raises ``SessionError`` (403/409/422) when refused."""
+        """Open one bounded PAPER session, waiting for regular hours when needed."""
         return self._start(duration_minutes, symbols=symbols, cadence_minutes=cadence_minutes, use_ai=use_ai,
                            requested_by=requested_by)
 
-    def _start(self, duration_minutes: int, *, symbols: Sequence[str] | None, cadence_minutes: int, use_ai: bool,
+    def _start(self, duration_minutes: int | None, *, symbols: Sequence[str] | None, cadence_minutes: int, use_ai: bool,
                requested_by: str, schedule_id: str | None = None, occurrence: Occurrence | None = None) -> dict[str, Any]:
         self._require_mode()
-        duration = _int_in("duration_minutes", duration_minutes, *DURATION_RANGE)
+        duration = (DEFAULT_DURATION_MINUTES if duration_minutes is None
+                    else _int_in("duration_minutes", duration_minutes, *DURATION_RANGE))
         cadence = _int_in("cadence_minutes", cadence_minutes, *CADENCE_RANGE)
         if not isinstance(use_ai, bool):
             raise SessionError(422, "use_ai must be true or false")
@@ -336,21 +342,36 @@ class SessionManager:
         if self._sim_finished():
             raise SessionError(409, "the simulated replay has reached the end of the synthetic data; restart the API "
                                     "to replay again")
-        ends = occurrence.end if occurrence is not None else now + timedelta(minutes=duration)
+        starts = now
+        if occurrence is None:
+            if not xcal.is_market_open(now):
+                opening = xcal.next_open(now)
+                if opening is None:
+                    raise SessionError(409, "the next XNYS regular open could not be established")
+                starts = opening
+            bounds = xcal.session_bounds(xcal.et_date(starts))
+            if bounds is None or not bounds[0] <= starts < bounds[1]:
+                raise SessionError(409, "the regular-hours session window could not be established")
+            ends = min(starts + timedelta(minutes=duration), bounds[1])
+            duration = math.ceil((ends - starts) / timedelta(minutes=1))
+        else:
+            ends = occurrence.end
         if ends <= now:
             raise SessionError(409, "the session window has already passed")
-        if not xcal.regular_minutes_between(now, ends):
+        if not xcal.regular_minutes_between(starts, ends):
             nxt = xcal.next_open(now)
             raise SessionError(409, "XNYS is closed for the whole requested window (sessions trade regular hours "
                                     f"only); next regular open {et_label(nxt) if nxt else 'unknown'}. Use "
                                     "schedule_session to run it then.")
         sid = new_id("sess")
         label = self.rt.execution_label.value
-        row = {"session_id": sid, "state": "RUNNING", "created_at": iso(now), "started_at": iso(now),
+        pending = starts > now
+        row = {"session_id": sid, "state": "SCHEDULED" if pending else "RUNNING", "created_at": iso(now),
+               "started_at": None if pending else iso(now),
                "ends_at": iso(ends), "symbols_json": json.dumps(syms), "cadence_minutes": cadence,
                "duration_minutes": duration, "use_ai": int(use_ai), "requested_by": who, "schedule_id": schedule_id,
                "mode": self.rt.settings.mode.value, "execution_label": label, "owner_process": self.process_id,
-               "next_cycle_at": iso(now), "updated_at": iso(now)}
+               "next_cycle_at": iso(starts), "updated_at": iso(now)}
 
         def _w(conn: sqlite3.Connection) -> None:
             if schedule_id is not None and occurrence is not None:
@@ -368,18 +389,22 @@ class SessionManager:
                 conn.execute(f"INSERT INTO trading_sessions({', '.join(row)}) VALUES ({', '.join('?' for _ in row)})",  # noqa: S608
                              tuple(row.values()))
             except sqlite3.IntegrityError:
-                act = conn.execute("SELECT session_id FROM trading_sessions WHERE state IN ('RUNNING','STOPPING')"
+                act = conn.execute("SELECT session_id FROM trading_sessions WHERE state IN ('SCHEDULED','RUNNING','STOPPING')"
                                    ).fetchone()
                 raise SessionError(409, f"a paper session is already active ({act[0] if act else 'unknown'}); stop it "
                                         "first or wait for it to end") from None
-            self._audit(conn, "SESSION_STARTED", who, {"session_id": sid, "symbols": syms, "duration_minutes": duration,
-                                                       "cadence_minutes": cadence, "use_ai": use_ai,
-                                                       "ends_at": iso(ends), "schedule_id": schedule_id,
-                                                       "execution_label": label})
+            self._audit(conn, "SESSION_SCHEDULED" if pending else "SESSION_STARTED", who,
+                        {"session_id": sid, "symbols": syms, "duration_minutes": duration, "starts_at": iso(starts),
+                         "cadence_minutes": cadence, "use_ai": use_ai, "ends_at": iso(ends), "schedule_id": schedule_id,
+                         "execution_label": label})
 
         self.rt.db.write(_w)
         session = self.get(sid)
         assert session is not None
+        if pending:
+            self._emit(f"Queued a {label} paper session for {et_label(starts)} through {et_label(ends)}.", actor=who,
+                       session=session, detail={"event": "scheduled"})
+            return session
         late = ""
         if occurrence is not None and now > occurrence.start + timedelta(minutes=1):
             late = f" (started {int((now - occurrence.start).total_seconds() // 60)} min after its scheduled time; it " \
@@ -644,7 +669,7 @@ class SessionManager:
         resumed: builtins.list[str] = []
         interrupted: builtins.list[str] = []
         stopped: builtins.list[str] = []
-        rows = [r for r in self._query("SELECT * FROM trading_sessions WHERE state IN ('RUNNING','STOPPING')")
+        rows = [r for r in self._query("SELECT * FROM trading_sessions WHERE state IN ('SCHEDULED','RUNNING','STOPPING')")
                 if r["owner_process"] != self.process_id]
         for r in rows:
             sid = str(r["session_id"])
@@ -652,13 +677,13 @@ class SessionManager:
             if r["state"] == "STOPPING":
                 if self._finish(sid, "STOPPED", r["stop_reason"] or "stop was requested before the API restarted"):
                     stopped.append(sid)
-            elif clean and ends is not None and now < ends:
+            elif clean and r["execution_label"] == self.rt.execution_label.value and ends is not None and now < ends:
                 nxt = parse_utc(r["next_cycle_at"])
                 nxt = now if nxt is None or nxt < now else nxt
 
                 def _w(conn: sqlite3.Connection, sid: str = sid, nxt: datetime = nxt) -> bool:
                     cur = conn.execute("UPDATE trading_sessions SET owner_process=?, next_cycle_at=?, resumed_count="
-                                       "resumed_count+1, updated_at=? WHERE session_id=? AND state='RUNNING'",
+                                       "resumed_count+1, updated_at=? WHERE session_id=? AND state IN ('SCHEDULED','RUNNING')",
                                        (self.process_id, iso(nxt), iso(now), sid))
                     if cur.rowcount:
                         self._audit(conn, "SESSION_RESUMED", "session-manager",
@@ -672,8 +697,12 @@ class SessionManager:
                                f"left until {et_label(ends)}.", actor="system", session=self.get(sid),
                                detail={"event": "resumed"})
             else:
-                why = (reason or "the API restarted and the startup broker reconciliation was not CLEAN") if not clean \
-                    else f"the API restarted after the session window ended ({et_label(ends) if ends else 'unknown'})"
+                if r["execution_label"] != self.rt.execution_label.value:
+                    why = "the execution environment changed since the session was accepted"
+                elif not clean:
+                    why = reason or "the API restarted and the startup broker reconciliation was not CLEAN"
+                else:
+                    why = f"the API restarted after the session window ended ({et_label(ends) if ends else 'unknown'})"
                 if self._finish(sid, "INTERRUPTED", why):
                     interrupted.append(sid)
         missed = self._process_schedules(now, allow_start=False, force=True)
@@ -726,7 +755,10 @@ class SessionManager:
             return
         ends = parse_utc(row["ends_at"])
         if ends is None or now >= ends:
-            self._finish(sid, "COMPLETED", "planned duration elapsed")
+            if row["state"] == "SCHEDULED":
+                self._finish(sid, "INTERRUPTED", "the queued session window passed before it could start")
+            else:
+                self._finish(sid, "COMPLETED", "planned duration elapsed")
             await self._final_reconcile()
             return
         if not xcal.is_market_open(now):
@@ -741,6 +773,12 @@ class SessionManager:
         nxt = parse_utc(row["next_cycle_at"])
         if nxt is not None and now < nxt:
             return
+        if row["state"] == "SCHEDULED":
+            if not self._transition(sid, "RUNNING", from_states=("SCHEDULED",), reason=None, now=now,
+                                    actor="session-manager", event_type="SESSION_STARTED", extra={"started_at": iso(now)}):
+                return
+            self._emit("The queued paper session started during XNYS regular hours.", actor="system",
+                       session=self.get(sid), detail={"event": "started"})
         await self._run_slot(row, scheduled_for=nxt or now)
 
     async def _run_slot(self, row: dict[str, Any], *, scheduled_for: datetime) -> None:

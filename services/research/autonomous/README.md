@@ -37,7 +37,7 @@ introduced. The existing process supervisor also supports `make research` and `m
 * Net return/Sharpe, drawdown, per-trade Sortino, tail loss, target MAE, doubled-cost stress, momentum baseline and
   session-block bootstrap diagnostics. Bonferroni screening counts **all** journal trials, including failures, for both
   positive net return and incremental return over momentum. Passing is eligibility for independent validation only.
-* GET `/api/v1/research/autonomous` and a read-only dashboard panel show actual records and failures, with explicit
+* GET `/api/v1/research/autonomous` returns actual records and failures, with explicit
   SIMULATED labels. No timers masquerade as experiment progress.
 
 ## Validation and deployment boundary
@@ -104,8 +104,7 @@ The existing model-suite inference sources are preserved. Autonomous artifacts p
   repeated strategy search requires explicit selection-bias controls. This release uses conservative screening,
   not a claim to implement the paper's PBO estimator or a deflated Sharpe ratio.
 
-Validation: `pytest tests/unit/research/test_autonomous_research.py`; dashboard tests include recorded/simulated output
-and failure behavior. Synthetic test profitability is never used as financial evidence.
+Validation: `pytest tests/unit/research/test_autonomous_research.py`. The API exposes recorded and simulated output and failure behavior. Synthetic test profitability is never used as financial evidence.
 
 ## Kronos sequence challenger
 

@@ -31,6 +31,7 @@ from .paths import data_root, results_root
 from .registry import State, StrategyRegistry, TransitionRefused
 from .research import FamilySpec, clean_json, evaluate_family, family_fdr
 from .strategies import crypto as D
+from .strategies import defensive as J
 from .strategies import momentum as A
 from .strategies import reversion as C
 from .targets import latest_decision
@@ -155,6 +156,10 @@ class Lab:
             FamilySpec(C.FAMILY_ETF_PULLBACK, "etf", "RSI(2) pullback on SPY/QQQ/IWM/DIA, one position",
                        list(C.etf_pullback_variants()), lambda p: C.etf_pullback_targets(dev, p), "SPY buy-and-hold",
                        bench, cfg, execution_notes=["multi-day holding requires active-policy and strategy authorization"]),
+            FamilySpec(J.FAMILY, "etf", "volatility-managed SPY/QQQ exposure (capped at 1x), optional 200-day trend",
+                       list(J.variants()), lambda p: J.targets(dev, p), "SPY buy-and-hold", bench, cfg,
+                       execution_notes=["multi-day holding requires active-policy and strategy authorization",
+                                        "fractional exposure needs whole-share sizing at execution (policy tier)"]),
         ]
 
     def ml_family(self, dev: EquityPanel) -> FamilySpec:
@@ -167,6 +172,42 @@ class Lab:
                           lambda p: G.targets(wf, cache, p), "SPY buy-and-hold", A.buy_and_hold(dev, "SPY"),
                           BacktestConfig(capital=100_000.0, execution="open"), first_test_year=2020,
                           execution_notes=["multi-day holding requires active-policy and strategy authorization"])
+
+    def xs_rank_lab(self, dev: EquityPanel) -> Any:
+        from .strategies import xs_rank as K
+
+        return K.XsRankLab(dev)
+
+    def xs_rank_family(self, dev: EquityPanel, xs: Any | None = None) -> FamilySpec:
+        """Family K: ranking objectives vs regression x holding horizon x cost-aware construction (lazy: models are
+        fitted only when a variant is evaluated, so a skipped family costs nothing)."""
+        from .strategies import xs_rank as K
+
+        lab_k = xs if xs is not None else K.XsRankLab(dev)
+        return FamilySpec(K.FAMILY, "us_equity", "learning-to-rank (LambdaRank, XGBoost pairwise, CatBoost YetiRank) "
+                          "vs ridge/LightGBM regression on the same features and folds, horizons 1/5/20 sessions, "
+                          "top-N vs cost-aware construction", list(K.variants()), lab_k.targets,
+                          "SPY buy-and-hold", A.buy_and_hold(dev, "SPY"),
+                          BacktestConfig(capital=K.CAPITAL, execution="open"), first_test_year=K.FIRST_TEST_YEAR,
+                          execution_notes=["every horizon holds overnight (open t+1 -> open t+1+h): requires "
+                                           "allow_overnight_positions and a multi_day_strategy_allowlist entry",
+                                           "20 names from the liquid-1000 universe; today's policy allows 1 position "
+                                           "from a 24-symbol allowlist (see policy_tier)",
+                                           "cost_aware parks unused slots in SPY"])
+
+    def equity_family_by_name(self, family: str, panel: EquityPanel) -> FamilySpec:
+        """Any daily-panel equity family (A..C3, J, G, K) by name; raises KeyError for unknown names."""
+        from .strategies import ml_rank as G
+        from .strategies import xs_rank as K
+
+        if family == G.FAMILY:
+            return self.ml_family(panel)
+        if family == K.FAMILY:
+            return self.xs_rank_family(panel)
+        fams = {f.family: f for f in self.equity_families(panel)}
+        if family in fams:
+            return fams[family]
+        raise KeyError(family)
 
     def crypto_families(self, dev: EquityPanel) -> list[FamilySpec]:
         costs = CryptoCosts(spread_bps=self.crypto_spreads())
@@ -217,6 +258,116 @@ class Lab:
                           execution_notes=[*notes, "intraday, same-session exit: compatible with the current lifecycle",
                                            "current policy: 1 position, $2,000 max order, allowlist of 24 symbols",
                                            "stocks in play are mostly NOT on the allowlist"])
+
+    # ------------------------------------------------------------------ session-timing families (5-minute)
+    def build_session_panel(self) -> Path:
+        from .intraday import IntradayPanel
+        from .strategies.session import UNIVERSES
+
+        src = self._latest_dir("intraday/session5m_all_*")
+        bars = load_bars(src)
+        ip = IntradayPanel.build(bars, symbols=sorted(set(bars["symbol"].astype(str)) & set(UNIVERSES["allow24"])))
+        cut = pd.Timestamp(self.holdout[0])
+        if (ip.days >= cut).any():  # defence in depth: the fetcher already stops before the holdout
+            ip = ip.slice_days(None, pd.Timestamp(self.holdout[0] - timedelta(days=1)))  # pyright: ignore[reportArgumentType]
+        ip.meta.update({"source_dir": src.name, "manifest": json.loads((src / "manifest.json").read_text())["params"]})
+        path = self.data / "panels" / f"session_5m_{src.name}.npz"
+        ip.save(path)
+        return path
+
+    def load_session_panel(self) -> tuple[Any, str]:
+        from .intraday import IntradayPanel
+
+        files = sorted((self.data / "panels").glob("session_5m_*.npz"))
+        if not files:
+            raise FileNotFoundError("no session panel; run session-fetch and build-panel --what session")
+        ip = IntradayPanel.load(files[-1])
+        cut = pd.Timestamp(self.holdout[0])
+        if (ip.days >= cut).any():
+            ip = ip.slice_days(None, pd.Timestamp(self.holdout[0] - timedelta(days=1)))  # pyright: ignore[reportArgumentType]
+        return ip, "session:" + str(ip.meta.get("sha256", files[-1].name))[:16]
+
+    def session_families(self, ip: Any, daily: EquityPanel, *, families: tuple[str, ...] | None = None,
+                         policy: RiskPolicy | None = None, holdout_look: int | None = None) -> list[FamilySpec]:
+        """H1-H3 (intraday) and I1-I2 (overnight / turn-of-month) on allowlisted ETFs and large caps. Panels with
+        holdout rows are accepted only together with an already committed holdout look id."""
+        from .costs import EquityCosts
+        from .intraday import DailyContext, SimConfig, benchmark_spy_buy_and_hold, simulate
+        from .strategies import session as S
+
+        cut = pd.Timestamp(self.holdout[0])
+        if (ip.days >= cut).any():
+            look = self.vault.open_look(gates.HOLDOUT_NAME, holdout_look) if holdout_look else None
+            if look is None or not families or len(families) != 1 or look["family"] != families[0]:
+                raise ValueError("session research must receive development data only")
+        policy = policy or RiskPolicy()
+        ctx = DailyContext.align(ip, daily)
+        fe = S.SessionFeatures(ip, ctx)
+        positions = S.month_positions(ip)
+        bench = benchmark_spy_buy_and_hold(ip, ctx)
+        leg_cache: dict[tuple[str, str], list[Any]] = {}
+
+        def legs(fam: str, prm: dict[str, Any]) -> list[Any]:
+            key = (fam, json.dumps(prm, sort_keys=True))
+            if key not in leg_cache:
+                leg_cache[key] = S.legs_for(fam, fe, prm, positions)
+            return leg_cache[key]
+
+        def runner(fam: str) -> Any:
+            def run(prm: dict[str, Any], cm: float) -> BacktestResult:
+                n = S.max_names(prm)
+                cfg = SimConfig(capital=100_000.0, weight=1.0 / n, max_concurrent=n,
+                                costs=EquityCosts(cost_multiplier=cm))
+                return simulate(ip, ctx, legs(fam, prm), cfg)[0]
+            return run
+
+        def policy_runner(fam: str) -> Any:
+            def run(prm: dict[str, Any], policy: RiskPolicy, equity: float) -> BacktestResult:
+                from .ledger import spec_hash as _sh
+                from .research import TierNotApplicable
+
+                ok, why = S.lifecycle_executable(fam, prm)
+                if not ok:
+                    raise TierNotApplicable("NOT_EXECUTABLE", why)
+                sessions = S.holding_sessions(fam, prm)
+                if sessions > 1:
+                    sid = f"{fam}:{_sh(prm)}"
+                    if not policy.allow_overnight_positions or sid not in policy.multi_day_strategy_allowlist:
+                        raise TierNotApplicable("NOT_PERMITTED", "today's policy rejects overnight holds "
+                                                "(allow_overnight_positions off or strategy not allowlisted)")
+                    if sessions > policy.max_holding_sessions:
+                        raise TierNotApplicable("NOT_PERMITTED", "holding sessions exceed max_holding_sessions")
+                allowed = [lg for lg in legs(fam, prm) if str(ip.symbols[lg.j]) in policy.symbol_allowlist]
+                cap = min(float(policy.max_concentration_pct), float(policy.max_position_notional) / equity,
+                          float(policy.max_order_notional) / equity)
+                cfg = SimConfig(capital=equity, weight=cap, max_concurrent=max(1, int(policy.max_positions)),
+                                whole_shares=True)
+                return simulate(ip, ctx, allowed, cfg)[0]
+            return run
+
+        intraday_note = ["intraday, flat by 15:50: executable with the current position lifecycle and allowlist "
+                         "(after validation and prospective promotion)",
+                         "fill model: marketable LIMIT (10 bps) at the next bar open, non-fill if it opens through the "
+                         "limit; protective stop on every position; runtime cost model charged once per leg"]
+        overnight_note = ["holds overnight: requires allow_overnight_positions, a multi_day_strategy_allowlist entry "
+                          "and holding_sessions within max_holding_sessions (all disabled in the default policy)",
+                          "DAY protective stops expire at the close; overnight gaps are unprotected and modelled as "
+                          "exits at the next open when it gaps through the stop"]
+        desc = {S.H1: "intraday momentum: move-so-far (from the prior close or the open) predicts the rest of the "
+                      "session; executable windows only",
+                S.H2: "intraday reversion below the session VWAP (z-scored by trailing sessions), time exits",
+                S.H3: "opening gaps on ETFs: fade large gap-downs or follow large gap-ups",
+                S.I1: "overnight hold: buy 15:25, sell after the next open",
+                S.I2: "turn-of-month hold on index ETFs (enter k-th last session, exit m-th first session)"}
+        out = []
+        for fam in families or S.FAMILIES:
+            out.append(FamilySpec(
+                fam, "etf" if fam != S.H2 else "us_equity", desc[fam], list(S.VARIANTS[fam]()),
+                lambda p: np.zeros(0), "SPY buy-and-hold (close-to-close)", np.zeros(0), first_test_year=2019,
+                wf_period="year", wf_min_train_days=504, runner=runner(fam), benchmark_result=bench,
+                policy_runner=policy_runner(fam),
+                execution_notes=intraday_note if fam in S.INTRADAY_FAMILIES else overnight_note))
+        return out
 
     def crypto_vs_etf(self, equity: EquityPanel, crypto: EquityPanel, *, lookback: int = 50) -> dict[str, Any]:
         """Same BTC trend rule (price > SMA(lookback), long or flat) on BTC/USD vs IBIT over the common
@@ -275,6 +426,19 @@ class Lab:
         """Selected variant under TODAY's risk policy: allowlisted symbols only, at most ``max_positions`` names,
         each capped by concentration / position / order notional, whole shares, on the actual account size."""
         policy = policy or RiskPolicy()
+        if spec.policy_runner is not None:
+            from .research import TierNotApplicable
+
+            try:
+                res = spec.policy_runner(params, policy, equity)
+            except TierNotApplicable as exc:
+                return {"status": exc.status, "reason": exc.reason}
+            m = res.metrics(spec.periods_per_year)
+            return {"status": "OK", "equity": equity, "max_positions": int(policy.max_positions),
+                    "allowlist_size": len(policy.symbol_allowlist),
+                    "metrics": {key: m.get(key) for key in ("sharpe", "cagr", "max_drawdown", "avg_exposure", "trades",
+                                                            "cost_drag_annual", "start", "end")},
+                    "note": "1 position, <= 25% of equity, whole shares, allowlisted symbols, same fill model"}
         if spec.runner is not None or spec.asset_class == "crypto":
             return {"status": "NOT_APPLICABLE", "reason": "intraday/crypto families use their own execution model"}
         w = spec.make_targets(params)
@@ -301,15 +465,28 @@ class Lab:
                 "allowlist_size": len(policy.symbol_allowlist),
                 "metrics": {key: m.get(key) for key in ("sharpe", "cagr", "max_drawdown", "avg_exposure", "trades",
                                                         "cost_drag_annual", "start", "end")},
-                "note": "multi-day holding is still blocked by the intraday-only position lifecycle"}
+                "permitted": bool(policy.allow_overnight_positions),
+                "note": ("what-if under today's sizing limits; holding across sessions additionally needs the operator's "
+                         "overnight authorization (allow_overnight_positions + multi_day_strategy_allowlist), which "
+                         "today's policy " + ("grants" if policy.allow_overnight_positions else "does not grant"))}
 
     # ------------------------------------------------------------------ research
     def run_research(self, families: list[FamilySpec], panel: EquityPanel, fingerprint: str,
-                     run_id: str | None = None) -> dict[str, Any]:
+                     run_id: str | None = None, *, force: bool = False) -> dict[str, Any]:
+        """Evaluate families. A family whose every variant already has a trial on this exact data fingerprint and
+        code is skipped (re-running adds no evidence and only inflates its trial count) unless ``force``."""
+        from .ledger import code_hash
+
         run_id = run_id or datetime.now(UTC).strftime("ql_%Y%m%dT%H%M%SZ")
         out_dir = self.out / "runs" / run_id
         reports = []
+        skipped: list[str] = []
+        code = code_hash()
         for spec in families:
+            if not force and self.ledger.evaluated_with(spec.family, list(spec.variants), fingerprint, code):
+                log.info("family %s skipped: already evaluated on this data and code (no new evidence)", spec.family)
+                skipped.append(spec.family)
+                continue
             log.info("family %s: %d variants", spec.family, len(spec.variants))
             rep = evaluate_family(spec, panel, self.ledger, fingerprint=fingerprint, out_dir=out_dir)
             if rep.get("selected_params") is not None:
@@ -321,10 +498,23 @@ class Lab:
                     {k: v for k, v in rep.items() if not k.startswith("_")}), indent=1, default=str))
             reports.append(rep)
             log.info("family %s passed=%s %s", spec.family, rep.get("passed"), rep.get("fail_reasons"))
-        return self._summarize(run_id, out_dir, reports)
+        summary = self._summarize(run_id, out_dir, reports)
+        for rep in reports:  # completion marker: only a fully summarized family can be skipped later
+            self.ledger.record(family=rep["family"], variant=f"RUN_COMPLETE:{run_id}", spec={"run_of": rep["family"]},
+                               data_fingerprint=fingerprint, stage="RUN", metrics={},
+                               status="DONE", note=f"summarized in {run_id}")
+        summary["skipped_no_new_evidence"] = skipped
+        return summary
 
     def _summarize(self, run_id: str, out_dir: Path, reports: list[dict[str, Any]]) -> dict[str, Any]:
-        fdr = family_fdr(reports)
+        from .research import NO_EDGE_NOTE
+
+        latest = self.out / "latest_research.json"
+        recorded: dict[str, Any] = json.loads(latest.read_text()).get("families", {}) if latest.is_file() else {}
+        here = {r["family"] for r in reports}
+        peers = {fam: 1.0 - float(info["dsr"]) for fam, info in recorded.items()
+                 if fam not in here and isinstance(info.get("dsr"), int | float)}
+        fdr = family_fdr(reports, peers=peers)
         fams = []
         for r in reports:
             fam = r["family"]
@@ -359,17 +549,21 @@ class Lab:
                 sid = f"{fam}:{r['selected_spec_hash']}"
                 self.registry.register(sid, family=fam, spec_hash=r["selected_spec_hash"],
                                        spec=r["selected_params"], asset_class=str(r.get("asset_class")),
-                                       holding="intraday" if fam.startswith("B_") else "multi_day")
+                                       holding="intraday" if fam.startswith(("B_", "H1_", "H2_", "H3_"))
+                                       else "multi_day")
                 if self.registry.state(sid) == State.RESEARCH:
                     self.registry.transition(sid, State.DEV_PASSED, reason=f"development gate passed in {run_id}",
                                              evidence={"dev_passed": True, "spec_hash": r["selected_spec_hash"],
                                                        "run_id": run_id})
         summary = clean_json({"run_id": run_id, "generated_at": datetime.now(UTC).isoformat(),
                               "holdout": [str(self.holdout[0]), str(self.holdout[1])], "gate": gates.DEV_GATE,
-                              "families": fams, "no_edge_note": reports[0].get("no_edge_note") if reports else None})
+                              "families": fams, "no_edge_note": NO_EDGE_NOTE,
+                              "fdr": {"q": 0.10, "families_in_correction": len(here) + len(peers),
+                                      "peers_from_earlier_runs": sorted(peers)}})
+        if not reports:  # nothing evaluated: never touch latest_research.json (keeps its timestamp and disclaimer)
+            return summary
         out_dir.mkdir(parents=True, exist_ok=True)
         (out_dir / "summary.json").write_text(json.dumps(summary, indent=1))
-        latest = self.out / "latest_research.json"
         merged: dict[str, Any] = json.loads(latest.read_text()) if latest.is_file() else {"families": {}}
         for f in fams:
             merged["families"][f["family"]] = {**f, "run_id": run_id}
@@ -379,12 +573,31 @@ class Lab:
         return summary
 
     # ------------------------------------------------------------------ holdout (one look)
-    def evaluate_holdout(self, spec: FamilySpec, full: EquityPanel, params: dict[str, Any],
-                         dev_report: dict[str, Any]) -> dict[str, Any]:
-        sid = f"{spec.family}:{spec_hash(params)}"
+    def claim_holdout_look(self, family: str, params: dict[str, Any], *, resume: bool = False) -> int:
+        """Commit ONE holdout look for a DEV_PASSED spec. Callers that must download holdout-period data claim
+        first, so the data is never read without a recorded, permanent look. ``resume`` returns this spec's own
+        look when it was committed but never resolved (e.g. the holdout download failed); a resolved look is never
+        reopened."""
+        sid = f"{family}:{spec_hash(params)}"
         if self.registry.state(sid) != State.DEV_PASSED:
             raise HoldoutLookRefused(f"{sid} is not DEV_PASSED; holdout looks are reserved for gate-passing specs")
-        look = self.vault.claim(gates.HOLDOUT_NAME, spec.family, params, sid)
+        if resume:
+            own = self.vault.unresolved_look(gates.HOLDOUT_NAME, family, params)
+            if own is not None:
+                return own
+        return self.vault.claim(gates.HOLDOUT_NAME, family, params, sid)
+
+    def evaluate_holdout(self, spec: FamilySpec, full: EquityPanel, params: dict[str, Any],
+                         dev_report: dict[str, Any], *, look: int | None = None) -> dict[str, Any]:
+        sid = f"{spec.family}:{spec_hash(params)}"
+        if look is None:
+            look = self.claim_holdout_look(spec.family, params)
+        else:
+            if self.registry.state(sid) != State.DEV_PASSED:
+                raise HoldoutLookRefused(f"{sid} is not DEV_PASSED; holdout looks are reserved for gate-passing specs")
+            row = self.vault.open_look(gates.HOLDOUT_NAME, look)
+            if row is None or row["family"] != spec.family or row["spec_hash"] != spec_hash(params):
+                raise HoldoutLookRefused(f"look {look} is not this spec's own unresolved look")
         res = spec.run(full, params)
         s = res.series()
         h0, h1 = pd.Timestamp(self.holdout[0]), pd.Timestamp(self.holdout[1])
@@ -578,10 +791,7 @@ def run_selection(opps: list[Opportunity], out: Path) -> dict[str, Any]:
 
 
 def holdout_family_spec(lab: Lab, family: str, full: EquityPanel) -> FamilySpec:
-    fams = {f.family: f for f in lab.equity_families(full)}
-    if family in fams:
-        return fams[family]
-    raise KeyError(family)
+    return lab.equity_family_by_name(family, full)
 
 
 _ = (BacktestResult, run_weights, date, TransitionRefused)

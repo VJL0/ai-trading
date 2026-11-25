@@ -58,7 +58,7 @@ async def propose(journal: Journal, dataset: str, directory: Path, kind='model')
     (directory/'request.json').write_text(json.dumps({'context': context, 'kind': kind}))
     await asyncio.to_thread(rd_step, directory)
     prompts = json.loads((directory/'prompts.json').read_text())
-    model = build_sol_model(settings, SecretStore(ROOT), transport='real')
+    model = build_sol_model(settings, SecretStore(settings.project_root, use_keychain=settings.use_keychain), transport='real')
     agent = Agent(model, output_type=ExperimentProposal, instructions=prompts['system'])
     response = await agent.run(prompts['user'], usage_limits=UsageLimits(request_limit=1, total_tokens_limit=12000))
     proposal = response.output

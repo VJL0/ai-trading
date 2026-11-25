@@ -5,6 +5,8 @@ No broker, no model, no external network."""
 from __future__ import annotations
 
 import json
+import os
+import signal
 import socket
 import subprocess
 import sys
@@ -86,6 +88,38 @@ def _text(res: types.CallToolResult) -> str:
     block = res.content[0]
     assert isinstance(block, types.TextContent)
     return block.text
+
+
+async def test_start_trading_boots_the_api_and_uses_defaults(tmp_path: Path) -> None:
+    (tmp_path / ".env").write_text("LAT_GATEWAY=FAKE\nLAT_FEED_MODE=SIMULATED\nLAT_AI_RUNTIME=NONE\n")
+    pidfile = tmp_path / "var" / "run" / "api.pid"
+    try:
+        params = _python_params(tmp_path, _free_port())
+        with (tmp_path / "err.log").open("w") as errlog:
+            async with (stdio_client(params, errlog=errlog) as (read, write),
+                        ClientSession(read, write, read_timeout_seconds=45) as session):
+                await session.initialize()
+                assert not pidfile.exists()
+                args = dict.fromkeys(("duration_minutes", "symbols", "cadence_minutes", "use_ai"))
+                invalid = await session.call_tool("start_paper_session", {**args, "duration_minutes": -1})
+                assert invalid.is_error and not pidfile.exists()
+                response = await session.call_tool("start_paper_session", args)
+                assert not response.is_error, _text(response)
+                assert response.structured_content is not None
+                assert response.structured_content["execution_label"] == "SIMULATED"
+                started = response.structured_content["session"]
+                assert started["duration_minutes"] == 60
+                assert started["cadence_minutes"] == 5
+                assert started["use_ai"] is False
+                pid = pidfile.read_text()
+                duplicate = await session.call_tool("start_paper_session", args)
+                assert duplicate.is_error and "already active" in _text(duplicate)
+                assert pidfile.read_text() == pid
+                stopped = await session.call_tool("stop_session", {"reason": "integration test", "session_id": None})
+                assert not stopped.is_error, _text(stopped)
+    finally:
+        if pidfile.exists():
+            os.killpg(int(pidfile.read_text()), signal.SIGTERM)
 
 
 async def test_stdio_session_end_to_end(stub_api: StubApi, tmp_path: Path) -> None:

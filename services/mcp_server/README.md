@@ -12,9 +12,8 @@ uv run --frozen python -m services.mcp_server          # what .mcp.json / .codex
 * Every `tools/call` is forwarded with `HttpToolBackend` to `http://127.0.0.1:<LAT_API_PORT>`, so the API
   process stays the single SQLite writer. The server never opens the ledger and never talks to a broker or a
   model.
-* At startup the server reads `var/<ns>/keys/agent.token`. If the file is missing it keeps serving, and each
-  call returns a clear 503 until the API has created the token. The token is never logged, printed, or sent
-  to the client.
+* `start_paper_session` starts the configured API on demand. The process owns the session and provisions
+  `var/<ns>/keys/agent.token`. The token is never logged, printed, or sent to the client.
 * The server refuses to start (exit code 2) unless `LAT_MODE` is PAPER or REPLAY.
 * Results: `content` holds one compact JSON text block and `structured_content` holds the same object. Errors
   are `is_error=true` results such as `error 422: …`, `error 503: … not reachable … make dev`, or

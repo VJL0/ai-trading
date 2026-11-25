@@ -4,7 +4,7 @@ The operator token lives at ``var/<namespace>/keys/operator.token`` (file mode 0
 one per mode namespace, so a paper token never authenticates in a live namespace.
 
 Who holds it:
-* the **human operator** (pastes it into the dashboard settings form / sends it as
+* the **human operator** (enters it in the local kill switch or sends it as
   ``X-LAT-Operator-Token``), and the local API process, which reads it to verify requests;
 * **never** an AI model, a prompt, the Peekaboo/Playwright GUI agent, logs, screenshots or the
   client bundle. This module never logs, prints or ``repr``s the token value.

@@ -18,6 +18,7 @@ so a model sees the same contract whichever runtime drives it. The HTTP backend:
 
 from __future__ import annotations
 
+import asyncio
 import json
 import os
 import stat
@@ -27,6 +28,10 @@ from typing import Any, Protocol, cast, runtime_checkable
 from urllib.parse import urlsplit
 
 import httpx
+from pydantic import ValidationError
+
+from packages.contracts.enums import GatewayKind, TradingMode
+from packages.core.config import Settings
 
 from .handlers import ToolError, dispatch
 from .protocol import ToolRuntime
@@ -109,12 +114,12 @@ class HttpToolBackend:
         read_timeout_s: float = 60.0,
         transport: httpx.AsyncBaseTransport | None = None,
         lazy_token: bool = False,
+        startup_settings: Settings | None = None,
     ) -> None:
         self.base_url = _require_loopback(base_url)
         self.actor = sanitize_actor(actor)
+        self._startup_settings = startup_settings
         if agent_token_path is None:
-            from packages.core.config import Settings
-
             agent_token_path = Settings().keys_dir / AGENT_TOKEN_FILE
         self.token_path = Path(agent_token_path)
         self._token: str | None = None
@@ -185,6 +190,25 @@ class HttpToolBackend:
             body = json.dumps(dict(args), default=_json_default, separators=(",", ":"), allow_nan=False).encode()
         except (TypeError, ValueError) as exc:
             raise ToolError(422, str(exc)) from None
+        if name == "start_paper_session" and self._startup_settings is not None and spec is not None:
+            try:
+                spec.input_model.model_validate(args)
+            except ValidationError as exc:
+                raise ToolError(422, exc.errors(include_input=False, include_context=False, include_url=False)) from None
+            from services.api.launcher import ApiStartupError, ensure_api
+
+            settings = self._startup_settings
+            if settings.mode not in (TradingMode.PAPER, TradingMode.REPLAY) or settings.gateway not in (
+                GatewayKind.FAKE, GatewayKind.ALPACA_PAPER,
+            ):
+                raise ToolError(403, "session startup requires an approved paper or simulated runtime")
+            try:
+                await asyncio.to_thread(
+                    ensure_api, settings,
+                    require_gateway_match=settings.trading_mode is not None or "gateway" in settings.model_fields_set,
+                )
+            except (ApiStartupError, OSError) as exc:
+                raise ToolError(503, f"the local API could not prepare a paper session: {exc}") from None
         resp = await self._request("POST", f"/api/v1/agent/tools/{name}", body, mutating=mutating)
         payload = _decode(resp)
         if resp.status_code >= 400:
@@ -203,7 +227,12 @@ class HttpToolBackend:
             raise ToolError(502, f"{name} output from the local API failed contract validation (withheld)") from None
 
     async def catalog(self) -> list[dict[str, Any]]:
-        resp = await self._request("GET", "/api/v1/agent/tools", None, mutating=False)
+        try:
+            resp = await self._request("GET", "/api/v1/agent/tools", None, mutating=False)
+        except ToolError as exc:
+            if exc.status != 503 or self._startup_settings is None:
+                raise
+            return [entry for entry in _catalog() if entry["name"] == "start_paper_session"]
         payload = _decode(resp)
         if resp.status_code >= 400:
             raise _error_from(resp.status_code, payload, self.base_url)

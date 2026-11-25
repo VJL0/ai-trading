@@ -59,7 +59,7 @@ row. `EntriesLock.exits_locked()` is the narrower lock for risk-reducing SELLs:
 | Reason | Entries | Exits |
 |---|---|---|
 | Process-start guard, mode, any entries flag (`broker_disconnected`, `reconciliation_mismatch`, `process_suspended`, `ledger_anomaly`, ...), UNKNOWN orders, no CLEAN reconciliation | locked | locked |
-| Halt, scope `ENTRIES` (every pre-existing halt, the dashboard halt, `request_halt`, reconciler halts) | locked | **open** |
+| Halt, scope `ENTRIES` (monitor entry halt, `request_halt`, reconciler halts) | locked | **open** |
 | Position safety state (UNPROTECTED, EXITING, BREACHED, OVERNIGHT, UNVERIFIED) | locked | **open** |
 | Halt, scope `ALL` (`POST /api/v1/control/kill-switch`, operator token) | locked | locked |
 

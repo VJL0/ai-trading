@@ -1,19 +1,22 @@
 # Local API contract (v1)
 
 FastAPI, bound to `127.0.0.1:8765` only. All money/qty/price values are **decimal strings**. All
-timestamps are ISO-8601 UTC strings ending in `Z`. Chart bar `time` values are UNIX seconds (int).
+timestamps are ISO-8601 UTC strings ending in `Z`. Market bar `time` values are UNIX seconds (int).
 Every response that exposes market data or execution state carries explicit labels
-(`execution_label`, `feed_mode`, `is_simulated`, `limitations`) so the dashboard never shows
-unlabeled simulated data as live.
+(`execution_label`, `feed_mode`, `is_simulated`, `limitations`) so AI and operator clients can identify simulated data.
 
 ## Auth classes
 | Class | Header | Who |
 |---|---|---|
-| public-local | `X-LAT-Request: 1` (CSRF guard on POST) | dashboard |
+| public-local | `X-LAT-Request: 1` (CSRF guard on POST) | local clients and monitor |
 | operator | `X-LAT-Request: 1` + `X-LAT-Operator-Token: <token from var/<ns>/keys/operator.token>` | human operator only (never models/GUI agent) |
 | engine | `X-LAT-Engine-Token: <token from var/<ns>/keys/engine.token>` | local LEAN process only |
 
-POST without `X-LAT-Request: 1` → 403. Requests whose `Origin` is not `http://127.0.0.1:<dashboard_port>`/`http://localhost:<dashboard_port>` → 403.
+CSRF-protected POSTs require `X-LAT-Request: 1`. Browser callers must use the loopback API origin and port.
+
+`GET /monitor` serves the local operator view. `GET /monitor/status` returns trading status, mode, equity,
+daily and total P&L, and critical alerts. The monitor calls the existing halt and operator-only kill-switch
+endpoints. The full machine-readable API schema is at `/api/openapi.json`.
 
 ## Read endpoints (public-local)
 
@@ -167,10 +170,9 @@ Refused (403) unless mode is PAPER/REPLAY and the execution label is not LIVE.
   that goes through `RiskEngine.evaluate` → signed intent → final gate → paper gateway, rate-limited per hour.
   There is no tool to resume trading, change risk limits, change mode, submit live orders or read secrets.
 
-## Live operations (read-only dashboard; update request 2026-11-08)
-The dashboard is **read-only**: it only issues GETs and subscribes to the SSE stream. All actions are taken by the AI
-agent through MCP tools (or by the operator CLI). Every event below is persisted in `activity_events` (append-only) and
-published on `/api/v1/stream` with the same body.
+## Structured operations and diagnostics
+The AI uses MCP and the local API for detailed operations. The activity log is append-only and publishes the
+same event bodies on `/api/v1/stream`.
 
 Pipeline stages (fixed order): `MARKET_DATA → FEATURES → MODELS → GPT_REVIEW → RISK_ENGINE → ORDER_DECISION → BROKER →
 RECONCILIATION`. Stage statuses: `idle | running | passed | rejected | error | skipped`.

@@ -76,7 +76,6 @@ def upstream_pins() -> list[dict[str, str]]:
 def main() -> int:
     sbom = {
         "python": python_packages(),
-        "node_dashboard": node_packages(ROOT / "apps/dashboard/pnpm-lock.yaml"),
         "node_mac_agent": node_packages(ROOT / "apps/mac-agent/browser/pnpm-lock.yaml"),
         "dotnet": dotnet_packages(),
         "upstream": upstream_pins(),

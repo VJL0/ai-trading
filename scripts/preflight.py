@@ -7,9 +7,7 @@ Exit code 1 only when a HARD requirement fails. Never prints secret values (pres
 from __future__ import annotations
 
 import json
-import os
 import platform
-import re
 import shutil
 import subprocess
 import sys
@@ -48,9 +46,7 @@ def tool_version(name: str, argv: list[str]) -> tuple[str | None, str]:
 def checks() -> list[Check]:
     out: list[Check] = []
     mac_ver = platform.mac_ver()[0]
-    major = int(mac_ver.split(".")[0]) if mac_ver else 0
-    out.append(Check("macOS", "PASS" if major >= 15 else "FAIL", f"macOS {mac_ver}", hard=True,
-                     fix="Peekaboo requires macOS 15+; upgrade macOS"))
+    out.append(Check("platform", "PASS", f"{platform.system()} {mac_ver}".strip()))
     arch = platform.machine()
     _, chip = run(["sysctl", "-n", "machdep.cpu.brand_string"])
     out.append(Check("cpu", "PASS", f"{arch} ({chip})"))
@@ -66,12 +62,9 @@ def checks() -> list[Check]:
     for name, argv, hard, fix in [
         ("brew", ["brew", "--version"], False, "install Homebrew from https://brew.sh"),
         ("uv", ["uv", "--version"], True, "brew install uv"),
-        ("node", ["node", "--version"], True, "install Node 20+ (e.g. brew install node or fnm)"),
-        ("pnpm", ["pnpm", "--version"], True, "corepack enable pnpm  (or brew install pnpm)"),
         ("git", ["git", "--version"], True, "xcode-select --install"),
         ("docker", ["docker", "--version"], False, "optional: OrbStack or Docker Desktop"),
-        ("claude", ["claude", "--version"], False, "optional: Claude Code CLI for Playwright MCP"),
-        ("peekaboo", ["peekaboo", "--version"], False, "brew install openclaw/tap/peekaboo"),
+        ("claude", ["claude", "--version"], False, "optional: Claude Code CLI for the trading MCP server"),
         ("sqlite3", ["sqlite3", "--version"], False, "ships with macOS"),
     ]:
         ver, detail = tool_version(name, argv)
@@ -101,21 +94,13 @@ def checks() -> list[Check]:
                      str(lean_dll.relative_to(ROOT)) if lean_dll.exists() else "not built",
                      fix="make lean-build"))
 
-    if shutil.which("peekaboo"):
-        code, perm = run(["peekaboo", "permissions", "status"])
-        granted = code == 0 and not re.search(r"(?i)not granted|denied|missing|✗", perm)
-        out.append(Check("peekaboo permissions", "PASS" if granted else "WARN", perm.replace("\n", " | ")[:300],
-                         fix="System Settings > Privacy & Security > Screen Recording and Accessibility: enable the "
-                             "app that runs the GUI agent (Terminal / Claude). The agent never changes these itself."))
-
-    code, _mcp = run(["claude", "mcp", "get", "playwright"], timeout=30) if shutil.which("claude") else (1, "")
-    out.append(Check("playwright MCP", "PASS" if code == 0 else "WARN", "registered" if code == 0 else "not registered",
-                     fix="claude mcp add playwright -- npx -y @playwright/mcp@<pinned>"))
-
     try:
+        from packages.core.config import Settings
         from packages.core.secrets import SecretName, SecretStore
 
-        store = SecretStore(ROOT)
+        settings = Settings()
+        out.append(Check("runtime mode", "PASS", settings.mode.value))
+        store = SecretStore(settings.project_root, use_keychain=settings.use_keychain)
         pres = {
             "alpaca_paper": store.alpaca_paper_available(),
             "anthropic": store.has(SecretName.ANTHROPIC_API_KEY),
@@ -135,7 +120,6 @@ def checks() -> list[Check]:
         out.append(Check("credentials", "WARN", f"could not inspect: {exc}"))
 
     out.append(Check("project dir", "PASS", str(ROOT)))
-    out.append(Check("mode default", "PASS", os.environ.get("LAT_MODE", "PAPER (default)")))
     return out
 
 

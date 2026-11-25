@@ -1,7 +1,7 @@
 """Request guards for the localhost API.
 
 * All state-changing requests need ``X-LAT-Request: 1`` (blocks simple cross-site form posts) and,
-  if an ``Origin`` header is present, it must be the local dashboard or the API itself.
+  if an ``Origin`` header is present, it must be the local API origin.
 * Operator endpoints additionally need the human operator token (var/<ns>/keys/operator.token).
 * Engine bridge endpoints need the engine token (var/<ns>/keys/engine.token), given only to LEAN.
 Tokens are compared in constant time and never logged. Models and the GUI agent never get either.
@@ -42,12 +42,11 @@ def tokens_match(presented: str | None, expected: str) -> bool:
     return hmac.compare_digest(presented.encode(), expected.encode())
 
 
-def allowed_origins(api_port: int, dashboard_port: int) -> frozenset[str]:
-    hosts = ("127.0.0.1", "localhost")
-    return frozenset(
-        {f"http://{h}:{dashboard_port}" for h in hosts} | {f"http://{h}:{api_port}" for h in hosts}
-        | {f"http://{h}:4173" for h in hosts}  # vite preview
-    )
+def allowed_origins(api_port: int, api_url: str) -> frozenset[str]:
+    origins = {f"http://127.0.0.1:{api_port}", f"http://localhost:{api_port}", api_url}
+    if api_port == 80:
+        origins.update(origin.removesuffix(":80") for origin in tuple(origins))
+    return frozenset(origins)
 
 
 def csrf_guard(request: Request, x_lat_request: str | None = Header(default=None)) -> None:

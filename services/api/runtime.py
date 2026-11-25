@@ -70,9 +70,7 @@ class Runtime:
             settings.mode, settings.gateway
         ) if settings.mode != modes.TradingMode.RESEARCH_ONLY else None
         self.execution_label: ExecutionLabel = modes.execution_label(settings.mode, settings.gateway)
-        self.feed_mode: FeedMode = settings.feed_mode or (
-            FeedMode.IEX_FREE if self.secrets.alpaca_paper_available() else FeedMode.SIMULATED
-        )
+        self.feed_mode = settings.market_data_feed(self.secrets)
 
         # ---- market data
         self.store = MarketDataStore(settings.datasets_dir)
@@ -655,11 +653,12 @@ class Runtime:
             return
         self.sessions = SessionManager(self)
 
-    def performance(self) -> dict[str, Any]:
+    def performance(self, *, summary_only: bool = False) -> dict[str, Any]:
         from services.sessions.performance import compute_performance
 
         return compute_performance(self.db, now=self.now(), label=self.execution_label.value,
-                                   is_simulated=self.execution_label.value == "SIMULATED", gateway=self.settings.gateway.value)
+                                   is_simulated=self.execution_label.value == "SIMULATED", gateway=self.settings.gateway.value,
+                                   summary_only=summary_only)
 
     def sessions_view(self, limit: int = 20) -> dict[str, Any]:
         if self.sessions is None:
@@ -974,6 +973,8 @@ class Runtime:
             tasks.append(asyncio.create_task(self.sim_clock.run(stop, self._on_sim_tick), name="sim-clock"))
         elif self.settings.data_pipeline_enabled:
             tasks.append(asyncio.create_task(self._data_pipeline_loop(stop), name="data-pipeline"))
+        if self.sim_clock is None and self.settings.quantlab_daily_enabled:
+            tasks.append(asyncio.create_task(self._quantlab_daily_loop(stop), name="quantlab-daily"))
         if self.sessions is not None:
             tasks.append(asyncio.create_task(self.sessions.run(stop), name="session-manager"))
         return tasks
@@ -1039,6 +1040,19 @@ class Runtime:
                                                               detail=str(e)))
             with contextlib.suppress(TimeoutError):
                 await asyncio.wait_for(stop.wait(), timeout=3600)
+
+    async def _quantlab_daily_loop(self, stop: asyncio.Event) -> None:
+        """After-close research maintenance in child processes (never in this event loop, never with order authority)."""
+        from services.quantlab.daily import DailyJob
+
+        def failed(step: str, detail: str) -> None:
+            self.db.write(lambda c: record_failure(c, component="quantlab_daily", kind=step, detail=detail))
+
+        def done(summary: dict[str, Any]) -> None:
+            self.activity.activity("info", f"Quantlab daily update for {summary['session']}: "
+                                   + ", ".join(f"{s['step']} {s['seconds']}s" for s in summary["steps"]))
+
+        await DailyJob(self.settings.project_root, on_failure=failed, on_done=done).run(stop)
 
     async def _status_loop(self, stop: asyncio.Event) -> None:
         tick = 0

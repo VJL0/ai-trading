@@ -30,7 +30,7 @@ quote() { printf '%q ' "$@"; }
 
 echo "local-ai-trader MCP registration (project: $ROOT)"
 echo "server command: $(quote "${SERVER_CMD[@]}")"
-echo "The server only forwards to the local API on 127.0.0.1; start the API with 'make dev' (or 'make paper')."
+echo "After connecting, ask the client to start trading. The session tool starts the local API on demand."
 echo
 
 # ---------------------------------------------------------------- Claude Code (project scope -> .mcp.json)

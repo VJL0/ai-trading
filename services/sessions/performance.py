@@ -281,7 +281,8 @@ def open_order_count(db: Database, gateway: str | None = None) -> int:
 # ------------------------------------------------------------------------------------------------ main
 def compute_performance(db: Database, *, now: datetime, label: str, is_simulated: bool,
                         since: datetime | None = None, until: datetime | None = None,
-                        backtest: bool = False, gateway: str | None = None) -> dict[str, Any]:
+                        backtest: bool = False, gateway: str | None = None,
+                        summary_only: bool = False) -> dict[str, Any]:
     """Shape of ``GET /api/v1/performance`` (decimal strings; ratios 0..1 with 4 decimals)."""
     now = require_utc(now)
     cut = require_utc(until) if until is not None else now
@@ -301,24 +302,29 @@ def compute_performance(db: Database, *, now: datetime, label: str, is_simulated
             realized += r
         if et_date(f.ts) == today:
             daily_realized += r
-    trips = [t for t in result.round_trips if _in_window(t.closed_at, since, cut)]
-    wins = sum(1 for t in trips if t.pnl > 0)
-
     positions = latest_positions(db, cut, gateway=gateway)
     unrealized = _unrealized(positions) if positions is not None else ZERO
+    source = {"ALPACA_PAPER": "ALPACA_PAPER", "FAKE": "FAKE_BROKER"}.get(gateway or "")
+    summary = {
+        "daily_pnl": format(daily_realized + unrealized, "f"),
+        "total_pnl": format(realized + unrealized, "f"),
+    }
+    accounts = [a for a in _account_rows(db, source) if a[0] <= cut]
+    portfolio_value = accounts[-1][2] if accounts else None
+    if summary_only:
+        return {**summary, "portfolio_value": _fmt(portfolio_value)}
+
+    trips = [t for t in result.round_trips if _in_window(t.closed_at, since, cut)]
+    wins = sum(1 for t in trips if t.pnl > 0)
     if positions is not None:
         active = sum(1 for p in positions if dec(p.get("quantity") or "0") != 0)
     else:
         active = sum(1 for r in db.query("SELECT quantity FROM ledger_positions") if dec(r["quantity"]) != 0)
 
-    source = {"ALPACA_PAPER": "ALPACA_PAPER", "FAKE": "FAKE_BROKER"}.get(gateway or "")
-    accounts = [a for a in _account_rows(db, source) if a[0] <= cut]
-    portfolio_value: Decimal | None = None
     cash: Decimal | None = None
     if accounts:
         latest = db.query_one("SELECT payload_json FROM account_snapshots WHERE snapshot_id=?", (accounts[-1][1],))
         payload = loads(latest["payload_json"]) if latest else {}
-        portfolio_value = accounts[-1][2]
         cash = dec(payload["cash"]) if payload.get("cash") is not None else None
     curve_rows = [a for a in accounts if _in_window(a[0], since, cut)]
     max_dd, cur_dd = drawdowns([a[2] for a in curve_rows])
@@ -328,8 +334,7 @@ def compute_performance(db: Database, *, now: datetime, label: str, is_simulated
         "mode_label": mode_label,
         "portfolio_value": _fmt(portfolio_value),
         "cash": _fmt(cash),
-        "daily_pnl": format(daily_realized + unrealized, "f"),
-        "total_pnl": format(realized + unrealized, "f"),
+        **summary,
         "realized_pnl": format(realized, "f"),
         "unrealized_pnl": format(unrealized, "f"),
         "win_rate": _fmt(_ratio(Decimal(wins) / Decimal(len(trips)))) if trips else None,

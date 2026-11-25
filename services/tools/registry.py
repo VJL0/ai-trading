@@ -197,9 +197,9 @@ _SPECS: Final[tuple[ToolSpec, ...]] = (
     # ---------------------------------------------------------------- PAPER sessions (mutating) + operations (read)
     ToolSpec(
         "start_paper_session",
-        "Start an autonomous PAPER trading session now ('1-hour paper session' -> duration_minutes=60). The local"
-        " service runs quant decision cycles during XNYS regular hours, every order still risk-engine gated, and"
-        " keeps running if this chat ends. One session at a time.",
+        "Use for 'start trading'. Pass null for unspecified settings. The API runs one bounded paper or simulated"
+        " session now or at the next XNYS regular open, up to 60 minutes by default. Every order is risk-gated."
+        " The session continues if this chat ends.",
         "paper_trading", True, s.StartPaperSessionIn, s.StartPaperSessionOut,
     ),
     ToolSpec(
@@ -328,7 +328,7 @@ def get_spec(name: str) -> ToolSpec | None:
 
 
 def catalog() -> list[dict[str, Any]]:
-    """Tool catalog served at ``GET /api/v1/agent/tools`` (and used by the dashboard / AI runtime status)."""
+    """Tool catalog served at ``GET /api/v1/agent/tools``."""
     return [
         {
             "name": t.name,

@@ -62,7 +62,7 @@ def _after_close(day: str) -> datetime:
     return get_calendar().session_close(date.fromisoformat(day)) + timedelta(minutes=1)
 
 
-@pytest.mark.parametrize("targets,t,expected", [
+@pytest.mark.parametrize(("targets", "t", "expected"), [
     ([[1.0], [0.0], [np.nan]], 2, [0.0]),
     ([[1.0], [np.nan], [0.0]], 1, [1.0]),
     ([[np.nan], [np.nan], [1.0]], 1, [0.0]),

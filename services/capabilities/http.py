@@ -83,8 +83,8 @@ class ReadOnlyAlpacaHttp:
         self.retries = 0
 
     @classmethod
-    def from_secrets(cls, project_root: Path, **kwargs: Any) -> ReadOnlyAlpacaHttp:
-        store = SecretStore(project_root)
+    def from_secrets(cls, project_root: Path, *, use_keychain: bool = True, **kwargs: Any) -> ReadOnlyAlpacaHttp:
+        store = SecretStore(project_root, use_keychain=use_keychain)
         key = store.get(SecretName.ALPACA_PAPER_KEY_ID)
         secret = store.get(SecretName.ALPACA_PAPER_SECRET_KEY)
         if key is None or secret is None:

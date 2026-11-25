@@ -36,13 +36,13 @@ from typing import Any, Final, Literal, cast
 import httpx
 import pydantic
 from pydantic import Field
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import SettingsConfigDict
 
 from packages.contracts import Evidence, MarketSnapshot, ModelRunRecord, QuantSignal, RiskPolicy
 from packages.contracts.enums import AiRuntimeMode, ModelProvider, ModelRunStatus, ModelTransport
 from packages.core.canonical import canonical_json, sha256_hex
 from packages.core.clock import Clock, SystemClock
-from packages.core.config import Settings
+from packages.core.config import ProjectSettings, Settings
 from packages.core.db import Database
 from packages.core.ids import new_id
 from packages.core.logging import log_event, redact
@@ -92,10 +92,10 @@ _BLOCKING_KINDS: Final = frozenset({"NOT_ELIGIBLE", "UNSUPPORTED_CAPABILITY", "R
 _BACKOFF_KINDS: Final = frozenset({"USAGE_UNAVAILABLE", "TRANSIENT", "RATE_LIMITED", "STREAM_INTERRUPTED"})
 
 
-class ChatGptConfig(BaseSettings):
+class ChatGptConfig(ProjectSettings):
     """Tunables (env prefix ``LAT_CHATGPT_``). Model id and callback port live in core ``Settings``."""
 
-    model_config = SettingsConfigDict(env_prefix="LAT_CHATGPT_", env_file=None, extra="ignore", frozen=True)
+    model_config = SettingsConfigDict(env_prefix="LAT_CHATGPT_")
 
     fake_scenario: str = Field(default="TRADE", description="scripted ChatGptScenario when LAT_AI_TRANSPORT=fake")
     max_turns: int = Field(default=6, ge=1, le=20, description="Responses requests per research turn")

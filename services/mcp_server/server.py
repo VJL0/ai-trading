@@ -12,7 +12,6 @@ from __future__ import annotations
 
 import json
 import logging
-import os
 import secrets
 import sys
 from typing import Any, Final
@@ -41,7 +40,10 @@ INSTRUCTIONS: Final = (
     "quantity limits, notional, exposure and planned loss and may REJECT it; approved orders go only to the "
     "paper/simulated gateway. Live trading is impossible in this build (compiled off) and no tool can resume "
     "trading, change risk limits or mode, or reveal credentials.\n"
-    "- start_paper_session runs autonomous decision cycles in the API process, even after this chat ends. "
+    "- When the operator says 'start trading', use start_paper_session. Pass null for unspecified fields. "
+    "Use Paper or Live as the operator-facing mode. Report simulated data as provenance when relevant. "
+    "Tell the operator whether the session started or is queued for the next regular open. "
+    "The API starts on demand and runs the bounded session even after this chat ends. "
     "schedule_session uses New York regular market hours; missed windows never catch up. "
     "Use get_session_status, stop_session, list_schedules and cancel_schedule to manage them. "
     "A stop does not cancel existing orders or flatten positions. "
@@ -120,18 +122,17 @@ def main(argv: list[str] | None = None) -> int:
     from packages.core.config import Settings
     from services.tools.backends import AGENT_TOKEN_FILE, HttpToolBackend
 
-    logging.basicConfig(stream=sys.stderr, level=os.environ.get("LAT_MCP_LOG_LEVEL", "WARNING").upper(),
-                        format="%(asctime)s %(levelname)s %(name)s: %(message)s")
     settings = Settings()
+    logging.basicConfig(stream=sys.stderr, level=settings.mcp_log_level.upper(),
+                        format="%(asctime)s %(levelname)s %(name)s: %(message)s")
     if settings.mode not in ALLOWED_MODES:
         print(f"{SERVER_NAME}: refusing to start in mode {settings.mode.value}; the agent tool interface is "
               "PAPER/REPLAY only.", file=sys.stderr)
         return 2
-    host = settings.api_host  # Settings already enforces a loopback address
-    base_url = f"http://[{host}]:{settings.api_port}" if ":" in host else f"http://{host}:{settings.api_port}"
-    actor = f"{sanitize_actor(os.environ.get('LAT_AGENT_NAME') or 'mcp')[:32]}-{secrets.token_hex(3)}"
+    base_url = settings.api_url
+    actor = f"{sanitize_actor(settings.agent_name or 'mcp')[:32]}-{secrets.token_hex(3)}"
     token_path = settings.keys_dir / AGENT_TOKEN_FILE
-    backend = HttpToolBackend(base_url, token_path, actor, lazy_token=True)
+    backend = HttpToolBackend(base_url, token_path, actor, lazy_token=True, startup_settings=settings)
     try:
         backend.load_token()
     except ToolError as exc:  # keep serving: each call re-tries and returns a clear error until the API is up

@@ -156,6 +156,32 @@ class EquityPanel:
         return u
 
     # ------------------------------------------------------------------ persistence
+    def content_fingerprint(self) -> str:
+        """Hash of the development evidence actually in this (possibly sliced) panel, independent of things that
+        do not change it: columns with no row in the slice (a recent listing that only later crossed ``min_obs``),
+        column order, and the adjustment BASIS (a later split/dividend re-bases a symbol's whole adjusted history).
+        Hashed per present symbol, ordered by name: kind, raw (as-traded) close/open/volume exactly, and the
+        adjustment events (sessions where the adjusted/raw factor changes by > 1e-6, ratio rounded to 1e-4) — so a
+        corrected bar, a recovered delisted name, a reclassification or a revised dividend changes it."""
+        h = hashlib.sha256()
+        h.update(np.asarray(self.dates.values).astype("datetime64[D]").astype("int64").tobytes())
+        close = self.f["close"]
+        present = np.where(np.isfinite(close).any(axis=0))[0]
+        adj = self.f.get("adj_close")
+        for j in sorted(present.tolist(), key=lambda c: str(self.symbols[c])):
+            h.update(f"{self.symbols[j]}|{self.kind[j]}".encode())
+            for k in ("close", "open", "volume"):
+                if k in self.f:
+                    h.update(np.nan_to_num(np.asarray(self.f[k][:, j], dtype=np.float64), nan=-1.0).tobytes())
+            if adj is not None:
+                with np.errstate(divide="ignore", invalid="ignore"):
+                    factor = np.asarray(adj[:, j], dtype=np.float64) / np.asarray(close[:, j], dtype=np.float64)
+                    ratio = factor[1:] / factor[:-1]
+                ev = np.where(np.isfinite(ratio) & (np.abs(ratio - 1.0) > 1e-6))[0]
+                h.update(ev.astype(np.int64).tobytes())
+                h.update(np.round(ratio[ev], 4).tobytes())
+        return h.hexdigest()[:16]
+
     def save(self, path: Path) -> str:
         path.parent.mkdir(parents=True, exist_ok=True)
         arrays = {f"f_{k}": v.astype(np.float32 if k not in ("close", "open", "adj_close", "adj_open") else np.float64)

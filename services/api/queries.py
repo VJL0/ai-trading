@@ -1,7 +1,7 @@
 """Read-side queries over the operational ledger, shaped to docs/architecture/api-contract.md.
 
 Everything returned here is actual local state (SQLite rows, experiment result files). Nothing is
-fabricated: missing data is returned as empty lists / nulls and the dashboard shows empty states.
+fabricated: missing data is returned as empty lists / nulls for callers to handle explicitly.
 """
 
 from __future__ import annotations

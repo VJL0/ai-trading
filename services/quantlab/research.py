@@ -21,7 +21,7 @@ from services.research.stats import benjamini_hochberg
 
 from .backtest import BacktestConfig, BacktestResult, performance_metrics, run_weights
 from .gates import DEV_GATE, dev_verdict
-from .ledger import TrialLedger, code_hash, spec_hash
+from .ledger import TrialLedger, code_hash, spec_hash, variant_name
 from .panel import EquityPanel
 from .validation import alpha_beta, deflated_sharpe, pbo_cscv, spa_test, trial_sharpe_variance, walk_forward_select
 
@@ -48,6 +48,8 @@ class FamilySpec:
     runner: Callable[[dict[str, Any], float], BacktestResult] | None = None
     """Custom simulator (e.g. intraday event backtests): (params, cost_multiplier) -> BacktestResult."""
     benchmark_result: BacktestResult | None = None
+    policy_runner: Callable[[dict[str, Any], Any, float], BacktestResult] | None = None
+    """Execution-tier simulation of a variant under TODAY's risk policy (custom-simulator families)."""
 
     def run(self, panel: EquityPanel, p: dict[str, Any], cost_multiplier: float = 1.0) -> BacktestResult:
         if self.runner is not None:
@@ -61,7 +63,7 @@ class FamilySpec:
 
 
 def _variant_name(p: dict[str, Any]) -> str:
-    return ",".join(f"{k}={v}" for k, v in sorted(p.items()))
+    return variant_name(p)
 
 
 def _vol_unit(r: np.ndarray) -> np.ndarray:
@@ -160,10 +162,23 @@ def evaluate_family(spec: FamilySpec, panel: EquityPanel, ledger: TrialLedger, *
     return report
 
 
-def family_fdr(reports: Sequence[dict[str, Any]], q: float = 0.10) -> dict[str, dict[str, Any]]:
-    """Benjamini-Hochberg across families on p = 1 - DSR (a family passes only if it also survives FDR)."""
+def family_fdr(reports: Sequence[dict[str, Any]], q: float = 0.10,
+               peers: dict[str, float] | None = None) -> dict[str, dict[str, Any]]:
+    """Benjamini-Hochberg across families on p = 1 - DSR (a family passes only if it also survives FDR).
+    ``peers`` adds the latest recorded p-values of families NOT evaluated in this run (skipped as unchanged, or
+    evaluated in other runs), so running a family alone or skipping its peers never shrinks the correction."""
     p = {r["family"]: 1.0 - float(r.get("dsr", {}).get("dsr", 0.0)) for r in reports if "dsr" in r}
+    for fam, pv in (peers or {}).items():
+        p.setdefault(fam, float(pv))
     return benjamini_hochberg(p, q=q) if p else {}
+
+
+class TierNotApplicable(Exception):
+    """Raised by a ``policy_runner`` when today's policy or lifecycle cannot execute the variant at all."""
+
+    def __init__(self, status: str, reason: str) -> None:
+        super().__init__(reason)
+        self.status, self.reason = status, reason
 
 
 def _sr_pp(r: np.ndarray) -> float:

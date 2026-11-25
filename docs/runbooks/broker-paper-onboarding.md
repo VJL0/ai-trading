@@ -11,7 +11,7 @@ Store **paper** credentials in the macOS Keychain (service `local-ai-trader`) or
 
 The application rejects live (`AK`) keys and uses only `https://paper-api.alpaca.markets`.
 Ambiguous `APCA_*` names are ignored. Do not put secrets in chat, source code, or shell command arguments.
-Non-secret `LAT_*` settings must be exported in the shell, not placed in `.env`.
+Use `.env` for runtime settings. `.env.example` lists the available settings and their defaults.
 
 ## Launch
 
@@ -22,7 +22,7 @@ Do not reset the broker account or delete ledger rows to make reconciliation pas
 ```sh
 make status
 make stop       # stops local services; does not cancel broker-held orders
-make paper      # same as make paper-sdk: PAPER + ALPACA_PAPER + IEX_FREE
+make paper      # same as make paper-sdk: PAPER + ALPACA_PAPER; IEX_FREE by default
 ```
 
 The supervisor refuses a gateway mismatch with an already-running process; `make paper` does not reconfigure a running demo.

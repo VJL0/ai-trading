@@ -43,9 +43,6 @@ trading/lean/data-local/
 
 # --- node ---
 node_modules/
-apps/dashboard/dist/
-apps/dashboard/test-results/
-apps/dashboard/playwright-report/
 apps/mac-agent/artifacts/
 
 # --- OS ---

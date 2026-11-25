@@ -652,9 +652,11 @@ async def _start_paper_session(rt: ToolRuntime, inp: s.StartPaperSessionIn, acto
     mgr = _manager(rt)
     session = await _session_call("start_paper_session", mgr.start, inp.duration_minutes,
                                   symbols=list(inp.symbols) if inp.symbols else None,
-                                  cadence_minutes=inp.cadence_minutes, use_ai=inp.use_ai,
+                                  cadence_minutes=inp.cadence_minutes or 5, use_ai=inp.use_ai is True,
                                   requested_by=f"agent:{actor}", mutating=True)
-    return {**_base(rt), "outcome": "STARTED", "session": _session_out(session), "detail": _SESSION_DETAIL}
+    scheduled = session["state"] == "SCHEDULED"
+    detail = "Queued for the next XNYS regular open. The API owns this one-time session." if scheduled else _SESSION_DETAIL
+    return {**_base(rt), "outcome": "SCHEDULED" if scheduled else "STARTED", "session": _session_out(session), "detail": detail}
 
 
 _STOP_DETAIL: Final[dict[str, str]] = {
@@ -686,7 +688,9 @@ async def _get_session_status(rt: ToolRuntime, inp: s.NoInput, actor: str) -> di
     status = _dict(await _call(rt.status))
     locked = status.get("entries_locked")
     running = sched.get("loop_running")
-    if active is not None:
+    if isinstance(active, dict) and active.get("state") == "SCHEDULED":
+        detail = "A paper session is queued for the next XNYS regular open."
+    elif active is not None:
         detail = "A paper session is running in the local service; it continues without this chat."
     else:
         detail = "No paper session is running."
@@ -909,6 +913,9 @@ async def _get_research_results(rt: ToolRuntime, inp: s.GetResearchResultsIn, ac
         stress = _dict(detail.get("stress"))
         if stress:
             detail["stress"] = {"cost_multiplier": stress.get("cost_multiplier"), "sharpe": stress.get("sharpe")}
+        diag = _dict(d.get("diagnostics"))  # K_xs_rank: compact rank-IC / construction / benchmark digest
+        if diag:
+            detail["diagnostics"] = diag
     looks = [{"strategy_id": _str(_dict(x).get("strategy_id")), "passed": bool(_dict(x).get("passed")),
               "fail_reasons": _strs(_dict(x).get("fail_reasons"), 4),
               "metrics": _scalars(_dict(_dict(x).get("metrics")), 12)} for x in _list(d.get("holdout_results"))[:10]]

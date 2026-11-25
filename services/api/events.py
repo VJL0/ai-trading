@@ -1,5 +1,5 @@
 """In-process pub/sub for Server-Sent Events, fed by a DB tailer so changes made by any writer
-(API, CLI decision cycles, reconciliation) reach the dashboard."""
+(API, CLI decision cycles, reconciliation) reach structured stream subscribers."""
 
 from __future__ import annotations
 

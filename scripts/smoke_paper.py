@@ -51,6 +51,9 @@ async def smoke(root: Path) -> dict[str, Any]:
                 else:
                     raise RuntimeError("API never became ready")
                 assert status["execution_label"] == "SIMULATED" and not status["live_execution_compiled"]
+                monitor = (await http.get("/monitor/status")).raise_for_status().json()
+                assert monitor["mode"] == "Paper" and monitor["equity"] is not None
+                assert (await http.get("/monitor")).status_code == 200
 
                 async def call(client: ClientSession, name: str, args: dict[str, Any]) -> dict[str, Any]:
                     result = await client.call_tool(name, args)

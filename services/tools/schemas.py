@@ -649,10 +649,12 @@ SessionSymbol = Annotated[str, Field(pattern=SYMBOL_PATTERN)]
 
 
 class StartPaperSessionIn(ToolInput):
-    duration_minutes: int = Field(ge=1, le=480, strict=True, description="minutes; 1 hour = 60")
-    symbols: list[SessionSymbol] | None = Field(None, min_length=1, max_length=10, description="tickers; null = all")
-    cadence_minutes: int = Field(5, ge=1, le=60, strict=True, description="minutes between cycles (default 5)")
-    use_ai: bool = Field(True, strict=True, description="in-app model review if available (default true)")
+    duration_minutes: int | None = Field(None, ge=1, le=480, strict=True, description="minutes; null = up to 60")
+    symbols: list[SessionSymbol] | None = Field(
+        None, min_length=1, max_length=10, description="tickers; null = eligible universe",
+    )
+    cadence_minutes: int | None = Field(None, ge=1, le=60, strict=True, description="minutes between cycles; null = 5")
+    use_ai: bool | None = Field(None, strict=True, description="optional in-app model review; null = false")
 
 
 class StopSessionIn(ToolInput):
@@ -728,7 +730,7 @@ class ScheduleOut(OutModel):
 
 
 class StartPaperSessionOut(ToolOutput):
-    outcome: Literal["STARTED"]
+    outcome: Literal["STARTED", "SCHEDULED"]
     session: SessionOut
     detail: str
 

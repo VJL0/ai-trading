@@ -127,6 +127,9 @@ def narrative(session: dict[str, Any], rep: dict[str, Any], *, started: datetime
     label = perf["mode_label"]
     sid, state = session["session_id"], session["state"]
     syms = ", ".join(session.get("symbols") or [])
+    queued_for = parse_utc(session.get("next_cycle_at")) if state == "SCHEDULED" else None
+    if queued_for is not None:
+        return f"{label} paper session {sid} on {syms} is queued for {et_label(queued_for)}. No decision cycle has run."
     span = f"from {et_label(started)} to {et_label(cut)}"
     status = {"RUNNING": "is still running", "STOPPING": "is stopping", "COMPLETED": "completed its planned window",
               "STOPPED": "was stopped", "INTERRUPTED": "was interrupted", "FAILED": "failed"}.get(state, state.lower())

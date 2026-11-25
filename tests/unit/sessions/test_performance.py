@@ -53,5 +53,8 @@ def test_account_curve_does_not_mix_fake_and_paper_capital(tmp_path):
         assert result['portfolio_value'] == '5001'
         assert result['max_drawdown'] == '0.0000'
         assert len(result['equity_curve']) == 2
+        summary = compute_performance(db, now=datetime(2026, 11, 5, 16, tzinfo=UTC), label='PAPER',
+                                      is_simulated=False, gateway='ALPACA_PAPER', summary_only=True)
+        assert summary == {key: result[key] for key in ('portfolio_value', 'daily_pnl', 'total_pnl')}
     finally:
         db.close()
