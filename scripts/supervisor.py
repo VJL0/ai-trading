@@ -1,7 +1,7 @@
 """Minimal local process supervisor (spec §11: local macOS process supervisor / make scripts).
 
 Commands:
-  start [api|research|lean-sim ...]     start detached services (PIDs in var/run, logs in var/logs)
+  start [api|research|agents|lean-sim ...] start detached services (PIDs in var/run, logs in var/logs)
   stop  [names...]                      SIGTERM process groups, SIGKILL after a grace period
   status                                 show process state + API /status summary
 Services bind to 127.0.0.1 only. No hosted services, queues or daemons are installed.
@@ -33,6 +33,8 @@ LOGS = ROOT / "var" / "logs"
 
 SERVICES: dict[str, list[str]] = {
     "research": [str(ROOT / ".venv" / "bin" / "python"), "-m", "services.research.autonomous"],
+    # Research crew (Claude Code + Codex on the operator's own sign-in); no execution authority.
+    "agents": [str(ROOT / ".venv" / "bin" / "python"), "-m", "services.agents", "run"],
     "api": [],  # managed by the shared API launcher
     "lean-sim": ["bash", "scripts/lean_live_sim.sh", "--attach-api"],
 }
@@ -105,6 +107,11 @@ def start(names: list[str]) -> int:
             child_env = {k: v for k, v in child_env.items() if k in ("PATH", "HOME", "TMPDIR", "LANG", "PYTHONUNBUFFERED")}
             if "LAT_PROJECT_ROOT" in os.environ:
                 child_env["LAT_PROJECT_ROOT"] = os.environ["LAT_PROJECT_ROOT"]
+        elif name == "agents":
+            # The provider CLIs use their own subscription sign-in; no API keys or app tokens are passed on.
+            keep = ("PATH", "HOME", "USER", "LANG", "TMPDIR", "TERM", "SHELL", "CODEX_HOME", "CLAUDE_CONFIG_DIR",
+                    "LAT_PROJECT_ROOT", "LAT_USE_KEYCHAIN", "PYTHONUNBUFFERED")
+            child_env = {k: v for k, v in child_env.items() if k in keep or k.startswith("LAT_AGENTS_")}
         with (LOGS / f"{name}.log").open("ab") as log:
             proc = subprocess.Popen(
                 SERVICES[name], cwd=ROOT, stdout=log, stderr=subprocess.STDOUT, stdin=subprocess.DEVNULL,

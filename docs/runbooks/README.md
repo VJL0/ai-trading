@@ -18,6 +18,8 @@ Only the operator CLI can clear a halt under the existing authentication and rec
 - `make smoke`: isolated temporary API + MCP processes, autonomous session with client disconnection,
   reconnect/report, SSE, and audit-chain verification. No account credentials, external API calls or paid inference.
 - `make status`: service status. Logs are under `var/logs`.
+- `make agents` / `make agents-once` / `make agents-status`: the research crew (Claude Code + Codex on your own
+  sign-in; research only, no execution authority). See [research crew](../architecture/agent-crew.md).
 - `make stop`: stops local processes. Broker-held orders remain at the broker.
 - `make reconcile`: reconcile the ledger before proceeding after unexpected shutdowns.
 - `make test-py`: excludes `live_models`, `paper_broker`, and `gui` even if credentials happen to be installed.

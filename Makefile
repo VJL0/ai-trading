@@ -141,6 +141,16 @@ research: ## start the autonomous local research service (no execution authority
 research-status: ## inspect recorded research, validation screens and worker failures
 	$(PY) -m services.research.autonomous --status
 
+.PHONY: agents agents-once agents-status
+agents: ## start the research crew (Claude Code + Codex on your own sign-in; research only, no execution authority)
+	$(PY) scripts/supervisor.py start agents
+
+agents-once: ## plan and run at most one research-crew task in the foreground, then exit
+	$(PY) -m services.agents run --once
+
+agents-status: ## research crew queue, provider cooldowns, today's runs and recent notes
+	$(PY) -m services.agents status
+
 .PHONY: capabilities quantlab-data quantlab-research quantlab-daily quantlab-session quantlab-xsrank
 QL := $(PY) -m services.quantlab.cli
 

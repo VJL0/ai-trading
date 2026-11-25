@@ -1,4 +1,4 @@
-"""``uv run --frozen python -m services.mcp_server`` — the local-ai-trader MCP server over stdio."""
+"""Serve Local AI Trader MCP over stdio, with an optional ``--profile research``."""
 
 from __future__ import annotations
 

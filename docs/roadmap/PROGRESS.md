@@ -187,7 +187,39 @@ reg h=20) Sharpe 0.66 vs SPY 0.76. The cost-aware rule bought no stock in 13 of 
 Depends on Phase 1–4 pieces now in place: replay the signal engine + `decide_edge` + risk engine + position manager
 over a snapshot with a fill simulator; compare with paper orders.
 
-## Phase 6 — autonomous research improvement: not started
+## Phase 6 — autonomous research improvement: research crew implemented (2026-11-25)
+
+Design: [research crew](../architecture/agent-crew.md). `services/agents` coordinates the operator's own Claude Code and
+Codex CLIs on subscription sign-in. It covers hypothesis, cross-provider review, market analysis and improvement
+tasks. It runs as a separate process with no execution authority (`make agents`, `make agents-once`,
+`make agents-status`).
+
+* Agents get only the read-only `research` MCP profile (`python -m services.mcp_server --profile research`):
+  quantlab views plus `search_memory`, in-process, with no API or agent token. Completed holdout outcomes are
+  withheld from agents. The crew validates agent specs with the closed DSL and runs them with
+  `run_agent_experiment`, which applies the same budget, novelty refusal, gates and trial ledger as every other
+  family. The crew stores the ledger's result, never the numbers an agent reports.
+* Quota: one agent at a time, a daily per-provider cap, no run without new evidence, and a check for experiment
+  headroom before dispatch. A usage limit, auth failure or missing CLI requeues the task without consuming an
+  attempt. The provider then cools down until the stated reset time, or for an exponential backoff when no reset is
+  stated, and the other provider takes the work. Tasks left `RUNNING` recover on restart, and in-flight CLI process
+  groups are killed on shutdown.
+* Memory: `experiments/agents/crew.sqlite3` holds append-only notes labelled `AGENT_NOTE` and shared across
+  providers. Prompts receive them as sanitized digests.
+* The work was built with Orca workers: Codex built the providers and the MCP profile, Claude built the crew core.
+  Each then reviewed the other's code. The Claude review fixed false usage-limit classification of agent prose and
+  "connection reset". The Codex review fixed QuantLab child roots, credential-like and multiline note injection,
+  headroom accounting, stale claims, duplicate reviews, process-group cleanup and Codex MCP tool approval.
+
+Verification (2026-11-25): `tests/unit/agents` + `tests/unit/mcp_server` + `tests/unit/tools` gave 460 passed, plus
+the 2 baseline `test_mcp_registrations` failures. Those come from the tracked `.mcp.json` and `.codex/config.toml`
+pointing at `/Users/victor/Developer/ai-trading`, not at this worktree. `make lint` passed, pyright on the changed
+packages was clean, and `make smoke` passed with 29 audit rows. One real `run --once` per provider in a disposable
+worktree with no data panel completed with `OK` and schema-valid output, a valid DSL spec, and a deterministic
+experiment that returned `ERROR: no panel`. The Claude task chose momentum and the Codex task chose reversal. The
+real trial ledger was not touched. Open: no crew campaign has run on the real development panel yet. Codex agents
+can still read files that the user can read (the shell is disabled and writes are sandboxed), so holdout integrity
+rests on the holdout ledger. The quantlab hourly admission check can race other concurrent callers.
 
 ## Phase 7 — reliability: started
 

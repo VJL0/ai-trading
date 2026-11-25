@@ -14,6 +14,9 @@ import json
 import logging
 import secrets
 import sys
+from argparse import ArgumentParser
+from collections.abc import Collection
+from functools import partial
 from typing import Any, Final
 
 import mcp_types as types
@@ -69,18 +72,23 @@ def _error_result(text: str) -> types.CallToolResult:
     return types.CallToolResult(content=[types.TextContent(text=text)], is_error=True)
 
 
-def build_server(backend: ToolBackend) -> Server[Any]:
+def build_server(
+    backend: ToolBackend, *, tool_names: Collection[str] | None = None, instructions: str = INSTRUCTIONS,
+) -> Server[Any]:
     """Build the MCP server bound to a tool backend (HTTP in production; any ``ToolBackend`` in tests)."""
-    tool_defs = mcp_tool_definitions()
+    definitions = {tool.name: tool for tool in mcp_tool_definitions()}
+    allowed = definitions if tool_names is None else {
+        name: definitions[name] for name in tool_names if name in definitions
+    }
 
     async def on_list_tools(
         ctx: ServerRequestContext[Any], params: types.PaginatedRequestParams | None
     ) -> types.ListToolsResult:
-        return types.ListToolsResult(tools=list(tool_defs))
+        return types.ListToolsResult(tools=list(allowed.values()))
 
     async def on_call_tool(ctx: ServerRequestContext[Any], params: types.CallToolRequestParams) -> types.CallToolResult:
         name = params.name
-        if name not in TOOL_REGISTRY:
+        if name not in allowed:
             return _error_result(f"error 404: unknown tool {name[:64]!r}")
         args: dict[str, Any] = dict(params.arguments or {})
         try:
@@ -98,14 +106,16 @@ def build_server(backend: ToolBackend) -> Server[Any]:
         version=SERVER_VERSION,
         title="Local AI Trader (PAPER only)",
         description=f"Validated paper-trading tool interface ({REGISTRY_VERSION})",
-        instructions=INSTRUCTIONS,
+        instructions=instructions,
         on_list_tools=on_list_tools,
         on_call_tool=on_call_tool,
     )
 
 
-async def serve_stdio(backend: ToolBackend) -> None:
-    server = build_server(backend)
+async def serve_stdio(
+    backend: ToolBackend, *, tool_names: Collection[str] | None = None, instructions: str = INSTRUCTIONS,
+) -> None:
+    server = build_server(backend, tool_names=tool_names, instructions=instructions)
     try:
         async with stdio_server() as (read_stream, write_stream):
             await server.run(read_stream, write_stream, server.create_initialization_options())
@@ -122,6 +132,9 @@ def main(argv: list[str] | None = None) -> int:
     from packages.core.config import Settings
     from services.tools.backends import AGENT_TOKEN_FILE, HttpToolBackend
 
+    parser = ArgumentParser(description="Local AI Trader MCP server over stdio")
+    parser.add_argument("--profile", choices=("default", "research"), default="default")
+    args = parser.parse_args(argv)
     settings = Settings()
     logging.basicConfig(stream=sys.stderr, level=settings.mcp_log_level.upper(),
                         format="%(asctime)s %(levelname)s %(name)s: %(message)s")
@@ -129,6 +142,12 @@ def main(argv: list[str] | None = None) -> int:
         print(f"{SERVER_NAME}: refusing to start in mode {settings.mode.value}; the agent tool interface is "
               "PAPER/REPLAY only.", file=sys.stderr)
         return 2
+    if args.profile == "research":
+        from services.mcp_server.research import RESEARCH_INSTRUCTIONS, RESEARCH_TOOL_NAMES, research_backend
+
+        anyio.run(partial(serve_stdio, tool_names=RESEARCH_TOOL_NAMES, instructions=RESEARCH_INSTRUCTIONS),
+                  research_backend(settings))
+        return 0
     base_url = settings.api_url
     actor = f"{sanitize_actor(settings.agent_name or 'mcp')[:32]}-{secrets.token_hex(3)}"
     token_path = settings.keys_dir / AGENT_TOKEN_FILE
