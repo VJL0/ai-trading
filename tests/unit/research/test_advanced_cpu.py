@@ -2,11 +2,13 @@ import numpy as np
 import pytest
 
 from services.research.autonomous.artifacts import PortableModel, export_model
-from services.research.autonomous.learners import Hypothesis, fit
+from services.research.autonomous.learners import Hypothesis, available, fit
 
 
 @pytest.mark.parametrize('family', ['double_ensemble', 'symbolic_gp'])
 def test_cpu_train_export(family, tmp_path):
+    if not available()[family]["available"]:
+        pytest.skip(f"optional runtime for {family} not installed (double_ensemble needs the isolated qlib env)")
     x = np.random.default_rng(4).normal(size=(200, 8))
     y = x[:, :3]*2
     m = fit(Hypothesis(family, capacity=8), x, y)

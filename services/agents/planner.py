@@ -76,17 +76,19 @@ class PlannerState:
     scan_asof: str | None = None
     failures_since_improvement: int = 0
     last_improvement_at: datetime | None = None
+    available_mechanisms: tuple[str, ...] = mechanisms.EXPRESSIBLE
 
 
 def free_slots(state: PlannerState) -> int:
     return max(0, state.experiments_per_hour - state.agent_trials_last_hour)
 
 
-def mechanism_scores(record: dict[str, dict[str, int]], seeds: dict[str, tuple[str, ...]]) -> dict[str, float]:
+def mechanism_scores(record: dict[str, dict[str, int]], seeds: dict[str, tuple[str, ...]],
+                     available: tuple[str, ...] = mechanisms.EXPRESSIBLE) -> dict[str, float]:
     """UCB1-style: mean reward per hypothesis task + exploration bonus (+ a bonus for fresh seeds)."""
-    total = sum(int(record.get(m, {}).get("tasks", 0)) for m in mechanisms.EXPRESSIBLE)
+    total = sum(int(record.get(m, {}).get("tasks", 0)) for m in available)
     scores: dict[str, float] = {}
-    for m in mechanisms.EXPRESSIBLE:
+    for m in available:
         r = record.get(m, {})
         n = int(r.get("tasks", 0))
         reward = (1.0 * r.get("dev_passes", 0) + 0.5 * r.get("supported", 0) - 0.5 * r.get("refuted", 0)
@@ -98,12 +100,13 @@ def mechanism_scores(record: dict[str, dict[str, int]], seeds: dict[str, tuple[s
 
 
 def choose_mechanism(record: dict[str, dict[str, int]], seeds: dict[str, tuple[str, ...]],
-                     tried_on_evidence: frozenset[str] = frozenset()) -> str | None:
-    scores = mechanism_scores(record, seeds)
+                     tried_on_evidence: frozenset[str] = frozenset(),
+                     available: tuple[str, ...] = mechanisms.EXPRESSIBLE) -> str | None:
+    scores = mechanism_scores(record, seeds, available)
     scores = {m: score for m, score in scores.items() if m not in tried_on_evidence or seeds.get(m)}
     if not scores:
         return None
-    order = {m: i for i, m in enumerate(mechanisms.EXPRESSIBLE)}
+    order = {m: i for i, m in enumerate(available)}
     return max(scores, key=lambda m: (scores[m], -order[m]))
 
 
@@ -127,7 +130,7 @@ def plan(state: PlannerState, config: CrewConfig, now: datetime) -> list[TaskReq
     # (b) new hypothesis only when the hourly experiment budget has room and none is in flight
     slots = free_slots(state)
     if slots >= 1 and state.open_hypotheses == 0:
-        mech = choose_mechanism(state.mechanism_record, state.seeds, state.tried_on_evidence)
+        mech = choose_mechanism(state.mechanism_record, state.seeds, state.tried_on_evidence, state.available_mechanisms)
         if mech is not None:
             k = state.hypothesis_tasks_by_mechanism.get(mech, 0) + 1
             add(TaskRequest(TaskKind.HYPOTHESIS, f"hypothesis:{mech}:{k}",
@@ -197,8 +200,10 @@ def gather_state(store: CrewStore, root: Path, ledger: LedgerDigest, now: dateti
     tasks = store.tasks(limit=-1)
     hyps = [t for t in tasks if t.kind is TaskKind.HYPOTHESIS]
     scan = scan_asof(root)
+    available = mechanisms.available_mechanisms(root)
     evidence = hashlib.sha256(json.dumps(
-        [ledger.agent_dev_total, ledger.families, ledger.research.get("updated_at"), scan], sort_keys=True,
+        [ledger.agent_dev_total, ledger.families, ledger.research.get("updated_at"), scan, available,
+         mechanisms.edgar_evidence(root)], sort_keys=True,
     ).encode()).hexdigest()
     finished: list[HypothesisRecord] = []
     for t in hyps:
@@ -216,7 +221,7 @@ def gather_state(store: CrewStore, root: Path, ledger: LedgerDigest, now: dateti
     seeds: dict[str, list[str]] = {}
     for n in store.notes(kind="seed", limit=200):
         m = n.mechanism or ""
-        if not mechanisms.is_expressible(m):
+        if m not in available:
             continue
         if m in last_hyp and n.at <= last_hyp[m]:
             continue  # already consumed by a later hypothesis task on this mechanism
@@ -245,4 +250,5 @@ def gather_state(store: CrewStore, root: Path, ledger: LedgerDigest, now: dateti
         scan_asof=scan,
         failures_since_improvement=failures,
         last_improvement_at=last_impr,
+        available_mechanisms=available,
     )

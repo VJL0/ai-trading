@@ -210,8 +210,20 @@ def cmd_crypto_spreads(args: argparse.Namespace, settings: Settings) -> int:
 def cmd_research(args: argparse.Namespace, settings: Settings) -> int:
     from .pipeline import Lab
 
-    lab = Lab(settings.project_root)
     want = set(args.families.split(",")) if args.families else None
+    if args.asset == "events":
+        from .research import clean_json
+        from .strategies.events_family import FAMILY, run_from_project
+
+        if want is None or FAMILY in want:
+            try:
+                summary = run_from_project(settings.project_root, force=args.force)
+            except ValueError as exc:
+                print(str(exc), file=sys.stderr)
+                return 2
+            print(json.dumps(clean_json(summary), allow_nan=False))
+        return 0
+    lab = Lab(settings.project_root)
     summaries = []
     if args.asset in ("equity", "all"):
         panel, fp = lab.load_panel("equity_")
@@ -327,7 +339,7 @@ def cmd_scan(args: argparse.Namespace, settings: Settings) -> int:
 
 def cmd_experiment(args: argparse.Namespace, settings: Settings) -> int:
     """Agent factor spec -> development-only family evaluation (trial recorded under F_agent)."""
-    from .factors import FAMILY, agent_family, validate_spec
+    from .factors import FAMILY, EventDataUnavailable, agent_family, prepare_agent_events, validate_spec
     from .ledger import duplicate_on_same_evidence, methodology_hash
     from .pipeline import Lab
     from .research import clean_json, evaluate_family
@@ -336,7 +348,11 @@ def cmd_experiment(args: argparse.Namespace, settings: Settings) -> int:
     lab = Lab(settings.project_root)
     panel, fp = lab.load_panel("equity_")
     dev = lab.dev_slice(panel)
-    dev_fp = dev.content_fingerprint()
+    try:
+        dev, dev_fp = prepare_agent_events(dev, settings.project_root, spec["expression"])
+    except EventDataUnavailable as exc:
+        print(json.dumps({"refused": True, "reason": "DATA_UNAVAILABLE", "detail": str(exc)}))
+        return 3
     meth = methodology_hash()
     prior = lab.ledger.prior_outcomes(FAMILY, spec, canonicalize=validate_spec)
     dup = duplicate_on_same_evidence(prior, fingerprint=fp, dev_fingerprint=dev_fp, methodology=meth)
@@ -863,7 +879,7 @@ def main(argv: list[str] | None = None) -> int:
     p.add_argument("--end", default="2026-11-20")
     p.add_argument("--top", type=int, default=40)
     p = sub.add_parser("research")
-    p.add_argument("--asset", choices=("equity", "crypto", "orb", "session", "xsrank", "all"), default="all")
+    p.add_argument("--asset", choices=("equity", "crypto", "orb", "session", "xsrank", "events", "all"), default="all")
     p.add_argument("--families", default=None)
     p.add_argument("--force", action="store_true",
                    help="re-evaluate families already evaluated on the same data and code (adds trials)")

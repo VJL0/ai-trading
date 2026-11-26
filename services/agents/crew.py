@@ -223,7 +223,8 @@ class Crew:
             if p is None:
                 continue
             slots = 0
-            if task.kind is TaskKind.HYPOTHESIS and mechanisms.is_expressible(str(task.payload.get("mechanism", ""))):
+            if task.kind is TaskKind.HYPOTHESIS and mechanisms.is_expressible(
+                    str(task.payload.get("mechanism", "")), self.root):
                 slots = min(self._spec_budget(task), self._free_slots(self.clock()) - reserved_slots)
                 if slots < 1:
                     waiting_for_slots = True
@@ -254,7 +255,7 @@ class Crew:
             workdir = self.config.runs_dir / run_id
             workdir.mkdir(parents=True, exist_ok=True)
             ledger = read_ledger_digest(self.root, now)
-            prompt = build_prompt(task, self.store, ledger, specs_per_task=self._spec_budget(task))
+            prompt = build_prompt(task, self.store, ledger, specs_per_task=self._spec_budget(task), project_root=self.root)
             inv = Invocation(provider=provider, prompt=prompt,
                              output_schema=output_schema(task.kind, specs_per_task=self._spec_budget(task)),
                              mcp_server=self.mcp_spec_factory(self.root, f"crew-{provider.value}"),
@@ -431,10 +432,14 @@ class Crew:
             for s in specs[budget:]:
                 refuse(s, "OVER_SPEC_BUDGET", f"only {budget} specs per task are considered")
             specs = specs[:budget]
-        if specs and not mechanisms.is_expressible(mech):
+        mechanism = mechanisms.get(mech, self.root)
+        if mechanism is not None and not mechanism.expressible_now and not hyp["data_requests"]:
+            self.store.add_note("data_request", {"request": mechanism.data_needed, "source": "mechanism"},
+                                now=now, task_id=task.id, provider=provider, mechanism=mech, evidence_status=CREW_EVENT)
+        if specs and (mechanism is None or not mechanism.expressible_now):
             for s in specs:
-                refuse(s, "MECHANISM_NOT_EXPRESSIBLE", f"{mech} cannot be expressed with the price/volume DSL; "
-                       "only data_requests are accepted")
+                refuse(s, "MECHANISM_NOT_EXPRESSIBLE", f"{mech} needs additional DSL features or development data. "
+                       "Submit a data request.")
             specs = []
         actor = f"crew-{provider.value}-{task.id[:8]}"
         exhausted = False
@@ -459,6 +464,11 @@ class Crew:
                 if "budget exhausted" in err:
                     exhausted = True
                     status = "NO_HEADROOM"
+                if status == "DATA_UNAVAILABLE":
+                    request = err or (mechanism.data_needed if mechanism else "") or "Development data for the factor"
+                    body = clean_tree({"request": request, "source": "experiment"}, 400)
+                    self.store.add_note("data_request", body, now=self.clock(), task_id=task.id, provider=provider,
+                                        mechanism=mech, evidence_status=CREW_EVENT)
                 refuse(clean_spec, status, err, res.get("prior"))
                 continue
             ledger = res.get("result") if isinstance(res.get("result"), dict) else {}

@@ -378,17 +378,17 @@ def role_prompt(kind: TaskKind) -> str:
 
 
 def build_prompt(task: TaskRow, store: CrewStore, ledger: LedgerDigest, *, specs_per_task: int,
-                 max_digest_chars: int = DIGEST_MAX_CHARS) -> str:
+                 max_digest_chars: int = DIGEST_MAX_CHARS, project_root: Path | None = None) -> str:
     sections = [PREAMBLE, role_prompt(task.kind)]
     if task.kind is TaskKind.HYPOTHESIS:
         sections.append(dsl_grammar().render())
-        m = mechanisms.get(str(task.payload.get("mechanism", "")))
+        m = mechanisms.get(str(task.payload.get("mechanism", "")), project_root)
         if m is not None:
             sections.append(
                 f"Assigned mechanism: {m.key} — {m.title}. {m.description}\n"
                 + (f"Relevant DSL functions: {', '.join(m.dsl_functions)}. Return at most {specs_per_task} specs."
                    if m.expressible_now else
-                   f"NOT expressible with the DSL today: return specs=[] and list data_requests "
+                   f"NOT expressible with the available features today: return specs=[] and list data_requests "
                    f"(needed: {m.data_needed})."))
     elif task.kind is TaskKind.REVIEW:
         sections.append(dsl_grammar().render())

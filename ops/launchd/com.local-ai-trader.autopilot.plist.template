@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  TEMPLATE ONLY - nothing installs this file. See docs/runbooks/autopilot.md before using it.
+  Replace __REPO__ with the absolute repository path and __HOME__ with your home directory, then copy it to
+  ~/Library/LaunchAgents/com.local-ai-trader.autopilot.plist yourself.
+
+  - Runs `python -m services.autopilot run` under `caffeinate -i` (prevents idle sleep while it runs; a closed lid
+    or a manual sleep still sleeps the Mac: the autopilot then misses that window and never trades late).
+  - Paper only: the autopilot refuses Live and non-paper gateways. Credentials stay in the Keychain/.env as usual;
+    never put secrets in this file.
+  - LAT_AUTOPILOT_ENABLED must be true in .env, otherwise the process exits 3 and launchd retries every
+    ThrottleInterval seconds.
+-->
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+  <key>Label</key>
+  <string>com.local-ai-trader.autopilot</string>
+  <key>ProgramArguments</key>
+  <array>
+    <string>/usr/bin/caffeinate</string>
+    <string>-i</string>
+    <string>__REPO__/.venv/bin/python</string>
+    <string>-m</string>
+    <string>services.autopilot</string>
+    <string>run</string>
+  </array>
+  <key>WorkingDirectory</key>
+  <string>__REPO__</string>
+  <key>EnvironmentVariables</key>
+  <dict>
+    <key>LAT_PROJECT_ROOT</key>
+    <string>__REPO__</string>
+    <!-- the research crew launches the operator's own `claude` and `codex` CLIs: they must be on PATH -->
+    <key>PATH</key>
+    <string>__HOME__/.local/bin:/opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin</string>
+    <key>PYTHONUNBUFFERED</key>
+    <string>1</string>
+  </dict>
+  <key>RunAtLoad</key>
+  <true/>
+  <key>KeepAlive</key>
+  <dict>
+    <!-- restart after a crash (the store resumes idempotently); a clean stop (exit 0) stays stopped -->
+    <key>SuccessfulExit</key>
+    <false/>
+  </dict>
+  <key>ThrottleInterval</key>
+  <integer>300</integer>
+  <key>ExitTimeOut</key>
+  <integer>60</integer>
+  <key>StandardOutPath</key>
+  <string>__REPO__/experiments/autopilot/logs/autopilot.log</string>
+  <key>StandardErrorPath</key>
+  <string>__REPO__/experiments/autopilot/logs/autopilot.log</string>
+  <key>ProcessType</key>
+  <string>Standard</string>
+</dict>
+</plist>

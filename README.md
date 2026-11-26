@@ -3,6 +3,21 @@
 Local quantitative research and **paper-only** trading, operated through Claude Code, Codex or the existing
 ChatGPT integration. The local monitor shows trading status and emergency controls. Live execution is compiled off.
 
+## Purpose: an autonomous, multi-agent trading orchestrator
+
+The system's purpose is to run itself. The [autopilot](docs/architecture/autopilot.md) (`make autopilot`) needs no
+operator commands. Every trading day it checks health before the open and starts the PAPER session. After the
+close it runs the quantlab pipeline and summons its Claude Code and Codex research crew to propose, test and review
+hypotheses, including the SEC EDGAR [earnings, fundamentals and insider data](docs/architecture/edgar-pit-data.md).
+It then lets the deterministic gates decide what gets promoted and writes a daily report.
+
+Its freedom stops at fixed boundaries. Every order passes the deterministic risk engine and signed-intent path.
+Agents and models propose and never authorize. Only the operator changes risk policy, clears a halt or uses the
+kill switch. Live stays compiled off. These boundaries exist because no strategy has yet shown an after-cost edge
+over SPY, market text can carry prompt injection, and some losses are irreversible. The
+[`paper-autonomous` risk profile](ops/policy/README.md) gives the autopilot 10 positions across 200 liquid names, and
+[replay](docs/architecture/replay.md) evaluates strategies under that exact policy before they trade.
+
 With the project MCP server connected, tell Claude Code or Codex **“start trading.”** Approve the paper-session
 tool call if your client prompts. The tool starts the local API when needed and opens one session for up to
 60 minutes during regular market hours. Outside market hours it queues for the next open. The API runs the
@@ -25,9 +40,11 @@ The internal `make demo` verification target advances a synthetic market clock a
 See [local operations](docs/runbooks/README.md), [session lifecycle](docs/runbooks/paper-sessions.md),
 [AI/MCP integration](docs/runbooks/ai-runtime-mcp.md), and [verification report](docs/verification/continuation.md).
 
-Verification:
+Verification is local only (there is no remote CI). `make validate` is the complete check and must pass before a
+change is done. See the [validation runbook](docs/runbooks/validation.md).
 
 ```sh
+make validate            # lint, types, contracts, all tests, startup smoke, LEAN, dependency audit (SKIP_AUDIT=1 offline)
 make test-py             # unit, integration, failure injection, e2e; excludes paid/broker/GUI opt-ins
 make test-lean           # .NET gate and bridge suite, if existing LEAN build is available
 make lint

@@ -17,10 +17,12 @@ from __future__ import annotations
 
 import ast
 from collections.abc import Callable
+from pathlib import Path
 from typing import Any
 
 import numpy as np
 
+from .events import EVENT_FIELDS, attach_events, evidence_fingerprint, missing_fields
 from .panel import EquityPanel, trailing_mean
 from .strategies import features as F
 
@@ -30,6 +32,10 @@ MAX_NODES = 40
 
 
 class SpecError(ValueError):
+    pass
+
+
+class EventDataUnavailable(SpecError):
     pass
 
 
@@ -78,12 +84,48 @@ def _build_functions(panel: EquityPanel, mask: np.ndarray) -> dict[str, Callable
     def clip(x: np.ndarray, lo: float, hi: float) -> np.ndarray:
         return np.clip(x, float(lo), float(hi))
 
+    def sue() -> np.ndarray:
+        return panel.f["sue"]
+
+    def earnings_announcement() -> np.ndarray:
+        return panel.f["earnings_announcement"]
+
+    def earnings_window() -> np.ndarray:
+        return panel.f["earnings_window"]
+
+    def earnings_drift_age() -> np.ndarray:
+        return panel.f["earnings_drift_age"]
+
+    def accruals() -> np.ndarray:
+        return panel.f["accruals"]
+
+    def asset_growth() -> np.ndarray:
+        return panel.f["asset_growth"]
+
+    def gross_profitability() -> np.ndarray:
+        return panel.f["gross_profitability"]
+
+    def net_share_issuance() -> np.ndarray:
+        return panel.f["net_share_issuance"]
+
+    def insider_net_buy_ratio() -> np.ndarray:
+        return panel.f["insider_net_buy_ratio"]
+
+    def insider_cluster_buy() -> np.ndarray:
+        return panel.f["insider_cluster_buy"]
+
     return {"mom": mom, "resid_mom": resid_mom, "vol": vol, "rsi": rsi, "relvol": relvol, "high52": high52,
-            "beta": beta, "dist_sma": dist_sma, "rank": rank, "zscore": zscore, "clip": clip}
+            "beta": beta, "dist_sma": dist_sma, "rank": rank, "zscore": zscore, "clip": clip, "sue": sue,
+            "earnings_announcement": earnings_announcement, "earnings_window": earnings_window,
+            "earnings_drift_age": earnings_drift_age, "accruals": accruals, "asset_growth": asset_growth,
+            "gross_profitability": gross_profitability, "net_share_issuance": net_share_issuance,
+            "insider_net_buy_ratio": insider_net_buy_ratio, "insider_cluster_buy": insider_cluster_buy}
 
 
 FUNCTION_NAMES = frozenset({"mom", "resid_mom", "vol", "rsi", "relvol", "high52", "beta", "dist_sma", "rank",
-                            "zscore", "clip"})
+                            "zscore", "clip", "sue", "earnings_announcement", "earnings_window", "earnings_drift_age",
+                            "accruals", "asset_growth", "gross_profitability", "net_share_issuance",
+                            "insider_net_buy_ratio", "insider_cluster_buy"})
 NUMERIC_ARG_FUNCS = frozenset({"mom", "resid_mom", "vol", "rsi", "relvol", "beta", "dist_sma", "high52"})
 
 
@@ -107,18 +149,43 @@ def validate_expression(expr: str) -> ast.Expression:
         if isinstance(node, ast.Call):
             if not isinstance(node.func, ast.Name) or node.func.id not in FUNCTION_NAMES or node.keywords:
                 raise SpecError("only whitelisted functions with positional arguments are allowed")
+            if node.func.id in EVENT_FIELDS and node.args:
+                raise SpecError(f"{node.func.id}() takes no arguments")
             if node.func.id in NUMERIC_ARG_FUNCS and not all(
                     isinstance(a, ast.Constant) and isinstance(a.value, int | float) for a in node.args):
                 raise SpecError(f"{node.func.id}() takes numeric literal arguments only")
             continue
-        if isinstance(node, ast.Name) and node.id in FUNCTION_NAMES:
+        if isinstance(node, ast.Name) and node.id in FUNCTION_NAMES and (
+                node.id not in EVENT_FIELDS or any(isinstance(call, ast.Call) and call.func is node for call in nodes)):
             continue
         raise SpecError(f"disallowed syntax: {type(node).__name__}")
     return tree
 
 
+def _event_dependencies(tree: ast.Expression) -> tuple[str, ...]:
+    calls = {node.func.id for node in ast.walk(tree) if isinstance(node, ast.Call) and isinstance(node.func, ast.Name)}
+    return tuple(name for name in EVENT_FIELDS if name in calls)
+
+
+def prepare_agent_events(panel: EquityPanel, root: Path, expression: str) -> tuple[EquityPanel, str]:
+    """Load locally published EDGAR features for scoring and novelty, after the caller takes the development slice."""
+    from services.market_data.edgar.store import EdgarStore, store_path
+
+    fields = _event_dependencies(validate_expression(expression))
+    store = EdgarStore(store_path(root))
+    if fields or store.path.is_file():
+        panel = attach_events(panel, store)
+    if missing := missing_fields(panel, fields):
+        raise EventDataUnavailable(f"development EDGAR data unavailable for {', '.join(missing)}")
+    fingerprint = evidence_fingerprint(panel, fields) if fields else panel.content_fingerprint()
+    return panel, fingerprint
+
+
 def evaluate_expression(expr: str, panel: EquityPanel, mask: np.ndarray) -> np.ndarray:
     tree = validate_expression(expr)
+    absent = [name for name in _event_dependencies(tree) if name not in panel.f]
+    if absent:
+        raise EventDataUnavailable(f"development EDGAR data unavailable for {', '.join(absent)}")
     fns = _build_functions(panel, mask)
 
     def ev(node: ast.AST) -> Any:

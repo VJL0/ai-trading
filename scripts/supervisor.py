@@ -35,6 +35,8 @@ SERVICES: dict[str, list[str]] = {
     "research": [str(ROOT / ".venv" / "bin" / "python"), "-m", "services.research.autonomous"],
     # Research crew (Claude Code + Codex on the operator's own sign-in); no execution authority.
     "agents": [str(ROOT / ".venv" / "bin" / "python"), "-m", "services.agents", "run"],
+    # Autonomous daily orchestrator (paper only; agent token only; see docs/architecture/autopilot.md).
+    "autopilot": [str(ROOT / ".venv" / "bin" / "python"), "-m", "services.autopilot", "run"],
     "api": [],  # managed by the shared API launcher
     "lean-sim": ["bash", "scripts/lean_live_sim.sh", "--attach-api"],
 }

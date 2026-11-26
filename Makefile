@@ -54,6 +54,12 @@ test-py: ## python suites excluding GUI, broker and paid-model opt-ins (torch te
 	$(UV) pytest -q -m "not live_models and not paper_broker and not gui" $(addprefix --ignore=,$(TORCH_TESTS))
 	$(UV) pytest -q -m "not live_models and not paper_broker and not gui" $(TORCH_TESTS)
 
+test-replay: ## execution-equivalent replay suites (simulated; already included in test-py)
+	LAT_USE_KEYCHAIN=false LAT_FEED_MODE=SIMULATED $(UV) pytest -q tests/unit/replay tests/integration/replay tests/failure_injection/replay
+
+replay-eval: ## replay a strategy through the real decision/risk/ledger/position stack (STRATEGY=, POLICY=default|active|file, BARS=file or synthetic)
+	$(PY) -m services.replay evaluate $(if $(BARS),--bars $(BARS),--synthetic) --strategy $(STRATEGY) --policy $(or $(POLICY),default) --equity $(or $(EQUITY),5000)
+
 test-lean: ## .NET tests for the LEAN gate/fee models (skips if LEAN not built)
 	@if [ -f trading/lean/LatStrategies.Tests/LatStrategies.Tests.csproj ] && [ -x "$(DOTNET_ROOT)/dotnet" ]; then \
 	  dotnet test trading/lean/LatStrategies.Tests/LatStrategies.Tests.csproj -c Release --nologo -v q; \
@@ -64,6 +70,10 @@ lint: ## check Python lint
 
 typecheck: ## pyright (strict for contracts/core/risk)
 	$(UV) pyright
+
+.PHONY: validate
+validate: ## REQUIRED before a change is done: lint, types, contracts, all tests, startup smoke, LEAN, dependency audit (SKIP_AUDIT=1 offline)
+	bash scripts/validate.sh $(if $(SKIP_AUDIT),--skip-audit,)
 
 backtest: ## python no-LLM baselines on stored data + real LEAN backtest on LEAN sample data
 	$(PY) -m services.research.cli baselines
@@ -150,6 +160,19 @@ agents-once: ## plan and run at most one research-crew task in the foreground, t
 
 agents-status: ## research crew queue, provider cooldowns, today's runs and recent notes
 	$(PY) -m services.agents status
+
+.PHONY: autopilot autopilot-once autopilot-status autopilot-plan
+autopilot: ## start the autonomous daily orchestrator (pre-open checks + PAPER session, after-close research; needs LAT_AUTOPILOT_ENABLED=true)
+	$(PY) scripts/supervisor.py start autopilot
+
+autopilot-once: ## one autopilot tick in the foreground, then exit
+	$(PY) -m services.autopilot run --once
+
+autopilot-status: ## autopilot phase, jobs, stand-down, alerts and next actions (read-only, no API calls)
+	$(PY) -m services.autopilot status
+
+autopilot-plan: ## dry run: what the next autopilot tick would do and why (AT=ISO to evaluate another time)
+	$(PY) -m services.autopilot plan $(if $(AT),--at $(AT),)
 
 .PHONY: capabilities quantlab-data quantlab-research quantlab-daily quantlab-session quantlab-xsrank
 QL := $(PY) -m services.quantlab.cli

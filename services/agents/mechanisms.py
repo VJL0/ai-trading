@@ -1,15 +1,18 @@
 """Economic mechanism catalog (mechanism-first research, TASK.md §2 and §5).
 
-Every hypothesis task targets one mechanism. Only mechanisms that the closed factor DSL
-(``services.quantlab.factors``: daily price and volume features only) can express may yield factor specs.
-The others can only yield ``data_requests`` for the operator: the crew refuses any spec for them, because a
-price-only proxy of, say, insider buying tests a different hypothesis than the one stated.
+Every hypothesis task targets one mechanism. An experiment needs both a closed factor DSL primitive and
+point-in-time development data. Mechanisms with missing inputs yield data requests for the operator.
 """
 
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import Final
+from dataclasses import dataclass, replace
+from datetime import datetime
+from pathlib import Path
+from typing import TYPE_CHECKING, Final
+
+if TYPE_CHECKING:
+    from services.market_data.edgar.store import EdgarStore
 
 
 @dataclass(frozen=True)
@@ -20,6 +23,7 @@ class Mechanism:
     expressible_now: bool
     dsl_functions: tuple[str, ...] = ()
     data_needed: str = ""
+    requires_edgar: bool = False
 
 
 CATALOG: Final[tuple[Mechanism, ...]] = (
@@ -41,14 +45,18 @@ CATALOG: Final[tuple[Mechanism, ...]] = (
               "of risk than high-volatility ones; volatility regimes change how other signals behave.",
               True, ("vol", "beta", "rank", "zscore")),
     Mechanism("earnings", "Earnings surprises and drift",
-              "Post-earnings-announcement drift: prices underreact to earnings, revenue and guidance surprises.",
-              False, data_needed="point-in-time earnings dates, consensus estimates, actuals and guidance"),
+              "Post-earnings-announcement drift: prices underreact to earnings announcements and surprises "
+              "relative to a seasonal EPS baseline.",
+              True, ("sue", "earnings_announcement", "earnings_window", "earnings_drift_age"),
+              "point-in-time SEC 8-K item 2.02 events, periodic filings and quarterly XBRL earnings history", True),
     Mechanism("fundamentals", "Fundamentals (quality, value, investment)",
               "Profitability, quality, value, investment, accruals and free-cash-flow improvement priced slowly.",
-              False, data_needed="point-in-time financial statements with filing timestamps"),
+              True, ("accruals", "asset_growth", "gross_profitability", "net_share_issuance"),
+              "point-in-time XBRL statements with filing acceptance timestamps", True),
     Mechanism("insider", "Insider activity",
               "Open-market insider purchases, clusters and seniority carry private information.",
-              False, data_needed="SEC Form 4 filings with public acceptance timestamps"),
+              True, ("insider_net_buy_ratio", "insider_cluster_buy"),
+              "SEC Form 4 filings with public acceptance timestamps", True),
     Mechanism("analyst", "Analyst information",
               "Estimate and recommendation revisions, target changes and forecast dispersion.",
               False, data_needed="point-in-time analyst estimate and recommendation history"),
@@ -74,13 +82,51 @@ CATALOG: Final[tuple[Mechanism, ...]] = (
 
 BY_KEY: Final[dict[str, Mechanism]] = {m.key: m for m in CATALOG}
 KEYS: Final[tuple[str, ...]] = tuple(m.key for m in CATALOG)
-EXPRESSIBLE: Final[tuple[str, ...]] = tuple(m.key for m in CATALOG if m.expressible_now)
+EXPRESSIBLE: Final[tuple[str, ...]] = tuple(m.key for m in CATALOG if m.expressible_now and not m.requires_edgar)
 
 
-def get(key: str) -> Mechanism | None:
-    return BY_KEY.get(key)
+def _edgar_store(root: Path | None) -> EdgarStore | None:
+    from services.market_data.edgar.store import EdgarStore, store_path
+
+    if root is None:
+        from .config import default_project_root
+
+        root = default_project_root()
+    store = EdgarStore(store_path(root))
+    return store if store.path.is_file() else None
 
 
-def is_expressible(key: str) -> bool:
+def _development_cutoff() -> datetime:
+    from services.market_data.calendar import get_calendar
+    from services.quantlab.gates import HOLDOUT_START
+
+    cal = get_calendar()
+    return cal.session_open(cal.previous_session(HOLDOUT_START))
+
+
+def _edgar_coverage(root: Path | None) -> frozenset[str]:
+    store = _edgar_store(root)
+    return store.coverage(_development_cutoff()) if store is not None else frozenset()
+
+
+def edgar_evidence(root: Path | None = None) -> str | None:
+    """Development-period EDGAR content, so a data extension is new evidence even when coverage is unchanged."""
+    store = _edgar_store(root)
+    return store.digest(_development_cutoff()) if store is not None else None
+
+
+def available_mechanisms(root: Path | None = None) -> tuple[str, ...]:
+    coverage = _edgar_coverage(root)
+    return tuple(m.key for m in CATALOG if m.expressible_now and (not m.requires_edgar or m.key in coverage))
+
+
+def get(key: str, root: Path | None = None) -> Mechanism | None:
     m = BY_KEY.get(key)
+    if m is not None and m.requires_edgar and key not in _edgar_coverage(root):
+        return replace(m, expressible_now=False)
+    return m
+
+
+def is_expressible(key: str, root: Path | None = None) -> bool:
+    m = get(key, root)
     return bool(m and m.expressible_now)

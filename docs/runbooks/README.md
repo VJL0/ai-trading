@@ -20,8 +20,13 @@ Only the operator CLI can clear a halt under the existing authentication and rec
 - `make status`: service status. Logs are under `var/logs`.
 - `make agents` / `make agents-once` / `make agents-status`: the research crew (Claude Code + Codex on your own
   sign-in; research only, no execution authority). See [research crew](../architecture/agent-crew.md).
+- `make autopilot` / `make autopilot-once` / `make autopilot-status` / `make autopilot-plan`: the autonomous daily
+  orchestrator (PAPER session at the open, research crew and quantlab after the close, daily report; needs
+  `LAT_AUTOPILOT_ENABLED=true`). See [autopilot runbook](autopilot.md) and [design](../architecture/autopilot.md).
 - `make stop`: stops local processes. Broker-held orders remain at the broker.
 - `make reconcile`: reconcile the ledger before proceeding after unexpected shutdowns.
+- `make validate`: the complete local validation (lint, types, contracts, tests, startup smoke, LEAN, dependency
+  audit). There is no remote CI. See [validation](validation.md).
 - `make test-py`: excludes `live_models`, `paper_broker`, and `gui` even if credentials happen to be installed.
 
 Set `LAT_API_PORT` in `.env` to customize the API and monitor port. Use a separate `LAT_PROJECT_ROOT` for isolated tests. The smoke command

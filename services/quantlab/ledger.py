@@ -37,12 +37,13 @@ def variant_name(spec: dict[str, Any]) -> str:
 _REPO = Path(__file__).resolve().parents[2]
 RESULT_DEPENDENCIES: tuple[str, ...] = (
     "services/research/costs.py", "services/research/stats.py", "services/market_data/calendar.py",
+    "services/market_data/edgar/parsers.py", "services/market_data/edgar/store.py",
     "services/positions/policy.py", "packages/contracts/policy.py")
 """Modules outside quantlab whose code changes research results (cost model, statistics, calendar, policy
 defaults used by the execution tier and the simulator)."""
 
 METHODOLOGY_FILES: tuple[str, ...] = (
-    "backtest.py", "costs.py", "factors.py", "gates.py", "research.py", "validation.py", "panel.py",
+    "backtest.py", "costs.py", "factors.py", "events.py", "gates.py", "research.py", "validation.py", "panel.py",
     "strategies/momentum.py", "strategies/features.py")
 """``factors.agent_family`` builds the agent family (targets, backtest config, benchmark), so its code is covered."""
 """The code that decides an agent factor's verdict: a change here is new evidence for a hypothesis."""

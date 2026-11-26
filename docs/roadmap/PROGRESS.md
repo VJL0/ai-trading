@@ -182,10 +182,24 @@ reg h=20) Sharpe 0.66 vs SPY 0.76. The cost-aware rule bought no stock in 13 of 
 * Open: regime-aware selection, symbolic regression / GP / Qlib / RD-Agent(Q) discovery, ensembles, relative-value /
   event families.
 
-## Phase 5 — full-lifecycle backtesting: not started
+## Phase 5 — full-lifecycle backtesting: harness implemented (2026-11-25), verified in simulation
 
-Depends on Phase 1–4 pieces now in place: replay the signal engine + `decide_edge` + risk engine + position manager
-over a snapshot with a fill simulator; compare with paper orders.
+Design: [replay](../architecture/replay.md). `services/replay` runs the production DecisionCycle, `decide_edge`,
+RiskEngine (evaluate, authorize and final_gate with real signatures, using a temp key), the OrderLedger claim,
+ExecutionService, Reconciler and PositionManager over a bar snapshot on a simulated clock. It does this in a fresh,
+empty temp workspace. The narrow adapters are a quote feed synthesized from bars and a next-open fill model with a
+seeded non-fill/partial-fill RNG.
+
+The harness writes an append-only `REPLAY` journal with provenance and supports resume. It checks parity against
+`quantlab.intraday`. `python -m services.replay evaluate --policy default|active|FILE --equity N` (`make
+replay-eval`) evaluates a strategy under an exact account and policy (audit P1), and a read-only paper-ledger
+comparison hook is included.
+
+Built by a Claude worker and reviewed by a Codex worker. The review fixed workspace aliasing, crash-resume
+duplicates, the next-open fill race, a cost escape on reconciled fills, marks and exposure, snapshot validation,
+and read-only URIs. Verification (SIMULATED: synthetic bars, FakeBroker, fixtures): 74 replay tests pass, and
+synthetic parity matched 5/5 trades within about 1 bps. Open: no comparison against a real paper ledger, and
+trained-model suites are not yet replayable.
 
 ## Phase 6 — autonomous research improvement: research crew implemented (2026-11-25)
 
@@ -223,11 +237,57 @@ rests on the holdout ledger. The quantlab hourly admission check can race other 
 
 ## Phase 7 — reliability: started
 
-* `.github/workflows/ci.yml` (ruff, pyright, contract freshness, tests, `pip-audit`) — written, **not yet run on
-  GitHub**. pyright now excludes vendored Kronos code (as ruff already did).
+* Local validation replaces remote CI (2026-11-25). The application is local and single-user, so the GitHub
+  Actions workflow was removed. `make validate` (`scripts/validate.sh`, [runbook](../runbooks/validation.md)) runs
+  ruff, pyright, contract checks, both pytest invocations, the isolated startup smoke, the LEAN tests and the
+  `pip-audit` dependency audit locally. pyright excludes vendored Kronos code, as ruff already did.
 * Fixed test-runner hang: torch tests (`test_kronos.py`, `test_advanced_models.py`) deadlocked at 0 % CPU when run
   late in one long pytest process (it already hung before any roadmap change); in their own process all 20 pass in
-  ~7 s. `make test-py` and CI now run them in a separate pytest invocation. Root cause (likely duplicate OpenMP
+  ~7 s. `make test-py` and `make validate` run them in a separate pytest invocation. Root cause (likely duplicate OpenMP
   runtimes / thread pools between torch and the other native ML libraries) is not yet isolated.
 * Dependency audit 2026-11-20: 111 locked Python packages (`pip-audit`) and the dashboard's npm lockfile
   (`pnpm audit`): no known vulnerabilities.
+
+## Autonomy program (2026-11-25): autopilot, EDGAR point-in-time data, replay, local validation
+
+The operator asked for a system that orchestrates research and paper trading by itself with no commands. Built
+with Orca workers: Claude built the autopilot and replay, Codex built EDGAR and the validation runner, and each provider reviewed
+the other's code.
+
+* **Autopilot** (`services/autopilot`, [design](../architecture/autopilot.md), [runbook](../runbooks/autopilot.md),
+  `make autopilot`). A deterministic XNYS daily supervisor. Before the open it checks health and makes one
+  idempotent `start_paper_session`. Intraday it makes one bounded read-only check every 15 min. After the close
+  it runs subprocess research in this order: the quantlab daily pipeline, research-crew ticks (Claude and Codex),
+  shadow, and at most one vault-enforced holdout look. It writes a daily JSON/MD report.
+  * It holds only the agent token and calls only allowlisted tools and argv.
+  * It never selects Live, changes policy, clears halts or touches the kill switch. It stands down on any halt
+    until the operator clears it.
+  * Off by default (`LAT_AUTOPILOT_ENABLED`).
+  * The Codex review fixed late or duplicate starts, a halt missed after the close, the subprocess boundary,
+    linked token and state files, and holdout crash recovery.
+  * 73 tests pass, and the integration test reached STARTED against a real API in a SIMULATED workspace.
+  * Open: the API can activate an already-queued session after its grace period if the Mac sleeps across the
+    open. That needs a session-manager contract change. Alerts are local only.
+* **SEC EDGAR point-in-time data** (`services/market_data/edgar`, `services/quantlab/events.py`,
+  [design](../architecture/edgar-pit-data.md)). Acceptance time is mapped to the first tradable open, and
+  amendments are versioned. Covers XBRL fundamentals, 8-K 2.02 and 10-Q/10-K earnings events, and Form 4
+  open-market P/S.
+  * Features: SUE, PEAD age, accruals, asset growth, gross profitability, net issuance, insider net-buy ratio and
+    cluster buys. They are in the closed DSL, and the crew's earnings, quality and insider mechanisms are now
+    expressible once data exists.
+  * Family `L_events` (`research --asset events`) compares price-only, price+fundamentals, price+insider and all
+    features after costs.
+  * The Claude review fixed Form 4 issuer mismatches, free-text symbols, and a planner evidence hash that ignored
+    new EDGAR data. The coordinator made the submissions `acceptanceDateTime` fallback take the later of the UTC
+    and Eastern readings.
+  * Not yet run on real data. Downloads need `LAT_SEC_USER_AGENT` ("Name email", SEC fair-access policy), which
+    only the operator can set.
+* **Local validation** (`make validate`, `scripts/validate.sh`, [runbook](../runbooks/validation.md)). There is no
+  remote CI. The two path-dependent MCP registration tests are fixed, and
+  `scripts/register_mcp.sh --write-project-configs` regenerates the tracked configs for any checkout.
+* **Paper risk profile** [`paper-autonomous`](../../ops/policy/README.md): 10 slots of 12 %, $600 per position,
+  200 liquid names picked from development-period data only, $150 daily loss, a 15 bps spread cap, and no
+  overnight holding. It is validated against the hard ceilings. Applying it is an operator action
+  (`PolicyStore.apply_change`).
+* **Verification (2026-11-25, SIMULATED):** `make test-py` gave 2,469 passed, 28 skipped, plus 20 torch tests.
+  `make lint`, `make typecheck` and `make smoke` (29 audit rows) are clean.

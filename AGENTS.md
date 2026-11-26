@@ -1,5 +1,12 @@
 # Local AI Trader
 
+## Purpose
+
+The system is an autonomous, multi-agent orchestrator. `services/autopilot` runs PAPER trading and research
+every trading day with no operator commands, and it summons the Claude Code and Codex research crew
+(`services/agents`) for hypothesis, review, analysis and improvement work. Engineering agents extend its
+capabilities. They work within the boundaries below, which are what make running without supervision safe.
+
 ## Trading and operator boundaries
 
 - Keep the order path through deterministic risk approval, signed intent, ledger claim, final execution checks, and the gateway. MCP and model output can propose actions. They cannot authorize orders or change risk policy.
@@ -16,7 +23,29 @@
 
 ## Verification
 
-- Use Python 3.11 through `uv run --frozen`. For configuration and operational workflows, consult the [environment runbook](docs/runbooks/environment.md) or [local operations](docs/runbooks/README.md) when the task touches them.
-- Run the affected tests first. For routine testing, follow CI’s `LAT_USE_KEYCHAIN=false LAT_FEED_MODE=SIMULATED` setup and exclude `live_models`, `paper_broker`, and `gui`. Use `make test-py` for broader Python coverage. It isolates the Torch tests in a separate process.
-- For startup, MCP transport, or session lifecycle changes, run `make smoke`. It exercises the API, MCP, and ledger in a temporary simulated workspace. For execution or recovery changes, include the relevant `tests/failure_injection/order_ledger` tests. For LEAN changes, use `make test-lean` and check that it ran the suite.
-- Use `make lint` and `make typecheck` for repository-wide checks. Report the checks run and distinguish simulated or stubbed coverage from broker verification.
+This application is local and single-user. There is no remote CI. Validation happens on this machine, and you
+own it: a change is not complete until you have validated it locally, resolved every failure, and verified that the
+changed functionality works.
+
+- **Validate locally.** Use Python 3.11 through `uv run --frozen`. Run the affected tests first with
+  `LAT_USE_KEYCHAIN=false LAT_FEED_MODE=SIMULATED` and exclude `live_models`, `paper_broker`, and `gui`. Then run
+  `make validate`, which is the required final check. It runs lint, type checking, tool/MCP/HTTP contract checks,
+  the full Python suite (Torch tests in their own process), the isolated startup smoke, the LEAN tests, and the
+  locked dependency security audit. Use `make validate SKIP_AUDIT=1` only when offline, and say the audit did not
+  run. See the [validation runbook](docs/runbooks/validation.md).
+- **Resolve failures.** Fix every failure you cause, along with lint and type errors in the code you touch, then
+  rerun the failing step and `make validate`. Never skip, delete, weaken, `xfail`, or loosen a test, check, risk
+  limit, or safety assertion to get a pass. If a failure predates your change or comes from someone else's
+  concurrent edits, show that it does (for example, it fails the same way without your change) and report it with
+  its output instead of hiding it.
+- **Verify functionality.** Passing tests are necessary but not sufficient. Exercise the changed behaviour itself:
+  - Add or update tests that would fail without the change.
+  - For startup, MCP transport, or session lifecycle changes, `make smoke` must pass. `make validate` includes it.
+  - For execution or recovery changes, include the relevant `tests/failure_injection/order_ledger` tests, and use
+    `make replay-eval` where it applies.
+  - For LEAN changes, confirm that `make test-lean` ran the suite and did not skip it.
+  - For CLIs and services, run them against a disposable simulated workspace.
+- **Report honestly.** Name the checks you ran and their results. Distinguish simulated or stubbed coverage from
+  broker verification, and list anything not run, such as paper-broker, live-model, or GUI checks, which need
+  explicit operator authorization. For configuration and operational workflows, consult the
+  [environment runbook](docs/runbooks/environment.md) or [local operations](docs/runbooks/README.md).

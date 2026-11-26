@@ -6,6 +6,7 @@ import json
 import os
 import shutil
 import subprocess
+import sys
 import tomllib
 from pathlib import Path
 
@@ -15,12 +16,21 @@ ROOT = Path(__file__).resolve().parents[3]
 SERVER_ARGS = ["run", "--frozen", "--directory", str(ROOT), "python", "-m", "services.mcp_server"]
 
 
+def _assert_server_args(args: list[str]) -> str:
+    """The tracked registrations pin the checkout path written by scripts/register_mcp.sh. That path differs
+    across worktrees and checkouts, so check the shape and that the directory is absolute, not its value."""
+    assert len(args) == len(SERVER_ARGS)
+    assert args[:3] == SERVER_ARGS[:3] and args[4:] == SERVER_ARGS[4:]
+    assert Path(args[3]).is_absolute()
+    return args[3]
+
+
 def test_claude_code_project_registration() -> None:
     cfg = json.loads((ROOT / ".mcp.json").read_text())
     assert set(cfg) == {"mcpServers"}
     server = cfg["mcpServers"]["local-ai-trader"]
     assert server["type"] == "stdio" and server["command"] == "uv"
-    assert server["args"] == SERVER_ARGS
+    _assert_server_args(server["args"])
     assert set(server.get("env", {})) <= {"LAT_AGENT_NAME"}  # no secrets, no mode/gateway overrides
     blob = json.dumps(cfg).lower()
     for forbidden in ("token", "key", "secret", "password", "lat_mode", "lat_gateway", "live"):
@@ -30,7 +40,8 @@ def test_claude_code_project_registration() -> None:
 def test_codex_project_registration_and_approval_modes() -> None:
     cfg = tomllib.loads((ROOT / ".codex" / "config.toml").read_text())
     server = cfg["mcp_servers"]["local-ai-trader"]
-    assert server["command"] == "uv" and server["args"] == SERVER_ARGS and server["cwd"] == str(ROOT)
+    assert server["command"] == "uv"
+    assert server["cwd"] == _assert_server_args(server["args"])
     assert server["startup_timeout_sec"] > 0 and server["tool_timeout_sec"] >= 60
     assert server["default_tools_approval_mode"] == "prompt"
     assert server["env"] == {"LAT_AGENT_NAME": "codex"}
@@ -54,8 +65,8 @@ def test_tool_input_schemas_fit_codex_default_schema_budget() -> None:
         assert size < 5000, (name, size)
 
 
-def _run_script(*args: str, path: str) -> subprocess.CompletedProcess[str]:
-    return subprocess.run(["/bin/bash", str(ROOT / "scripts" / "register_mcp.sh"), *args], capture_output=True,
+def _run_script(*args: str, path: str, root: Path = ROOT) -> subprocess.CompletedProcess[str]:
+    return subprocess.run(["/bin/bash", str(root / "scripts" / "register_mcp.sh"), *args], capture_output=True,
                           text=True, timeout=60, env={"PATH": path, "HOME": os.environ.get("HOME", "/tmp")}, check=False)
 
 
@@ -99,6 +110,34 @@ def test_register_script_apply_uses_official_commands_only(tmp_path: Path) -> No
 def test_register_script_rejects_unknown_args() -> None:
     proc = _run_script("--force", path="/usr/bin:/bin")
     assert proc.returncode == 2
+
+
+def test_register_script_writes_portable_project_configs(tmp_path: Path) -> None:
+    root = (tmp_path / 'checkout with spaces and "quotes" 🚀').resolve()
+    for filename in ("scripts/register_mcp.sh", ".mcp.json", ".codex/config.toml"):
+        dst = root / filename
+        dst.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(ROOT / filename, dst)
+
+    uv = shutil.which("uv")
+    assert uv is not None
+    bindir = tmp_path / "bin"
+    bindir.mkdir()
+    (bindir / "uv").symlink_to(uv)
+    (bindir / "python3.11").symlink_to(sys.executable)
+
+    claude_path = root / ".mcp.json"
+    codex_path = root / ".codex/config.toml"
+    expected_claude = json.loads(claude_path.read_text())
+    expected_codex = tomllib.loads(codex_path.read_text())
+    args = [*SERVER_ARGS[:3], str(root), *SERVER_ARGS[4:]]
+    expected_claude["mcpServers"]["local-ai-trader"]["args"] = args
+    expected_codex["mcp_servers"]["local-ai-trader"].update(args=args, cwd=str(root))
+
+    proc = _run_script("--write-project-configs", path=f"{bindir}:/usr/bin:/bin", root=root)
+    assert proc.returncode == 0, proc.stderr
+    assert json.loads(claude_path.read_text()) == expected_claude
+    assert tomllib.loads(codex_path.read_text()) == expected_codex
 
 
 def test_script_is_bash_syntax_clean() -> None:

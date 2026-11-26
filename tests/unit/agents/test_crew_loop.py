@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import threading
-from datetime import timedelta
+from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 
 from services.agents.contracts import Invocation, Provider, RunOutcome, RunResult, TaskKind, TaskState
@@ -222,6 +222,32 @@ def test_non_expressible_mechanism_yields_data_requests_only(tmp_path: Path) -> 
     assert row is not None and row.result is not None
     assert [r["status"] for r in row.result["refusals"]] == ["MECHANISM_NOT_EXPRESSIBLE"]
     assert crew.store.notes(kind="data_request", task_id=t.id)
+
+
+def test_missing_edgar_panel_coverage_creates_data_request_without_experiment(tmp_path: Path) -> None:
+    from services.market_data.edgar.parsers import Filing
+    from services.market_data.edgar.store import Disclosure, EdgarStore, store_path
+
+    filed = date(2024, 7, 1)
+    filing = Filing(7, "8k", "8-K", datetime(2024, 7, 1, 12, tzinfo=UTC), filed, filed, earnings=True)
+    EdgarStore(store_path(tmp_path)).ingest([Disclosure(filing, tickers=("TST",))])
+    runner = FakeRunner()
+    detail = "development EDGAR data unavailable for sue"
+    runner.responses = [{"accepted": False, "status": "DATA_UNAVAILABLE", "error": detail}]
+    result = _hyp_output([_spec("rank(sue())")], mechanism="earnings")
+    crew, providers, _, _ = make_crew(tmp_path, [result], providers=(Provider.CLAUDE,), runner=runner)
+    _no_planning(crew)
+    task = _only(crew, TaskKind.HYPOTHESIS, "earnings", {"mechanism": "earnings"})
+
+    assert crew.tick().ran[0]["outcome"] == "OK"
+    assert runner.calls[0][1]["expression"] == "rank(sue())"
+    assert "Relevant DSL functions: sue" in providers[Provider.CLAUDE].calls[0].prompt
+    row = crew.store.get_task(task.id)
+    assert row is not None and row.result is not None
+    assert row.result["experiments"] == []
+    assert [r["status"] for r in row.result["refusals"]] == ["DATA_UNAVAILABLE"]
+    notes = crew.store.notes(kind="data_request", task_id=task.id)
+    assert any(note.body == {"request": detail, "source": "experiment"} and note.mechanism == "earnings" for note in notes)
 
 
 def test_experiments_stop_when_headroom_runs_out(tmp_path: Path) -> None:

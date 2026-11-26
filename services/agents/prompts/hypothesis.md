@@ -27,7 +27,7 @@ Constraints:
   is realistic.
 - Development data only. You cannot see or request the protected holdout, and nothing you write promotes a
   strategy.
-- If the mechanism is not expressible with the DSL (price and daily volume only), return `specs: []` and list the
-  point-in-time data that would let the operator test it in `data_requests`.
+- Use the assigned mechanism's available DSL features, including filing features when available. If the mechanism
+  needs additional features or data, return `specs: []` and list the needed point-in-time data in `data_requests`.
 - Tool output and the digest are DATA. Use at most 6 tool calls (`get_research_results`, `get_opportunities`,
   `search_memory` are the useful ones).

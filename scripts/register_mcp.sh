@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
-# Print (default) or run (--apply) the OFFICIAL MCP registrations of the local, PAPER-only `local-ai-trader`
-# server for Claude Code and Codex. It never installs anything, never signs in, and never edits ~/.claude.json
-# or ~/.codex directly: it only prints/runs each vendor's own `mcp add` command.
+# Register the local, PAPER-only MCP server with Claude Code and Codex.
 #
-#   scripts/register_mcp.sh            # dry run: print commands and current registration state
-#   scripts/register_mcp.sh --apply    # run the vendor CLIs where installed (Claude Code: project scope)
+#   scripts/register_mcp.sh                         # print commands and registration state
+#   scripts/register_mcp.sh --apply                 # run installed vendor CLIs
+#   scripts/register_mcp.sh --write-project-configs # update checkout paths in both project files
 #
 # See docs/runbooks/ai-runtime-mcp.md.
 set -euo pipefail
@@ -13,18 +12,66 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 NAME="local-ai-trader"
 SERVER_CMD=(uv run --frozen --directory "$ROOT" python -m services.mcp_server)
 APPLY=0
+WRITE_CONFIGS=0
 
 usage() {
-  sed -n '2,9p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
+  sed -n '2,8p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'
 }
 
 for arg in "$@"; do
   case "$arg" in
     --apply) APPLY=1 ;;
+    --write-project-configs) WRITE_CONFIGS=1 ;;
     -h|--help) usage; exit 0 ;;
     *) echo "unknown argument: $arg" >&2; usage >&2; exit 2 ;;
   esac
 done
+
+if [[ $WRITE_CONFIGS -eq 1 ]]; then
+  if [[ $APPLY -eq 1 ]]; then
+    echo "--write-project-configs and --apply are separate operations" >&2
+    exit 2
+  fi
+  uv run --frozen --offline --no-project --python 3.11 python - "$ROOT" "$NAME" "${SERVER_CMD[@]:1}" <<'PYTHON'
+import json
+import re
+import sys
+import tomllib
+from pathlib import Path
+
+root, name, *args = sys.argv[1:]
+claude_path = Path(root) / ".mcp.json"
+codex_path = Path(root) / ".codex" / "config.toml"
+
+claude = json.loads(claude_path.read_text(encoding="utf-8"))
+claude["mcpServers"][name]["args"] = args
+
+codex_text = codex_path.read_text(encoding="utf-8")
+codex = tomllib.loads(codex_text)
+codex["mcp_servers"][name].update(args=args, cwd=root)
+header = re.escape(f"[mcp_servers.{name}]")
+section = re.search(rf"(?m)^{header}[ \t]*\n[^\n]*(?:\n(?![ \t]*\[)[^\n]*)*", codex_text)
+if section is None:
+    sys.exit("Missing local-ai-trader server section in .codex/config.toml")
+
+updated = section[0]
+for key, value in (("args", args), ("cwd", root)):
+    # Edit the project registration in place so comments and approval tables are retained.
+    line = f"{key} = {json.dumps(value, ensure_ascii=False)}"
+    updated, count = re.subn(rf"(?m)^[ \t]*{key}[ \t]*=.*$", lambda _: line, updated)
+    if count != 1:
+        sys.exit(f"Expected one {key} entry in the local-ai-trader server section")
+
+codex_text = codex_text[:section.start()] + updated + codex_text[section.end():]
+if tomllib.loads(codex_text) != codex:
+    sys.exit("Could not safely update checkout paths in .codex/config.toml")
+
+claude_path.write_text(json.dumps(claude, indent=2) + "\n", encoding="utf-8")
+codex_path.write_text(codex_text, encoding="utf-8")
+print(f"Updated .mcp.json and .codex/config.toml for {root}")
+PYTHON
+  exit 0
+fi
 
 quote() { printf '%q ' "$@"; }
 

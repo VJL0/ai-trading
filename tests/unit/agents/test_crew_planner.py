@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 import json
-from datetime import UTC, datetime, timedelta
+from datetime import UTC, date, datetime, timedelta
 from pathlib import Path
 
 from services.agents import mechanisms
@@ -106,6 +106,28 @@ def test_ucb_prefers_untried_then_rewards_passes_and_penalizes_refuted() -> None
     assert set(mechanism_scores(base, {})) == set(mechanisms.EXPRESSIBLE)
 
 
+def test_planner_selects_edgar_mechanism_only_after_development_coverage(tmp_path: Path) -> None:
+    from services.market_data.edgar.parsers import Filing
+    from services.market_data.edgar.store import Disclosure, EdgarStore, store_path
+
+    store = CrewStore(tmp_path / "crew.sqlite3")
+    config = make_config(tmp_path)
+    ledger = LedgerDigest(available=False)
+    store.add_note("seed", {"rationale": "drift after earnings"}, now=T0, mechanism="earnings")
+    before = gather_state(store, tmp_path, ledger, T0, 6)
+    assert before.available_mechanisms == mechanisms.EXPRESSIBLE and not before.seeds
+    assert plan(before, config, T0)[0].payload["mechanism"] != "earnings"
+
+    dev_day = date(2024, 7, 1)
+    dev = Filing(7, "dev-8k", "8-K", datetime(2024, 7, 1, 12, tzinfo=UTC), dev_day, dev_day, earnings=True)
+    EdgarStore(store_path(tmp_path)).ingest([Disclosure(dev, tickers=("TST",))])
+    after = gather_state(store, tmp_path, ledger, T0, 6)
+    assert after.hypothesis_evidence != before.hypothesis_evidence
+    assert after.available_mechanisms == (*mechanisms.EXPRESSIBLE, "earnings")
+    req, = plan(after, config, T0)
+    assert req.payload["mechanism"] == "earnings" and req.payload["seeds"] == ["drift after earnings"]
+
+
 def _ledger_with_agent_trials(root: Path, n: int) -> None:
     from services.quantlab.ledger import TrialLedger
     from services.quantlab.paths import results_root
@@ -165,3 +187,28 @@ def test_hypotheses_stop_after_exploration_without_new_evidence(tmp_path: Path) 
     assert plan(gather_state(store, tmp_path, ledger, T0, 6), cfg, T0) == []
     ledger.agent_dev_total += 1
     assert [req.kind for req in plan(gather_state(store, tmp_path, ledger, T0, 6), cfg, T0)] == [TaskKind.HYPOTHESIS]
+
+
+def test_planner_evidence_changes_when_development_edgar_data_grows(tmp_path: Path) -> None:
+    from services.market_data.edgar.parsers import Filing
+    from services.market_data.edgar.store import Disclosure, EdgarStore, store_path
+    from services.quantlab.gates import HOLDOUT_START
+
+    store = CrewStore(tmp_path / "crew.sqlite3")
+    ledger = LedgerDigest(available=False)
+    edgar = EdgarStore(store_path(tmp_path))
+
+    def filing(cik: int, day: date) -> Disclosure:
+        return Disclosure(Filing(cik, f"8k-{cik}-{day}", "8-K", datetime(day.year, day.month, day.day, 12, tzinfo=UTC),
+                                 day, day, earnings=True), tickers=(f"T{cik}",))
+
+    edgar.ingest([filing(7, date(2024, 7, 1))])
+    first = gather_state(store, tmp_path, ledger, T0, 6)
+    # A DATA_UNAVAILABLE refusal adds no trial. Extending the store must still count as new evidence.
+    edgar.ingest([filing(8, date(2024, 8, 1))])
+    extended = gather_state(store, tmp_path, ledger, T0, 6)
+    assert extended.available_mechanisms == first.available_mechanisms
+    assert extended.hypothesis_evidence != first.hypothesis_evidence
+    # Filings that only become available inside the protected holdout are not development evidence.
+    edgar.ingest([filing(9, HOLDOUT_START + timedelta(days=7))])
+    assert gather_state(store, tmp_path, ledger, T0, 6).hypothesis_evidence == extended.hypothesis_evidence

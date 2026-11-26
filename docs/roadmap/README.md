@@ -36,7 +36,7 @@ Progress and evidence per phase: [PROGRESS.md](PROGRESS.md).
    evidence-backed improvements into reversible paper trading; agents cannot modify protected evaluation rules,
    access reserved data or bypass risk authorization.
 7. **Reliability:** extended paper sessions survive failures without duplicate orders; trustworthy operational and
-   economic diagnostics; CI for tests/types/security/model contracts; dependency review; docs match the Alpaca SDK
+   economic diagnostics; local validation (`make validate`) for tests/types/security/model contracts; dependency review; docs match the Alpaca SDK
    execution architecture.
 
 ## Global engineering rules

@@ -5,10 +5,15 @@ from __future__ import annotations
 
 import argparse
 import json
+from datetime import UTC, date, datetime
+from pathlib import Path
 from types import SimpleNamespace
 
 import numpy as np
+import pytest
 
+from services.market_data.edgar.parsers import Fact, Filing
+from services.market_data.edgar.store import Disclosure, EdgarStore, store_path
 from services.quantlab import cli
 from services.quantlab.factors import FAMILY
 from services.quantlab.ledger import TrialLedger
@@ -48,4 +53,27 @@ def test_redundant_factor_is_refused_and_original_factor_runs(tmp_path, capsys) 
     # a later factor that merely re-spells the accepted one is redundant with that earlier agent factor
     code, out = _run(settings, "rank(vol(20)) - rank(vol(126))", capsys)
     assert code == 3 and str(out["prior"]["nearest"]).startswith("agent:")
+    assert ledger.count(FAMILY) == 1
+
+
+def test_edgar_factor_runs_only_with_local_development_data(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> None:
+    _save_panel(tmp_path)
+    settings = SimpleNamespace(project_root=tmp_path)
+    expression = "rank(asset_growth())"
+    code, out = _run(settings, expression, capsys)
+    assert code == 3 and out["reason"] == "DATA_UNAVAILABLE" and "asset_growth" in out["detail"]
+    ledger = TrialLedger(tmp_path / "experiments" / "quantlab" / "trials.sqlite3")
+    assert ledger.count(FAMILY) == 0
+
+    filed = date(2020, 2, 14)
+    previous, current = date(2018, 12, 31), date(2019, 12, 31)
+    accepted = datetime(2020, 2, 14, 13, tzinfo=UTC)
+    EdgarStore(store_path(tmp_path)).ingest(
+        Disclosure(Filing(i + 1, f"10k-{i}", "10-K", accepted, filed, current),
+                   (Fact("assets", None, previous, 100.0), Fact("assets", None, current, 120.0 + i)),
+                   tickers=(f"S{i:02d}",))
+        for i in range(30)
+    )
+    code, out = _run(settings, expression, capsys)
+    assert code == 0 and out["family"] == FAMILY
     assert ledger.count(FAMILY) == 1
