@@ -28,7 +28,10 @@ from .backend import AuthorityError
 QUANTLAB_STEPS: Final = frozenset({("fetch-delta",), ("build-panel", "--what", "equity"), ("scan",), ("shadow",)})
 _FAMILY: Final = re.compile(r"[A-Z][A-Za-z0-9_]{1,40}")
 CREW_ARGV: Final = ("-m", "services.agents", "run", "--once", "--json")
+LEAD_PREFIX: Final = ("-m", "services.agents", "lead", "--json")
 CREW_LOCKED_EXIT: Final = 4
+LEAD_BUDGET_RANGE: Final = (60, 4 * 3600)
+_BRIEFING_TAIL: Final = ("lead", "briefing.json")
 _TAIL: Final = 20000
 
 
@@ -59,10 +62,28 @@ class StepOutcome:
 Runner = Callable[[Sequence[str], Path, float], Awaitable[StepOutcome]]
 
 
+def _lead_ok(rest: tuple[str, ...]) -> bool:
+    """``--budget-s N --briefing <state_dir>/lead/briefing.json [--fake]`` and nothing else."""
+    if rest[-1:] == ("--fake",):
+        rest = rest[:-1]
+    if len(rest) != 4 or rest[0] != "--budget-s" or rest[2] != "--briefing" or not rest[1].isdigit():
+        return False
+    if not LEAD_BUDGET_RANGE[0] <= int(rest[1]) <= LEAD_BUDGET_RANGE[1]:
+        return False
+    path = Path(rest[3])
+    return path.is_absolute() and ".." not in path.parts and path.parts[-2:] == _BRIEFING_TAIL
+
+
+def is_agents_child(args: Sequence[str]) -> bool:
+    return tuple(args[:2]) == ("-m", "services.agents")
+
+
 def check_argv(argv: Sequence[str]) -> tuple[str, ...]:
-    """Only the crew tick and the named quantlab steps may be launched."""
+    """Only the crew tick, one lead cycle and the named quantlab steps may be launched."""
     args = tuple(argv)
     if args == CREW_ARGV:
+        return args
+    if args[:4] == LEAD_PREFIX and _lead_ok(args[4:]):
         return args
     if args[:2] == ("-m", "services.quantlab.cli"):
         step = args[2:]
@@ -80,7 +101,7 @@ async def run_child(argv: Sequence[str], cwd: Path, timeout_s: float) -> StepOut
     if os.name == "posix":
         cmd = ["/usr/bin/nice", "-n", "10", *cmd]
     env = dict(os.environ)
-    if args == CREW_ARGV:
+    if is_agents_child(args):
         # Autonomous runs use the crew's standard provider binaries from the installation PATH.
         for name in ("LAT_AGENTS_CLAUDE_BIN", "LAT_AGENTS_CODEX_BIN"):
             env.pop(name, None)
@@ -105,10 +126,10 @@ async def run_child(argv: Sequence[str], cwd: Path, timeout_s: float) -> StepOut
                 with contextlib.suppress(TimeoutError):
                     await asyncio.wait_for(proc.wait(), min(1.0, remaining))
         except TimeoutError:
-            await _stop_child(await launch, crew=args == CREW_ARGV)
+            await _stop_child(await launch, crew=is_agents_child(args))
             return StepOutcome(args, None, time.monotonic() - t0, "timeout")
         except asyncio.CancelledError:
-            await _stop_child(await launch, crew=args == CREW_ARGV)
+            await _stop_child(await launch, crew=is_agents_child(args))
             raise
         output.seek(max(0, output.seek(0, os.SEEK_END) - _TAIL))
         tail = output.read(_TAIL).decode(errors="replace")
@@ -131,6 +152,11 @@ async def _stop_child(proc: asyncio.subprocess.Process, *, crew: bool) -> None:
 
 def quantlab_argv(*step: str) -> tuple[str, ...]:
     return check_argv(("-m", "services.quantlab.cli", *step))
+
+
+def lead_argv(budget_s: int, briefing: Path, *, fake: bool = False) -> tuple[str, ...]:
+    return check_argv((*LEAD_PREFIX, "--budget-s", str(int(budget_s)), "--briefing", str(briefing),
+                       *(("--fake",) if fake else ())))
 
 
 def holdout_argv(family: str) -> tuple[str, ...]:

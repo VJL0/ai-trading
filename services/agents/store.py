@@ -22,7 +22,7 @@ import uuid
 from collections.abc import Iterator, Sequence
 from contextlib import contextmanager
 from dataclasses import dataclass
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import IO, Any, Final
 
@@ -346,6 +346,13 @@ class CrewStore:
             return int(db.execute(
                 "SELECT COUNT(*) FROM runs WHERE provider=? AND started>=? AND COALESCE(outcome,'')<>'UNAVAILABLE'",
                 (Provider(provider).value, iso(day_start(now)))).fetchone()[0])
+
+    def runs_in_window(self, provider: Provider, now: datetime, window: timedelta) -> int:
+        """Runs started in the rolling subscription window ``(now - window, now]`` that may have spent quota."""
+        with self._db() as db:
+            return int(db.execute(
+                "SELECT COUNT(*) FROM runs WHERE provider=? AND started>? AND COALESCE(outcome,'')<>'UNAVAILABLE'",
+                (Provider(provider).value, iso(now - window))).fetchone()[0])
 
     def task_runs(self, task_id: str) -> list[dict[str, Any]]:
         with self._db() as db:

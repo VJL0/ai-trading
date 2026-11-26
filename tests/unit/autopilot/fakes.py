@@ -128,6 +128,15 @@ class FakeApi:
                     "api_cost_usd": "0", "equity_points": 0, "equity_curve": []}
         if name == "get_orders":
             return {**b, "orders": []}
+        if name == "stop_session":
+            if self.active is None or self.active["session_id"] != args.get("session_id"):
+                raise ToolError(404, "no such active session")
+            self.active["state"] = "STOPPING"
+            return {**b, "outcome": "STOPPING", "session": copy.deepcopy(self.active), "detail": ""}
+        if name == "request_halt":
+            self.halts.append({"halt_id": f"halt_{len(self.halts) + 1}", "reason": args.get("reason"),
+                               "source": "agent", "created_at": None})
+            return {**b, "halt_id": self.halts[-1]["halt_id"], "detail": "halted"}
         if name == "get_research_results":
             return {**b, "status": "ok", "updated_at": None, "holdout": [], "families": copy.deepcopy(self.families),
                     "holdout_results": [], "detail": None, "no_edge_note": None}
@@ -144,11 +153,12 @@ class FakeRunner:
     async def __call__(self, argv: Sequence[str], cwd: Path, timeout_s: float) -> StepOutcome:
         args = tuple(argv)
         self.calls.append((args, timeout_s))
-        key = args[2] if args[1] == "services.quantlab.cli" else "crew"
+        key = args[2] if args[1] == "services.quantlab.cli" else ("lead" if args[2] == "lead" else "crew")
         return self.results.get(key, StepOutcome(args, 0, 1.0, '{"ticks": [{"ran": [], "idle_reason": "no task"}]}'))
 
     def commands(self) -> list[str]:
-        return [a[2] if a[1] == "services.quantlab.cli" else "crew" for a, _ in self.calls]
+        return [a[2] if a[1] == "services.quantlab.cli" else ("lead" if a[2] == "lead" else "crew")
+                for a, _ in self.calls]
 
 
 class FakeDailyJob:
@@ -170,6 +180,8 @@ class FakeDailyJob:
 
 
 def make(tmp: Path, now: datetime, **cfg_kw: Any) -> tuple[Autopilot, FakeClock, FakeApi, FakeRunner, FakeDailyJob]:
+    # Most tests cover the deterministic floor alone; test_lead.py runs the same paths with the lead agent enabled.
+    cfg_kw.setdefault("lead", False)
     clock = FakeClock(now)
     api = FakeApi(clock)
     runner = FakeRunner()

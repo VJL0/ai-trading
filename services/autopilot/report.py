@@ -43,6 +43,8 @@ def build(*, day: str, now: datetime, final: bool, jobs: list[dict[str, Any]], a
     rejections = _list(_dict(session_report).get("top_risk_rejections"))
     perf = _dict(performance)
     crew = _dict(by_job.get("crew", {}).get("detail"))
+    lead = _dict(by_job.get("lead", {}).get("detail"))
+    lead_cycles = _list(lead.get("cycles"))
     holdout = _dict(by_job.get("holdout", {}).get("detail"))
     promo_checks = _list(_dict(_dict(shadow).get("equity")).get("promotion_checks")) + \
         _list(_dict(_dict(shadow).get("crypto")).get("promotion_checks"))
@@ -81,6 +83,15 @@ def build(*, day: str, now: datetime, final: bool, jobs: list[dict[str, Any]], a
         "crew_runs": {"status": by_job.get("crew", {}).get("status"), "ticks_done": crew.get("ticks_done", 0),
                       "ticks": _list(crew.get("ticks"))[:12],
                       "note": "agent notes are proposals; only the trial ledger's gates decide"},
+        "lead_agent": {
+            "status": by_job.get("lead", {}).get("status"), "cycles": len(lead_cycles),
+            "subagent_runs": sum(len(_list(_dict(c).get("ran"))) for c in lead_cycles),
+            "delegated": sum(len(_list(_dict(c).get("delegated"))) for c in lead_cycles),
+            "last": {k: _dict(lead.get("last")).get(k) for k in ("lead_outcome", "lead_provider", "situation",
+                                                                  "priorities", "session_actions", "error")},
+            "next_wake": lead.get("next_wake"),
+            "note": "the lead's assessments are AGENT_NOTE opinions; it can only request fail-safe session actions",
+        },
         "promotions": {
             "holdout": {"status": by_job.get("holdout", {}).get("status"), **holdout},
             "shadow": by_job.get("shadow", {}).get("status"),
@@ -120,6 +131,10 @@ def markdown(rep: dict[str, Any]) -> str:
     res, crew, promo = _dict(rep.get("research")), _dict(rep.get("crew_runs")), _dict(rep.get("promotions"))
     lines += ["", "## Research", f"- QuantLab daily: {res.get('quantlab_daily')}",
               f"- Crew: {crew.get('status')} ({crew.get('ticks_done')} ticks)",
+              f"- Lead agent: {_dict(rep.get('lead_agent')).get('cycles')} cycles, "
+              f"{_dict(rep.get('lead_agent')).get('delegated')} delegations, "
+              f"{_dict(rep.get('lead_agent')).get('subagent_runs')} subagent runs; last: "
+              f"{_dict(_dict(rep.get('lead_agent')).get('last')).get('situation') or 'n/a'}",
               f"- Holdout: {_dict(promo.get('holdout')).get('status')} "
               f"{_dict(promo.get('holdout')).get('family') or ''}".rstrip(),
               f"- Shadow journal: {promo.get('shadow')}"]

@@ -24,6 +24,7 @@ def env(tmp_path: Path, monkeypatch: pytest.MonkeyPatch) -> Path:
     monkeypatch.setenv("LAT_FEED_MODE", "SIMULATED")
     monkeypatch.setenv("LAT_MODE", "PAPER")
     monkeypatch.setenv("LAT_GATEWAY", "FAKE")
+    monkeypatch.setenv("LAT_AUTOPILOT_LEAD", "false")  # never launch a real lead child (subscription quota) in a test
     return tmp_path
 
 
@@ -33,6 +34,8 @@ def test_config_defaults_bounds_and_names(tmp_path: Path) -> None:
     assert cfg.state_dir == tmp_path / "experiments" / "autopilot"
     assert cfg.report_dir == tmp_path / "experiments" / "autopilot" / "reports"
     assert cfg.session_minutes is None
+    assert cfg.lead and cfg.lead_session_actions and not cfg.lead_fake and cfg.lead_max_cycles == 10
+    assert cfg.lead_briefing_path == tmp_path / "experiments" / "autopilot" / "lead" / "briefing.json"
     cfg = AutopilotConfig.from_env({"LAT_AUTOPILOT_ENABLED": "true", "LAT_AUTOPILOT_SYMBOLS": "spy, qqq",
                                     "LAT_AUTOPILOT_SESSION_MINUTES": "120"}, root=tmp_path)
     assert cfg.enabled and cfg.symbols == ("SPY", "QQQ") and cfg.session_minutes == 120

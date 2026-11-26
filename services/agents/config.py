@@ -15,7 +15,8 @@ from .contracts import Provider
 ENV_PREFIX: Final = "LAT_AGENTS_"
 COOLDOWN_CAP: Final = timedelta(hours=12)
 MAX_ATTEMPTS: Final = 2
-MAX_RETRY_AT: Final = timedelta(days=8)  # a CLI-stated reset further out than this is treated as a parse error
+MAX_RETRY_AT: Final = timedelta(days=8)
+PLANNERS: Final = ("rules", "lead")  # a CLI-stated reset further out than this is treated as a parse error
 
 _REPO_ROOT: Final = Path(__file__).resolve().parents[2]
 
@@ -35,6 +36,24 @@ _ENV: Final[tuple[tuple[str, str], ...]] = (
     ("STORE", ""),
     ("MODEL_CLAUDE", ""),
     ("MODEL_CODEX", ""),
+    # Subscription limits: runs per provider in a rolling window (Claude and ChatGPT plans meter ~5-hour windows).
+    ("WINDOW_RUNS_PER_PROVIDER", "8"),
+    ("WINDOW_HOURS", "5"),
+    ("MAX_PER_PROVIDER", "1"),
+    # `rules` = the deterministic crew planner; `lead` = only the lead agent enqueues work.
+    ("PLANNER", "rules"),
+    # Lead agent (`python -m services.agents lead`): one turn decides priorities and delegations.
+    ("LEAD_PROVIDERS", "claude,codex"),
+    ("LEAD_TIMEOUT_S", "600"),
+    ("LEAD_MAX_TURNS", "16"),
+    ("LEAD_MAX_PARALLEL", "3"),
+    ("LEAD_PER_PROVIDER", "2"),
+    ("LEAD_DELEGATIONS_PER_CYCLE", "4"),
+    ("LEAD_DELEGATIONS_PER_DAY", "16"),
+    ("LEAD_RESERVE_RUNS", "2"),
+    ("LEAD_MIN_WAKE_MIN", "20"),
+    ("LEAD_MAX_WAKE_MIN", "240"),
+    ("LEAD_BRIEFING", ""),
 )
 
 
@@ -106,6 +125,21 @@ class CrewConfig:
     model_claude: str | None = None
     model_codex: str | None = None
     max_attempts: int = MAX_ATTEMPTS
+    window_runs_per_provider: int = 8
+    window_hours: int = 5
+    max_per_provider: int = 1
+    planner: str = "rules"
+    lead_providers: tuple[Provider, ...] = (Provider.CLAUDE, Provider.CODEX)
+    lead_timeout_s: int = 600
+    lead_max_turns: int = 16
+    lead_max_parallel: int = 3
+    lead_per_provider: int = 2
+    lead_delegations_per_cycle: int = 4
+    lead_delegations_per_day: int = 16
+    lead_reserve_runs: int = 2
+    lead_min_wake_min: int = 20
+    lead_max_wake_min: int = 240
+    lead_briefing: Path | None = None
 
     @classmethod
     def from_env(cls, env: Mapping[str, str] | None = None, *, project_root: Path | None = None) -> CrewConfig:
@@ -115,6 +149,17 @@ class CrewConfig:
         store = Path(store_raw).expanduser() if store_raw else root / "experiments" / "agents" / "crew.sqlite3"
         if not store.is_absolute():
             store = root / store
+        briefing_raw = env.get(ENV_PREFIX + "LEAD_BRIEFING", "").strip()
+        briefing = Path(briefing_raw).expanduser() if briefing_raw else None
+        if briefing is not None and not briefing.is_absolute():
+            briefing = root / briefing
+        planner = env.get(ENV_PREFIX + "PLANNER", "").strip().lower() or "rules"
+        if planner not in PLANNERS:
+            raise ConfigError(f"{ENV_PREFIX}PLANNER must be one of {', '.join(PLANNERS)}, got {planner!r}")
+        min_wake = _int(env, "LEAD_MIN_WAKE_MIN", 20, 5, 720)
+        max_wake = _int(env, "LEAD_MAX_WAKE_MIN", 240, 5, 24 * 60)
+        if max_wake < min_wake:
+            raise ConfigError(f"{ENV_PREFIX}LEAD_MAX_WAKE_MIN must be >= LEAD_MIN_WAKE_MIN")
         return cls(
             project_root=root,
             store_path=store,
@@ -131,6 +176,21 @@ class CrewConfig:
             idle_sleep_s=_int(env, "IDLE_SLEEP_S", 600, 1, 86400),
             model_claude=env.get(ENV_PREFIX + "MODEL_CLAUDE", "").strip() or None,
             model_codex=env.get(ENV_PREFIX + "MODEL_CODEX", "").strip() or None,
+            window_runs_per_provider=_int(env, "WINDOW_RUNS_PER_PROVIDER", 8, 0, 500),
+            window_hours=_int(env, "WINDOW_HOURS", 5, 1, 24 * 7),
+            max_per_provider=_int(env, "MAX_PER_PROVIDER", 1, 1, 4),
+            planner=planner,
+            lead_providers=_providers(env.get(ENV_PREFIX + "LEAD_PROVIDERS", "claude,codex")),
+            lead_timeout_s=_int(env, "LEAD_TIMEOUT_S", 600, 60, 3600),
+            lead_max_turns=_int(env, "LEAD_MAX_TURNS", 16, 1, 100),
+            lead_max_parallel=_int(env, "LEAD_MAX_PARALLEL", 3, 1, 6),
+            lead_per_provider=_int(env, "LEAD_PER_PROVIDER", 2, 1, 4),
+            lead_delegations_per_cycle=_int(env, "LEAD_DELEGATIONS_PER_CYCLE", 4, 0, 12),
+            lead_delegations_per_day=_int(env, "LEAD_DELEGATIONS_PER_DAY", 16, 0, 200),
+            lead_reserve_runs=_int(env, "LEAD_RESERVE_RUNS", 2, 0, 20),
+            lead_min_wake_min=min_wake,
+            lead_max_wake_min=max_wake,
+            lead_briefing=briefing,
         )
 
     def model_for(self, provider: Provider) -> str | None:
@@ -144,6 +204,10 @@ class CrewConfig:
         n = max(1, consecutive_limits)
         minutes = self.cooldown_minutes * (2 ** min(n - 1, 20))
         return min(timedelta(minutes=minutes), COOLDOWN_CAP)
+
+    @property
+    def window(self) -> timedelta:
+        return timedelta(hours=self.window_hours)
 
     @property
     def runs_dir(self) -> Path:

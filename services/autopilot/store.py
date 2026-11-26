@@ -125,6 +125,18 @@ class Store:
             rows = db.execute(q, args).fetchall()
         return [{**dict(r), "data": json.loads(r["data_json"])} for r in reversed(rows)]
 
+    def last_seq(self, kinds: tuple[str, ...], *, exclude_jobs: tuple[str, ...] = ()) -> int:
+        """Highest event sequence number of the given kinds (0 if none), ignoring events of ``exclude_jobs``."""
+        q = "SELECT MAX(seq) FROM events WHERE 1=1"
+        q += f" AND kind IN ({','.join('?' * len(kinds))})"
+        args: list[Any] = list(kinds)
+        if exclude_jobs:
+            q += f" AND COALESCE(job, '') NOT IN ({','.join('?' * len(exclude_jobs))})"
+            args.extend(exclude_jobs)
+        with closing(self._db()) as db:
+            r = db.execute(q, args).fetchone()
+        return int(r[0] or 0)
+
     # ------------------------------------------------------------------ jobs
     def job(self, day: str, job: str) -> dict[str, Any] | None:
         with closing(self._db()) as db:

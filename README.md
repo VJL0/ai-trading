@@ -7,9 +7,12 @@ ChatGPT integration. The local monitor shows trading status and emergency contro
 
 The system's purpose is to run itself. The [autopilot](docs/architecture/autopilot.md) (`make autopilot`) needs no
 operator commands. Every trading day it checks health before the open and starts the PAPER session. After the
-close it runs the quantlab pipeline and summons its Claude Code and Codex research crew to propose, test and review
-hypotheses, including the SEC EDGAR [earnings, fundamentals and insider data](docs/architecture/edgar-pit-data.md).
-It then lets the deterministic gates decide what gets promoted and writes a daily report.
+close it runs the quantlab pipeline, lets the deterministic gates decide what gets promoted, and writes a daily
+report. Throughout the day it wakes one [lead agent](docs/architecture/lead-agent.md) (Claude Code or Codex). The
+lead reads the evidence, decides what to investigate or research and in which role, and delegates that work to
+parallel subagents. The subagents propose, test and review hypotheses, including ones on the SEC EDGAR
+[earnings, fundamentals and insider data](docs/architecture/edgar-pit-data.md), within the subscription limits.
+Trading never waits for the lead agent.
 
 Its freedom stops at fixed boundaries. Every order passes the deterministic risk engine and signed-intent path.
 Agents and models propose and never authorize. Only the operator changes risk policy, clears a halt or uses the

@@ -96,6 +96,14 @@ def test_config_defaults_and_env_names(tmp_path: Path) -> None:
     names = env_names()
     assert "LAT_AGENTS_PROVIDERS" in names and "LAT_AGENTS_STORE" in names and "LAT_AGENTS_MODEL_CODEX" in names
     assert all(n.startswith("LAT_AGENTS_") for n in names)
+    assert cfg.planner == "rules" and cfg.max_per_provider == 1  # the standalone crew loop keeps its behaviour
+    assert (cfg.window_runs_per_provider, cfg.window_hours, cfg.lead_reserve_runs) == (8, 5, 2)
+    assert (cfg.lead_max_parallel, cfg.lead_per_provider, cfg.lead_delegations_per_cycle) == (3, 2, 4)
+    assert "LAT_AGENTS_LEAD_BRIEFING" in names and "LAT_AGENTS_WINDOW_RUNS_PER_PROVIDER" in names
+    for bad in ({"LAT_AGENTS_PLANNER": "llm"}, {"LAT_AGENTS_LEAD_MAX_PARALLEL": "9"},
+                {"LAT_AGENTS_LEAD_MIN_WAKE_MIN": "60", "LAT_AGENTS_LEAD_MAX_WAKE_MIN": "30"}):
+        with pytest.raises(ConfigError):
+            CrewConfig.from_env(bad, project_root=tmp_path)
 
 
 def test_config_from_env_overrides_and_errors(tmp_path: Path) -> None:

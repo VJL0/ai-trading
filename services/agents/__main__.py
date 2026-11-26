@@ -1,4 +1,5 @@
-"""``python -m services.agents {run [--once] [--fake] | status | notes | enqueue | providers}``.
+"""``python -m services.agents {run [--once] [--fake] | lead [--fake] [--budget-s N] | status | notes | enqueue |
+providers}``.
 
 Research crew CLI. It never starts the API, never trades and never touches the trading ledger.
 """
@@ -74,6 +75,64 @@ def cmd_run(args: argparse.Namespace) -> int:
     return 0
 
 
+def _with_project_root(cfg: CrewConfig, fake: bool, fn: Any) -> Any:
+    previous_root = os.environ.get("LAT_PROJECT_ROOT")
+    if not fake:
+        # QuantLab's child process resolves its Settings from the environment.
+        os.environ["LAT_PROJECT_ROOT"] = str(cfg.project_root.resolve())
+    try:
+        return fn()
+    finally:
+        if not fake:
+            if previous_root is None:
+                os.environ.pop("LAT_PROJECT_ROOT", None)
+            else:
+                os.environ["LAT_PROJECT_ROOT"] = previous_root
+
+
+def cmd_lead(args: argparse.Namespace) -> int:
+    """One lead cycle: a lead turn, validated delegations, then parallel subagent waves until ``--budget-s``."""
+    import signal
+    from dataclasses import replace
+
+    from .crew import Crew, build_providers, utcnow
+    from .lead import LeadAgent, read_briefing
+    from .store import SingleInstanceLock
+
+    base = _config(args)
+    cfg = replace(base, planner="lead", max_concurrent=base.lead_max_parallel, max_per_provider=base.lead_per_provider)
+    store = CrewStore(cfg.store_path)
+    if args.fake:
+        from .fake import demo_experiment_runner, demo_provider, fake_mcp_spec
+
+        providers: dict[Provider, Any] = {p: demo_provider(p) for p in cfg.providers}
+        crew = Crew(cfg, store, providers, experiment_runner=demo_experiment_runner, mcp_spec_factory=fake_mcp_spec)
+    else:
+        crew = Crew(cfg, store, build_providers(cfg))
+    briefing_path = Path(args.briefing).resolve() if args.briefing else cfg.lead_briefing
+    previous: dict[int, Any] = {}
+    for sig in (signal.SIGINT, signal.SIGTERM):
+        previous[sig] = signal.signal(sig, lambda signum, frame: crew.stop())
+
+    def run() -> dict[str, Any]:
+        with SingleInstanceLock(cfg.lock_path):
+            recovered = store.recover(utcnow())
+            result = LeadAgent(crew, briefing=read_briefing(briefing_path), budget_s=args.budget_s).cycle()
+            return {"recovered": recovered, **result}
+
+    try:
+        result = _with_project_root(cfg, args.fake, run)
+    except CrewLocked as exc:
+        _emit({"error": str(exc)}, True)
+        return 4
+    finally:
+        for sig, handler in previous.items():
+            signal.signal(sig, handler)
+    _emit({"mode": "FAKE (simulated providers, nothing evaluated)" if args.fake else "CLI subscriptions",
+           "store": str(cfg.store_path), "lead_cycle": result}, args.json, None)
+    return 0
+
+
 def _status(cfg: CrewConfig, store: CrewStore) -> dict[str, Any]:
     from .crew import utcnow
 
@@ -85,8 +144,15 @@ def _status(cfg: CrewConfig, store: CrewStore) -> dict[str, Any]:
         st["daily_cap"] = cfg.daily_runs_per_provider
         providers[p.value] = st
     runs = store.runs_since(day_start(now))
+    from .crew import Crew
+
+    window = Crew(cfg, store, {}).remaining_runs(now)
+    for name, st in providers.items():
+        st.update({k: window.get(name, {}).get(k) for k in ("runs_in_window", "window_cap", "window_hours")})
+    journal = store.notes(kind="lead_journal", limit=1)
     return {"store": str(cfg.store_path), "asof": now.isoformat(), "queue": store.counts(),
-            "providers": providers,
+            "providers": providers, "planner": cfg.planner,
+            "lead_last_turn": journal[0].public() if journal else None,
             "runs_today": [{k: r.get(k) for k in ("id", "task_id", "provider", "started", "ended", "outcome")}
                            for r in runs[-20:]],
             "last_notes": [n.public() for n in store.notes(limit=5)],
@@ -199,13 +265,19 @@ def build_parser() -> argparse.ArgumentParser:
     run.add_argument("--fake", action="store_true",
                      help="simulated providers and experiment runner (demo; separate store, nothing evaluated)")
     run.set_defaults(fn=cmd_run)
+    lead = sub.add_parser("lead", parents=[common], help="one lead-agent cycle: decide, delegate, run subagents")
+    lead.add_argument("--fake", action="store_true",
+                      help="simulated providers and experiment runner (demo; separate store, nothing evaluated)")
+    lead.add_argument("--briefing", help="trading briefing JSON (default LAT_AGENTS_LEAD_BRIEFING)")
+    lead.add_argument("--budget-s", type=int, default=None, help="wall-clock budget for the whole cycle (seconds)")
+    lead.set_defaults(fn=cmd_lead)
     sub.add_parser("status", parents=[common], help="queue, provider cooldowns, today's runs").set_defaults(fn=cmd_status)
     notes = sub.add_parser("notes", parents=[common], help="crew notes, newest first")
     notes.add_argument("--kind")
     notes.add_argument("--limit", type=int, default=20)
     notes.set_defaults(fn=cmd_notes)
     enq = sub.add_parser("enqueue", parents=[common], help="enqueue a task by hand (idempotent per payload)")
-    enq.add_argument("kind", choices=[k.value for k in TaskKind])
+    enq.add_argument("kind", choices=[k.value for k in TaskKind if k is not TaskKind.LEAD])
     enq.add_argument("--payload", help="JSON object")
     enq.set_defaults(fn=cmd_enqueue)
     sub.add_parser("providers", parents=[common], help="CLI availability (no quota spent)").set_defaults(

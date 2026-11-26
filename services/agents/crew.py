@@ -39,6 +39,7 @@ from .contracts import (
 )
 from .planner import TaskRequest, gather_state, plan, used_slots
 from .schemas import (
+    AnalysisOutput,
     HypothesisOutput,
     ImprovementOutput,
     MarketAnalysisOutput,
@@ -56,6 +57,7 @@ McpSpecFactory = Callable[[Path, str], McpServerSpec]
 
 AGENT_EXPERIMENTS_PER_HOUR_FALLBACK = 6
 SHUTDOWN_GRACE_S = 5.0
+MIN_RUN_S = 60
 
 
 def utcnow() -> datetime:
@@ -131,6 +133,7 @@ class Crew:
         self.mcp_spec_factory = mcp_spec_factory or default_mcp_spec
         self._per_hour = experiments_per_hour
         self._stop = threading.Event()
+        self.deadline: datetime | None = None  # set by the lead cycle: no run starts that could not finish by then
 
     # -------------------------------------------------------------------------------------------- helpers
     @property
@@ -168,26 +171,61 @@ class Crew:
                 self.store.add_note("event", {"event": "PROVIDER_ENABLED", "reason": clean(reason, 200)[0]}, now=now,
                                     provider=p, evidence_status=CREW_EVENT)
 
-    def choose_provider(self, task: TaskRow, now: datetime, busy: set[Provider] | None = None) -> Provider | None:
-        """Available, not cooling down, under the daily cap, not excluded (the author of a reviewed hypothesis),
-        not already running; prefer one that has not failed this task, then the fewest runs today, then config order."""
-        busy = busy or set()
+    def choose_provider(self, task: TaskRow, now: datetime,
+                        busy: Mapping[Provider, int] | set[Provider] | None = None) -> Provider | None:
+        ranked = self.eligible_providers(task, now, busy)
+        return ranked[0] if ranked else None
+
+    def eligible_providers(self, task: TaskRow, now: datetime,
+                           busy: Mapping[Provider, int] | set[Provider] | None = None) -> list[Provider]:
+        """Available, not cooling down, under the daily and rolling-window caps, not excluded (the author of a
+        reviewed hypothesis), with a free per-provider slot; prefer one that has not failed this task, then the
+        task's preferred provider, then the fewest runs today, then config order.
+
+        Subscription limits: delegated work never uses the last ``LEAD_RESERVE_RUNS`` runs of a provider's day or
+        window, so the lead agent can always take its next turn; a lead turn may use the reserve."""
+        in_flight: dict[Provider, int] = (
+            dict.fromkeys(busy, 1) if isinstance(busy, set) else dict(busy or {}))
+        reserve = 0 if task.kind is TaskKind.LEAD or self.config.planner != "lead" else self.config.lead_reserve_runs
+        prefer = str(task.payload.get("prefer_provider") or "")
         failed: dict[str, int] = {}
         for r in self.store.task_runs(task.id):
             if r.get("outcome") in (RunOutcome.INVALID_OUTPUT.value, RunOutcome.ERROR.value, RunOutcome.TIMEOUT.value):
                 failed[r["provider"]] = failed.get(r["provider"], 0) + 1
-        cands: list[tuple[int, int, int, Provider]] = []
+        cands: list[tuple[int, int, int, int, Provider]] = []
         for i, p in enumerate(self.provider_order()):
-            if p in busy or p == task.exclude_provider:
+            if in_flight.get(p, 0) >= self.config.max_per_provider or p == task.exclude_provider:
                 continue
             st = self.store.provider_state(p)
             if st.disabled_reason or st.cooling(now):
                 continue
             today = self.store.runs_today(p, now)
-            if today >= self.config.daily_runs_per_provider:
+            if today >= self.config.daily_runs_per_provider - reserve:  # launched runs are already recorded
                 continue
-            cands.append((failed.get(p.value, 0), today, i, p))
-        return min(cands)[3] if cands else None
+            if self.config.window_runs_per_provider:
+                window = self.store.runs_in_window(p, now, self.config.window)
+                if window >= self.config.window_runs_per_provider - reserve:
+                    continue
+            cands.append((failed.get(p.value, 0), 0 if p.value == prefer else 1, today, i, p))
+        return [c[4] for c in sorted(cands)]
+
+    def remaining_runs(self, now: datetime) -> dict[str, dict[str, Any]]:
+        """Per-provider headroom under the daily and rolling-window caps (for the lead's briefing and status)."""
+        out: dict[str, dict[str, Any]] = {}
+        for p in self.config.providers:
+            st = self.store.provider_state(p)
+            today = self.store.runs_today(p, now)
+            window = self.store.runs_in_window(p, now, self.config.window)
+            daily_left = max(0, self.config.daily_runs_per_provider - today)
+            window_left = (max(0, self.config.window_runs_per_provider - window)
+                           if self.config.window_runs_per_provider else daily_left)
+            usable = 0 if st.disabled_reason or st.cooling(now) else min(daily_left, window_left)
+            out[p.value] = {"runs_today": today, "daily_cap": self.config.daily_runs_per_provider,
+                            "runs_in_window": window, "window_cap": self.config.window_runs_per_provider,
+                            "window_hours": self.config.window_hours, "usable_now": usable,
+                            "cooldown_until": st.cooldown_until.isoformat() if st.cooling(now) and st.cooldown_until
+                            else None, "disabled": bool(st.disabled_reason)}
+        return out
 
     def _enqueue(self, req: TaskRequest, now: datetime) -> str | None:
         tid, created = self.store.enqueue(req.kind, req.key, req.payload, now=now, priority=req.priority,
@@ -198,6 +236,8 @@ class Crew:
 
     # ------------------------------------------------------------------------------------------------ tick
     def plan(self, now: datetime) -> list[str]:
+        if self.config.planner == "lead":
+            return []  # the lead agent decides what to work on; nothing is enqueued by rule
         ledger = read_ledger_digest(self.root, now)
         state = gather_state(self.store, self.root, ledger, now, self.per_hour)
         return [tid for req in plan(state, self.config, now) if (tid := self._enqueue(req, now))]
@@ -212,13 +252,18 @@ class Crew:
         if not runnable:
             res.idle_reason = "no runnable task"
             return res
-        busy: set[Provider] = set()
+        busy: dict[Provider, int] = {}
         flights: list[_InFlight] = []
         reserved_slots = 0
         waiting_for_slots = False
         for task in runnable:
             if self._stop.is_set() or len(flights) >= self.config.max_concurrent:
                 break
+            if self._time_left(self.clock()) < MIN_RUN_S:
+                res.idle_reason = "deadline reached"
+                break
+            if task.kind is TaskKind.LEAD:
+                continue  # lead turns run only through LeadAgent.cycle
             p = self.choose_provider(task, self.clock(), busy)
             if p is None:
                 continue
@@ -238,11 +283,11 @@ class Crew:
             flight = self._launch(claimed, p, claimed_at)
             if flight is None:
                 continue
-            busy.add(p)
+            busy[p] = busy.get(p, 0) + 1
             flights.append(flight)
             reserved_slots += slots
         if not flights:
-            res.idle_reason = ("waiting for experiment headroom" if waiting_for_slots else
+            res.idle_reason = res.idle_reason or ("waiting for experiment headroom" if waiting_for_slots else
                                "no provider available (cooldown, daily cap, disabled or excluded)")
             return res
         for f in flights:
@@ -259,7 +304,7 @@ class Crew:
             inv = Invocation(provider=provider, prompt=prompt,
                              output_schema=output_schema(task.kind, specs_per_task=self._spec_budget(task)),
                              mcp_server=self.mcp_spec_factory(self.root, f"crew-{provider.value}"),
-                             workdir=workdir, timeout_s=self.config.run_timeout_s, max_turns=self.config.max_turns,
+                             workdir=workdir, timeout_s=self._run_timeout(now), max_turns=self.config.max_turns,
                              model=self.config.model_for(provider))
         except Exception as exc:
             log.exception("could not prepare run for task %s", task.id)
@@ -283,6 +328,12 @@ class Crew:
         th = threading.Thread(target=work, name=f"crew-{provider.value}-{run_id}", daemon=True)
         th.start()
         return _InFlight(task, provider, run_id, inv, th, holder)
+
+    def _time_left(self, now: datetime) -> float:
+        return float("inf") if self.deadline is None else (self.deadline - now).total_seconds()
+
+    def _run_timeout(self, now: datetime) -> int:
+        return int(max(MIN_RUN_S, min(self.config.run_timeout_s, self._time_left(now))))
 
     def _spec_budget(self, task: TaskRow) -> int:
         slots = task.payload.get("slots")
@@ -400,6 +451,15 @@ class Crew:
                 self.store.add_note("data_request", {"request": gap, "source": "market_analysis"}, now=now,
                                     task_id=task.id, provider=provider)
             return {"seeds": seeds, "observations": len(out.observations)}
+        if isinstance(out, AnalysisOutput):
+            body = clean_tree(out.model_dump(mode="json"), 2000)
+            body["delegation"] = clean_tree(task.payload.get("delegation") or {}, 600)
+            self.store.add_note("analysis", body, now=now, task_id=task.id, provider=provider, mechanism=mech)
+            for gap in body["data_gaps"]:
+                self.store.add_note("data_request", {"request": gap, "source": "analysis"}, now=now,
+                                    task_id=task.id, provider=provider)
+            return {"answer": body["answer"][:600], "confidence": out.confidence.value,
+                    "recommendations": body["recommendations"][:6], "follow_ups": body["follow_ups"][:6]}
         if isinstance(out, ImprovementOutput):
             for prop in out.proposals:
                 self.store.add_note("improvement", clean_tree(prop.model_dump(mode="json"), 2000), now=now, task_id=task.id,

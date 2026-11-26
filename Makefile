@@ -151,7 +151,7 @@ research: ## start the autonomous local research service (no execution authority
 research-status: ## inspect recorded research, validation screens and worker failures
 	$(PY) -m services.research.autonomous --status
 
-.PHONY: agents agents-once agents-status
+.PHONY: agents agents-once agents-status agents-lead agents-lead-fake
 agents: ## start the research crew (Claude Code + Codex on your own sign-in; research only, no execution authority)
 	$(PY) scripts/supervisor.py start agents
 
@@ -160,6 +160,12 @@ agents-once: ## plan and run at most one research-crew task in the foreground, t
 
 agents-status: ## research crew queue, provider cooldowns, today's runs and recent notes
 	$(PY) -m services.agents status
+
+agents-lead: ## one lead-agent cycle by hand (decide, delegate, run subagents); the autopilot normally launches it
+	$(PY) -m services.agents lead --budget-s 2700
+
+agents-lead-fake: ## demo lead cycle with simulated providers (separate store, no quota, nothing evaluated)
+	$(PY) -m services.agents lead --fake --budget-s 600
 
 .PHONY: autopilot autopilot-once autopilot-status autopilot-plan
 autopilot: ## start the autonomous daily orchestrator (pre-open checks + PAPER session, after-close research; needs LAT_AUTOPILOT_ENABLED=true)

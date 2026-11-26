@@ -21,8 +21,12 @@ Only the operator CLI can clear a halt under the existing authentication and rec
 - `make agents` / `make agents-once` / `make agents-status`: the research crew (Claude Code + Codex on your own
   sign-in; research only, no execution authority). See [research crew](../architecture/agent-crew.md).
 - `make autopilot` / `make autopilot-once` / `make autopilot-status` / `make autopilot-plan`: the autonomous daily
-  orchestrator (PAPER session at the open, research crew and quantlab after the close, daily report; needs
-  `LAT_AUTOPILOT_ENABLED=true`). See [autopilot runbook](autopilot.md) and [design](../architecture/autopilot.md).
+  orchestrator (PAPER session at the open, quantlab after the close, daily report; needs
+  `LAT_AUTOPILOT_ENABLED=true`). Through the day it wakes the [lead agent](../architecture/lead-agent.md), which
+  delegates research and analysis to parallel subagents. See [autopilot runbook](autopilot.md) and
+  [design](../architecture/autopilot.md).
+- `make agents-lead` / `make agents-lead-fake`: one lead-agent cycle by hand, or a simulated demo cycle that spends
+  no quota.
 - `make stop`: stops local processes. Broker-held orders remain at the broker.
 - `make reconcile`: reconcile the ledger before proceeding after unexpected shutdowns.
 - `make validate`: the complete local validation (lint, types, contracts, tests, startup smoke, LEAN, dependency

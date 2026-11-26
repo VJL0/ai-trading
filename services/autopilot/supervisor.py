@@ -19,6 +19,10 @@ Daily sequence for a trading day D (New York time, early closes included; holida
    tick, each child bounded by its timeout and by the next pre-open. A day whose research never ran is superseded
    by the next day's run (the steps are incremental): research catches up once, never per missed day.
 4. REPORT: a partial report after pre-open and each intraday check, the final one after research.
+5. LEAD (``services.autopilot.lead``): from the pre-open until the research window ends, one lead-agent cycle at a
+   time runs as a background child. The lead decides what to investigate or research and delegates it to parallel
+   subagents; it replaces the fixed crew ticks. Its only effect on trading is a validated fail-safe request (stand
+   down today, request a halt). Steps 1-4 never wait for it and run the same when it is unavailable.
 
 Any active halt (ENTRIES scope or the operator's ALL-scope kill switch) puts the autopilot into stand-down: no
 session request and no research step until a later read-only check shows the operator has cleared it.
@@ -53,7 +57,33 @@ from .daycal import (
     session_today,
     trading_day,
 )
-from .research import CREW_ARGV, CREW_LOCKED_EXIT, Runner, StepOutcome, holdout_argv, quantlab_argv, read_json, run_child
+from .lead import (
+    EVIDENCE_KINDS,
+    K_LEAD,
+    K_LEAD_ACTIONS,
+    LEAD,
+    LEAD_ACTION_JOB,
+    PERFORMANCE_KEYS,
+    LeadState,
+    compact_health,
+    compact_report,
+    compact_risk,
+    compact_session,
+    lead_due,
+    parse_cycle,
+    write_briefing,
+)
+from .research import (
+    CREW_ARGV,
+    CREW_LOCKED_EXIT,
+    Runner,
+    StepOutcome,
+    holdout_argv,
+    lead_argv,
+    quantlab_argv,
+    read_json,
+    run_child,
+)
 from .research import summarize_crew as _summarize_crew
 from .store import TERMINAL, Store
 
@@ -150,6 +180,8 @@ class Autopilot:
         self.simulated_feed = simulated_feed
         self.ensure_api = ensure_api
         self.daily_job_factory = daily_job_factory
+        self._lead_task: asyncio.Future[StepOutcome] | None = None
+        self._lead_day: str | None = None
 
     # ================================================================== decide (pure: clock + calendar + store)
     def decide(self, now: datetime) -> Plan:
@@ -175,6 +207,7 @@ class Autopilot:
                                                                     "cleared the halt"))
         if phase is Phase.QUIET and td is not None:
             self._decide_research(plan, td, now, sd)
+        self._decide_lead(plan, phase, td, now, sd)
         self._decide_reports(plan, now)
         if not plan.actions:
             plan.notes.append("nothing due now")
@@ -242,6 +275,33 @@ class Autopilot:
             plan.actions.append(Action(job.upper(), d, f"after-close research step {job} for {d}"))
             return
 
+    def lead_state(self) -> LeadState:
+        return LeadState.load(self.store.get(K_LEAD), _ts)
+
+    def lead_running(self) -> bool:
+        return self._lead_task is not None and not self._lead_task.done()
+
+    def _decide_lead(self, plan: Plan, phase: Phase, td: TradingDay | None, now: datetime, sd: Any) -> None:
+        cfg = self.cfg
+        if not cfg.lead:
+            return
+        if td is None or phase is Phase.CLOSED:
+            return
+        if self.lead_running():
+            plan.notes.append(f"lead cycle for {self._lead_day} in progress (background child)")
+            return
+        if sd:
+            plan.notes.append("lead agent paused: stand-down until the operator clears the halt")
+            return
+        due, reason = lead_due(self.lead_state(), day=td.day.isoformat(), now=now,
+                               evidence_seq=self.store.last_seq(EVIDENCE_KINDS, exclude_jobs=(LEAD, LEAD_ACTION_JOB)),
+                               max_cycles=cfg.lead_max_cycles, min_interval=timedelta(minutes=cfg.lead_min_interval_min),
+                               max_interval=timedelta(minutes=cfg.lead_max_interval_min))
+        if due:
+            plan.actions.append(Action("LEAD", td.day.isoformat(), f"lead-agent cycle: {reason}"))
+        else:
+            plan.notes.append(reason)
+
     def _decide_reports(self, plan: Plan, now: datetime) -> None:
         by_day: dict[str, dict[str, str]] = {}
         for j in self.store.jobs():
@@ -267,9 +327,18 @@ class Autopilot:
 
     # ================================================================== tick / run
     async def tick(self) -> list[dict[str, Any]]:
+        results: list[dict[str, Any]] = []
+        try:
+            polled = await self._poll_lead()
+        except AuthorityError:
+            raise
+        except Exception as exc:  # a lead result must never stop the deterministic loop
+            self._alert(self.clock.now(), self._lead_day, LEAD, f"lead result handling failed: {_err(exc)[1]}")
+            polled = None
+        if polled is not None:
+            results.append({"kind": "LEAD_RESULT", "day": self._lead_day, "result": polled})
         now = self.clock.now()
         plan = self.decide(now)
-        results: list[dict[str, Any]] = []
         for action in plan.actions:
             at = self.clock.now()  # wall clock re-read before every action
             try:
@@ -306,6 +375,7 @@ class Autopilot:
                 with contextlib.suppress(TimeoutError):  # wakes early on stop; the wall clock is re-read
                     await asyncio.wait_for(stop.wait(), timeout=self.cfg.tick_s)
         finally:
+            await self._finish_lead(wait=once and not stop.is_set())
             self.store.event(self.clock.now(), "STOP", "autopilot stopped")
 
     async def _execute(self, a: Action, now: datetime) -> dict[str, Any]:
@@ -328,6 +398,11 @@ class Autopilot:
         if a.kind == "REPORT":
             assert a.day is not None
             return await self._report(a.day, now, final=True)
+        if a.kind == "LEAD":
+            assert a.day is not None
+            td = trading_day(date.fromisoformat(a.day))
+            assert td is not None
+            return await self._lead_launch(td, now)
         assert a.day is not None
         td = trading_day(date.fromisoformat(a.day))
         assert td is not None
@@ -721,6 +796,8 @@ class Autopilot:
 
     async def _crew(self, td: TradingDay, now: datetime) -> dict[str, Any]:
         d = td.day.isoformat()
+        if self.cfg.lead:
+            return self._skip(now, d, CREW, "the lead agent decides and delegates the crew's work (LAT_AUTOPILOT_LEAD)")
         if self.cfg.crew_ticks == 0:
             return self._skip(now, d, CREW, "LAT_AUTOPILOT_CREW_TICKS=0")
         row = self.store.job(d, CREW)
@@ -857,6 +934,199 @@ class Autopilot:
         self.store.event(now, "DECISION", f"research for {day} superseded ({n} open steps)", day=day)
         return {"superseded": n}
 
+
+    # ================================================================== lead agent (background child)
+    async def _read_optional(self, name: str, args: dict[str, Any] | None, errors: list[str]) -> dict[str, Any]:
+        try:
+            return await self._call(name, args)
+        except AuthorityError:
+            raise
+        except Exception as exc:
+            errors.append(f"{name}: {_err(exc)[1]}")
+            return {}
+
+    async def _lead_briefing(self, td: TradingDay, now: datetime) -> dict[str, Any]:
+        """Read-only snapshot for the lead: tool outputs (with execution labels) plus the autopilot's own state."""
+        d = td.day.isoformat()
+        errors: list[str] = []
+        status = await self._read_optional("get_session_status", None, errors)
+        risk = await self._read_optional("get_risk_status", None, errors)
+        perf = await self._read_optional("get_performance", None, errors)
+        health = await self._read_optional("get_system_health", None, errors)
+        feed = await self._read_optional("get_feed_quality", None, errors)
+        sid = _d(_d(self.store.job(d, PREOPEN) or {}).get("detail")).get("session_id")
+        rep = await self._read_optional("get_session_report", {"session_id": sid}, errors) if sid else {}
+        outputs = [o for o in (status, risk, perf, health, feed, rep) if o]
+        phase, _ = phase_at(now, lead_min=self.cfg.preopen_lead_min, grace_min=self.cfg.start_grace_min,
+                            settle_min=self.cfg.settle_min)
+        health_c, feed_c = compact_health(health, feed)
+        state = self.lead_state()
+        nxt = next_session(td.day)
+        own = (LEAD, LEAD_ACTION_JOB)
+        return {
+            "asof": now.isoformat(), "phase": phase.value, "trading_day": td.public(),
+            "next_session": nxt.public() if nxt else None,
+            "provenance": {"execution_labels": sorted({str(o["execution_label"]) for o in outputs
+                                                       if o.get("execution_label")}),
+                           "is_simulated": any(bool(o.get("is_simulated")) for o in outputs) or self._simulated(d)},
+            "standdown": self.store.get(K_STANDDOWN),
+            "jobs": [{"job": j["job"], "status": j["status"], "attempts": j["attempts"],
+                      "detail": {k: v for k, v in _d(j["detail"]).items() if k not in ("cycles",)}}
+                     for j in self.store.jobs(d) if j["job"] != LEAD],
+            "alerts": [{k: e[k] for k in ("ts", "job", "message")} for e in self.store.events(day=d, kind="ALERT",
+                                                                                              limit=10)],
+            "recent_events": [{k: e[k] for k in ("ts", "kind", "job", "message")}
+                              for e in self.store.events(limit=40) if e["job"] not in own][-15:],
+            "session": compact_session(status) if status else None,
+            "risk": compact_risk(risk) if risk else None,
+            "performance": {k: perf.get(k) for k in PERFORMANCE_KEYS} if perf else None,
+            "session_report": compact_report(rep) if rep else None,
+            "health": health_c if health else None, "feed": feed_c if feed else None,
+            "lead_limits": {"turn": (state.cycles if state.day == d else 0) + 1, "max_turns": self.cfg.lead_max_cycles,
+                            "session_actions_enabled": self.cfg.lead_session_actions,
+                            "session_actions_taken_today": _l(_d(self.store.get(K_LEAD_ACTIONS, {})).get(d)),
+                            "min_interval_min": self.cfg.lead_min_interval_min,
+                            "max_interval_min": self.cfg.lead_max_interval_min},
+            "errors": errors[:10],
+        }
+
+    async def _lead_launch(self, td: TradingDay, now: datetime) -> dict[str, Any]:
+        d = td.day.isoformat()
+        if self.lead_running():
+            return {"deferred": "a lead cycle is already running"}
+        briefing = await self._lead_briefing(td, now)
+        path = write_briefing(self.cfg.lead_briefing_path, briefing)
+        now = self.clock.now()
+        prev = self.lead_state()
+        cycles = (prev.cycles if prev.day == d else 0) + 1
+        state = LeadState(d, cycles, now, None,
+                          self.store.last_seq(EVIDENCE_KINDS, exclude_jobs=(LEAD, LEAD_ACTION_JOB)))
+        self.store.put(now, K_LEAD, state.dump())
+        self.store.set_job(now, d, LEAD, "RUNNING", attempt=True,
+                           detail={"cycles_launched": cycles, "last_launch": now.isoformat()})
+        self.store.event(now, "ACTION", f"lead-agent cycle {cycles}/{self.cfg.lead_max_cycles} launched (background "
+                                        "child; trading never waits for it)", day=d, job=LEAD,
+                         data={"briefing": str(path), "errors": briefing["errors"]})
+        argv = lead_argv(self.cfg.lead_timeout_s, path, fake=self.cfg.lead_fake)
+        self._lead_day = d
+        self._lead_task = asyncio.ensure_future(self.runner(argv, self.cfg.project_root, self.cfg.lead_timeout_s + 120))
+        return {"launched": cycles}
+
+    async def _poll_lead(self) -> dict[str, Any] | None:
+        task = self._lead_task
+        if task is None or not task.done():
+            return None
+        self._lead_task = None
+        d = self._lead_day or et_date(self.clock.now()).isoformat()
+        now = self.clock.now()
+        try:
+            out = task.result()
+        except asyncio.CancelledError:
+            self.store.set_job(now, d, LEAD, "PENDING", detail={"last_error": "cancelled"})
+            return {"cancelled": True}
+        except AuthorityError:
+            raise
+        except Exception as exc:
+            out = StepOutcome((), 1, 0.0, f"runner raised {type(exc).__name__}")
+        summary = parse_cycle(out, locked_exit=CREW_LOCKED_EXIT)
+        state = self.lead_state()
+        minutes = summary.next_wake_minutes if summary.next_wake_minutes is not None else self.cfg.lead_max_interval_min
+        minutes = max(self.cfg.lead_min_interval_min, min(self.cfg.lead_max_interval_min, minutes))
+        if state.day == d:
+            self.store.put(now, K_LEAD, LeadState(state.day, state.cycles, state.last_launch,
+                                                  now + timedelta(minutes=minutes), state.evidence_seq).dump())
+        row = self.store.job(d, LEAD)
+        history = [*_l(_d(row["detail"] if row else {}).get("cycles")), {"at": now.isoformat(), **summary.public()}]
+        self.store.set_job(now, d, LEAD, "PENDING", detail={"cycles": history[-12:], "last": summary.public(),
+                                                           "next_wake": (now + timedelta(minutes=minutes)).isoformat()})
+        self.store.event(now, "RESULT", f"lead cycle: {summary.lead_outcome or summary.error} via "
+                                        f"{summary.lead_provider or '-'}; {len(summary.delegated)} delegated, "
+                                        f"{len(summary.ran)} subagent runs, next turn in {minutes} min",
+                         day=d, job=LEAD, data=summary.public())
+        if not summary.ok or summary.lead_outcome not in ("OK", None):
+            self._alert(now, d, LEAD, f"lead agent did not complete a turn ({summary.lead_outcome or summary.error}); "
+                                      "trading and the deterministic research steps continue without it")
+        actions = []
+        for sa in summary.session_actions if summary.ok and summary.lead_outcome == "OK" else ():
+            actions.append(await self._lead_session_action(d, sa, self.clock.now()))
+        return {**summary.public(), "session_action_results": actions}
+
+    async def _finish_lead(self, *, wait: bool) -> None:
+        task = self._lead_task
+        if task is None:
+            return
+        if wait:
+            with contextlib.suppress(Exception):
+                await asyncio.wait({task})
+            await self._poll_lead()
+            return
+        if not task.done():
+            task.cancel()
+            with contextlib.suppress(asyncio.CancelledError, Exception):
+                await task
+            self.store.event(self.clock.now(), "RESULT", "lead cycle cancelled: the autopilot is stopping (its "
+                                                          "subagent tasks return to the queue)", day=self._lead_day,
+                             job=LEAD)
+        self._lead_task = None
+
+    async def _lead_session_action(self, d: str, sa: Mapping[str, str], now: datetime) -> dict[str, Any]:
+        """Execute one validated fail-safe request of the lead. Never starts, resumes or enlarges trading."""
+        action, reason = sa["action"], sa["reason"]
+
+        def refuse(why: str) -> dict[str, Any]:
+            self.store.event(now, "REFUSED", f"lead request {action} refused: {why}", day=d, job=LEAD_ACTION_JOB,
+                             data={"reason": reason})
+            return {"action": action, "refused": why}
+
+        if not self.cfg.lead_session_actions:
+            return refuse("lead session requests are disabled (LAT_AUTOPILOT_LEAD_SESSION_ACTIONS=false)")
+        taken = _d(self.store.get(K_LEAD_ACTIONS, {}))
+        if action in _l(taken.get(d)):
+            return refuse("already taken for this trading day")
+        today = session_today(now)
+        if action == "stand_down_today":
+            td = trading_day(date.fromisoformat(d))
+            if today is None or td is None or today.day != td.day:
+                return refuse("the lead turn was not for today's session")
+            if now >= today.close:
+                return refuse("today's session is over")
+            res = await self._stand_down_today(today, reason, now)
+            if "refused" in res:
+                return refuse(str(res["refused"]))
+        elif action == "request_halt":
+            await self._call("request_halt", {"reason": f"lead agent: {reason}"[:200]})
+            res = {"halt_requested": True}
+        else:
+            return refuse("unknown request")
+        self.store.put(now, K_LEAD_ACTIONS, {k: v for k, v in taken.items() if k >= d} | {d: [*_l(taken.get(d)), action]})
+        self.store.event(now, "ACTION", f"lead request {action} executed: {reason}", day=d, job=LEAD_ACTION_JOB,
+                         data=res)
+        self._alert(now, d, LEAD_ACTION_JOB, f"lead agent: {action} ({reason})", dedupe=False)
+        if action == "request_halt":
+            await self._standdown_check(self.clock.now())
+        return {"action": action, **res}
+
+    async def _stand_down_today(self, td: TradingDay, reason: str, now: datetime) -> dict[str, Any]:
+        d = td.day.isoformat()
+        job = self.store.job(d, PREOPEN)
+        status = job["status"] if job else None
+        if status is None or status == "PENDING":
+            self.store.set_job(now, d, PREOPEN, "SKIPPED", detail={"reason": f"lead agent stand-down: {reason}"})
+            return {"session": "not requested today"}
+        if status in ("RUNNING", "UNKNOWN"):
+            return {"refused": "the session start outcome is still being resolved; decide again next turn"}
+        sid = _d(job["detail"] if job else {}).get("session_id")
+        if status != "DONE" or not sid:
+            return {"refused": f"no autopilot session today (pre-open {status})"}
+        snapshot = await self._call("get_session_status")
+        active = _d(snapshot.get("active"))
+        if active.get("session_id") != sid or active.get("state") not in ACTIVE_STATES:
+            return {"refused": "today's autopilot session is not active"}
+        if active.get("requested_by") != REQUESTED_BY:
+            return {"refused": "the active session was not requested by the autopilot"}
+        res = await self._call("stop_session", {"session_id": sid, "reason": f"lead agent: {reason}"[:200]})
+        return {"session": "stop requested", "session_id": sid, "outcome": _d(res).get("outcome")}
+
     # ================================================================== report
     async def _report(self, day: str, now: datetime, *, final: bool) -> dict[str, Any]:
         errors: list[str] = []
@@ -930,6 +1200,7 @@ def status_snapshot(cfg: AutopilotConfig, store: Store | None, now: datetime, *,
         "standdown": store.get(K_STANDDOWN), "last_tick": store.get(K_LAST_TICK),
         "last_intraday_check": store.get(K_LAST_CHECK),
         "holdout_attempts": store.get(K_HOLDOUT_ATTEMPTS, {}),
+        "lead": {"enabled": cfg.lead, "state": store.get(K_LEAD), "actions": store.get(K_LEAD_ACTIONS, {})},
         "jobs": [{k: j[k] for k in ("day", "job", "status", "attempts", "updated_at")}
                  for d in days for j in store.jobs(d)],
         "recent_alerts": [{k: e[k] for k in ("ts", "day", "job", "message")} for e in store.events(kind="ALERT", limit=10)],

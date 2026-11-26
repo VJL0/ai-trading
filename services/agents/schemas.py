@@ -16,7 +16,7 @@ from typing import Any, Literal
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from .contracts import TaskKind
+from .contracts import SessionAction, TaskKind
 from .mechanisms import KEYS as MECHANISM_KEYS
 
 _TXT = 2000
@@ -92,11 +92,66 @@ class ImprovementOutput(_Strict):
     proposals: list[Proposal] = Field(max_length=6, description="proposals for the operator (never applied by the crew)")
 
 
+class Confidence(StrEnum):
+    LOW = "LOW"
+    MEDIUM = "MEDIUM"
+    HIGH = "HIGH"
+
+
+class AnalysisOutput(_Strict):
+    """A lead-assigned open question: read-only investigation, advisory findings."""
+
+    answer: str = Field(max_length=_TXT, description="direct answer to the assigned objective")
+    findings: list[str] = Field(max_length=_LIST, description="evidence-backed findings (cite tool outputs or digest rows)")
+    confidence: Confidence = Field(description="how well the available evidence supports the answer")
+    recommendations: list[str] = Field(max_length=_LIST, description="what the lead should do next, if anything")
+    follow_ups: list[str] = Field(max_length=_LIST, description="questions worth a later delegation")
+    data_gaps: list[str] = Field(max_length=_LIST, description="missing or stale data that limited the analysis")
+
+
+class Delegation(_Strict):
+    """One unit of work the lead hands to a subagent. The role and objective are the lead's own; the kind fixes the
+    output contract and the deterministic handling (only hypothesis specs are evaluated, through the trial ledger)."""
+
+    kind: Literal["hypothesis", "review", "market_analysis", "improvement", "analysis"] = Field(
+        description="capability: hypothesis (factor specs, run on DEV data), review (independent critique of a "
+                    "finished hypothesis task), market_analysis (scan digest), improvement (proposals for the "
+                    "operator), analysis (any read-only question)")
+    role: str = Field(max_length=120, description="the subagent's role or persona, chosen by you")
+    objective: str = Field(max_length=_ITEM, description="what the subagent must find out or produce")
+    instructions: str = Field(max_length=1500, description="method, scope and what to ignore")
+    rationale: str = Field(max_length=_ITEM, description="the evidence that makes this worth subscription quota now")
+    priority: int = Field(description="1 (low) .. 5 (urgent)")
+    provider: Literal["any", "claude", "codex"] = Field(description="preferred provider (a hint; budgets decide)")
+    mechanism: str = Field(description="catalog mechanism key for kind=hypothesis, else empty")
+    subject_task_id: str = Field(description="the hypothesis task id for kind=review, else empty")
+
+
+class LeadSessionAction(_Strict):
+    action: SessionAction = Field(description="stand_down_today (no session today, or stop today's autopilot "
+                                  "session) or request_halt (halt new entries until the operator lifts it)")
+    reason: str = Field(max_length=300, description="why, in one sentence")
+    evidence: list[str] = Field(max_length=6, description="the briefing facts that justify it")
+
+
+class LeadDecision(_Strict):
+    situation: str = Field(max_length=_TXT, description="your assessment of the day: session, risk, research state")
+    priorities: list[str] = Field(max_length=8, description="ranked priorities for the rest of the day")
+    delegations: list[Delegation] = Field(max_length=12, description="work to hand to parallel subagents now "
+                                          "(empty when nothing is worth the quota)")
+    session_actions: list[LeadSessionAction] = Field(max_length=2, description="fail-safe session requests; "
+                                                     "usually empty")
+    memory_notes: list[str] = Field(max_length=5, description="durable lessons worth remembering on later days")
+    next_wake_minutes: int = Field(description="when you want your next turn (the scheduler clamps it)")
+
+
 OUTPUT_MODELS: dict[TaskKind, type[_Strict]] = {
     TaskKind.HYPOTHESIS: HypothesisOutput,
     TaskKind.REVIEW: ReviewOutput,
     TaskKind.MARKET_ANALYSIS: MarketAnalysisOutput,
     TaskKind.IMPROVEMENT: ImprovementOutput,
+    TaskKind.ANALYSIS: AnalysisOutput,
+    TaskKind.LEAD: LeadDecision,
 }
 
 _KEEP = frozenset({"type", "properties", "required", "additionalProperties", "items", "enum", "description"})
@@ -148,6 +203,9 @@ def output_schema(kind: TaskKind, *, specs_per_task: int = 3) -> dict[str, Any]:
         spec["rebalance"]["enum"] = [1, 5, 10, 21, 63]
         props["specs"]["description"] = (f"at most {specs_per_task} declarative factor specs (empty when the "
                                          "mechanism is not expressible with the DSL)")
+    if kind is TaskKind.LEAD:
+        mech = props["delegations"]["items"]["properties"]["mechanism"]
+        mech["enum"], mech["type"] = ["", *MECHANISM_KEYS], "string"
     return schema
 
 

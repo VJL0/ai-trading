@@ -20,7 +20,7 @@ TRADING_PACKAGES = ("api", "risk", "order_ledger", "positions", "sessions")
 _PROBE = """
 import json, sys
 import services.agents.crew, services.agents.__main__, services.agents.fake, services.agents.planner
-import services.agents.context, services.agents.store, services.agents.schemas
+import services.agents.context, services.agents.store, services.agents.schemas, services.agents.lead
 import services.quantlab.factors, services.quantlab.views  # what the crew imports lazily at run time
 print(json.dumps(sorted(sys.modules)))
 """

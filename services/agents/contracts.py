@@ -27,6 +27,21 @@ class TaskKind(StrEnum):
     REVIEW = "review"                      # independent critique of another provider's hypothesis + results
     MARKET_ANALYSIS = "market_analysis"    # read-only scan/research digest -> observations + hypothesis seeds
     IMPROVEMENT = "improvement"            # failures/rejections -> proposals for the operator (never applied)
+    ANALYSIS = "analysis"                  # lead-assigned open question -> findings + recommendations (read-only)
+    LEAD = "lead"                          # one turn of the lead agent: evidence -> priorities + delegations
+
+
+# Task kinds the lead agent may delegate to a subagent (each has a fixed output contract and deterministic handling).
+DELEGABLE_KINDS: Final = frozenset({TaskKind.HYPOTHESIS, TaskKind.REVIEW, TaskKind.MARKET_ANALYSIS,
+                                    TaskKind.IMPROVEMENT, TaskKind.ANALYSIS})
+
+
+class SessionAction(StrEnum):
+    """Fail-safe session requests the lead may make. The autopilot validates and executes them; nothing here can
+    start, resume or enlarge trading."""
+
+    STAND_DOWN_TODAY = "stand_down_today"  # skip today's session request, or stop today's autopilot session
+    REQUEST_HALT = "request_halt"          # halt new entries (only the operator can lift it)
 
 
 class TaskState(StrEnum):

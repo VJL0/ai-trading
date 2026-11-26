@@ -36,10 +36,18 @@ ENV_VARS: Final[tuple[tuple[str, str, str], ...]] = (
     ("USE_AI", "false", "in-app model review inside session cycles"),
     ("START_API", "true", "start the local API if it is not running (never restarts a running one)"),
     ("RESEARCH", "true", "run after-close research steps (quantlab daily, crew, shadow, holdout)"),
-    ("CREW_TICKS", "2", "research-crew ticks per evening (each `python -m services.agents run --once`)"),
+    ("CREW_TICKS", "2", "research-crew ticks per evening when the lead agent is off (`services.agents run --once`)"),
     ("CREW_TIMEOUT_S", "3600", "timeout per crew tick subprocess"),
     ("HOLDOUT", "true", "let a DEV_PASSED family take its single protected-holdout look"),
     ("STEP_TIMEOUT_S", "7200", "timeout per quantlab subprocess step"),
+    ("LEAD", "true", "launch the lead agent (`services.agents lead`) through the trading day and the evening; it "
+                     "decides and delegates the AI work (replaces the fixed crew ticks)"),
+    ("LEAD_MAX_CYCLES", "10", "lead turns per trading day (each turn plus its delegations is one cycle)"),
+    ("LEAD_MIN_INTERVAL_MIN", "20", "minimum minutes between two lead cycles, even on new evidence"),
+    ("LEAD_MAX_INTERVAL_MIN", "180", "longest gap between lead cycles inside the lead's window"),
+    ("LEAD_TIMEOUT_S", "2700", "wall-clock budget of one lead cycle (lead turn plus parallel subagents)"),
+    ("LEAD_SESSION_ACTIONS", "true", "honour the lead's fail-safe requests (stand down today, request a halt)"),
+    ("LEAD_FAKE", "false", "simulated lead and subagents (disposable workspaces and demos only)"),
     ("STATE_DIR", "experiments/autopilot", "state directory (SQLite store, lock, logs)"),
     ("REPORT_DIR", "experiments/autopilot/reports", "daily reports YYYY-MM-DD.{json,md}"),
 )
@@ -136,6 +144,13 @@ class AutopilotConfig:
     crew_timeout_s: int = 3600
     holdout: bool = True
     step_timeout_s: int = 7200
+    lead: bool = True
+    lead_max_cycles: int = 10
+    lead_min_interval_min: int = 20
+    lead_max_interval_min: int = 180
+    lead_timeout_s: int = 2700
+    lead_session_actions: bool = True
+    lead_fake: bool = False
 
     @classmethod
     def from_env(cls, env: Mapping[str, str] | None = None, *, root: Path | None = None) -> AutopilotConfig:
@@ -165,6 +180,13 @@ class AutopilotConfig:
             crew_timeout_s=_int(env, "CREW_TIMEOUT_S", 3600, 60, 4 * 3600),
             holdout=_bool(env, "HOLDOUT", True),
             step_timeout_s=_int(env, "STEP_TIMEOUT_S", 7200, 60, 6 * 3600),
+            lead=_bool(env, "LEAD", True),
+            lead_max_cycles=_int(env, "LEAD_MAX_CYCLES", 10, 0, 48),
+            lead_min_interval_min=_int(env, "LEAD_MIN_INTERVAL_MIN", 20, 5, 240),
+            lead_max_interval_min=_int(env, "LEAD_MAX_INTERVAL_MIN", 180, 15, 24 * 60),
+            lead_timeout_s=_int(env, "LEAD_TIMEOUT_S", 2700, 300, 4 * 3600),
+            lead_session_actions=_bool(env, "LEAD_SESSION_ACTIONS", True),
+            lead_fake=_bool(env, "LEAD_FAKE", False),
         )
 
     @property
@@ -174,6 +196,10 @@ class AutopilotConfig:
     @property
     def lock_path(self) -> Path:
         return self.project_root / "experiments" / "autopilot" / "autopilot.lock"
+
+    @property
+    def lead_briefing_path(self) -> Path:
+        return self.state_dir / "lead" / "briefing.json"
 
     @property
     def log_dir(self) -> Path:
@@ -188,5 +214,9 @@ class AutopilotConfig:
             "symbols": list(self.symbols) if self.symbols else None, "use_ai": self.use_ai,
             "start_api": self.start_api, "research": self.research, "crew_ticks": self.crew_ticks,
             "crew_timeout_s": self.crew_timeout_s, "holdout": self.holdout, "step_timeout_s": self.step_timeout_s,
+            "lead": self.lead, "lead_max_cycles": self.lead_max_cycles,
+            "lead_min_interval_min": self.lead_min_interval_min, "lead_max_interval_min": self.lead_max_interval_min,
+            "lead_timeout_s": self.lead_timeout_s, "lead_session_actions": self.lead_session_actions,
+            "lead_fake": self.lead_fake,
             "state_dir": str(self.state_dir), "report_dir": str(self.report_dir),
         }

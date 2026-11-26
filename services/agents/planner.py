@@ -32,8 +32,8 @@ from .context import LedgerDigest, mechanism_record, results_root
 from .contracts import Provider, RunOutcome, TaskKind, TaskState
 from .store import CrewStore
 
-PRIORITY: Final[dict[TaskKind, int]] = {TaskKind.REVIEW: 40, TaskKind.HYPOTHESIS: 30,
-                                        TaskKind.MARKET_ANALYSIS: 20, TaskKind.IMPROVEMENT: 10}
+PRIORITY: Final[dict[TaskKind, int]] = {TaskKind.REVIEW: 40, TaskKind.HYPOTHESIS: 30, TaskKind.ANALYSIS: 25,
+                                        TaskKind.MARKET_ANALYSIS: 20, TaskKind.IMPROVEMENT: 10, TaskKind.LEAD: 100}
 IMPROVEMENT_THRESHOLD: Final = 10
 SEED_BONUS: Final = 0.3
 FAILED_RUN_OUTCOMES: Final = frozenset({RunOutcome.INVALID_OUTPUT.value, RunOutcome.ERROR.value,

@@ -35,8 +35,9 @@ way you normally do (`make dev`, or `make paper` for Alpaca paper) if you want t
 | --- | --- |
 | 08:30–09:35 | Pre-open checks, then one `start_paper_session` request (09:30–15:30). |
 | 09:30–16:00 | A status check every 15 min. Observation only. |
-| from 16:30 | QuantLab daily pipeline, crew ticks, shadow journal, at most one holdout look, then the final report. |
+| from 16:30 | QuantLab daily pipeline, shadow journal, at most one holdout look, then the final report (crew ticks only when the lead agent is off). |
 | until 08:00 next session | Research must finish by 5 min before the next pre-open. |
+| 08:30 until 08:00 next session | Lead-agent cycles in the background, when due (at most 10 a day, at least 20 min apart). The lead decides what to investigate or research and delegates it to parallel subagents ([lead agent](../architecture/lead-agent.md)). Nothing above waits for it. |
 
 On early closes the times follow the real close. On 2026-11-27 the session runs 09:30–12:30 and research starts
 at 13:30. Holidays (2026-11-26) have no pre-open.
@@ -57,6 +58,13 @@ written after the pre-open and after each check, and the final report after rese
   leaves any running API session alone.
 * **Your own schedule**: if an operator `schedule_session` covers today, the autopilot adopts it
   (`OPERATOR_SCHEDULE`) and does not request a second session.
+* **Lead-agent requests**: the lead can ask to stand down today or to halt new entries. The autopilot executes
+  each request at most once a day, never against your own session, and raises an alert
+  (`lead agent: <action> (<reason>)`). A halt it requested is cleared the same way as any other
+  (`make resume HALT_ID=...`). Set `LAT_AUTOPILOT_LEAD_SESSION_ACTIONS=false` to keep the lead advisory only, or
+  `LAT_AUTOPILOT_LEAD=false` to go back to the fixed evening crew ticks.
+* **What the lead decided**: `python -m services.agents notes --kind lead_journal` shows each turn's situation,
+  priorities, delegations and refusals. The briefing it read is in `experiments/autopilot/lead/briefing.json`.
 
 ## Alerts and failures
 
@@ -108,8 +116,9 @@ launchctl bootout gui/$(id -u)/com.local-ai-trader.autopilot
 * launchd restarts the process after a crash (`KeepAlive.SuccessfulExit=false`, at most every 300 s). The store
   resumes each job idempotently. If `LAT_AUTOPILOT_ENABLED` is not true, the process exits 3 and launchd retries
   every 300 s, so enable it first or do not install the template.
-* The crew needs your own `claude` and `codex` CLIs on `PATH`, signed in. Adjust `PATH` in the plist if they are
-  installed elsewhere.
+* The lead agent and the crew need your own `claude` and `codex` CLIs on `PATH`, signed in. Adjust `PATH` in the
+  plist if they are installed elsewhere. When neither can run, because of usage limits, sign-in or a missing CLI,
+  the lead raises one alert per day and the rest of the day runs unchanged.
 
 ## State and files
 
@@ -118,6 +127,8 @@ launchctl bootout gui/$(id -u)/com.local-ai-trader.autopilot
 | `experiments/autopilot/autopilot.sqlite3` | Append-only `events`, per-day `jobs`, `kv`. Safe to read with `sqlite3 -readonly`. |
 | `experiments/autopilot/autopilot.lock` | Single-instance lock. Holds the PID while `run` is active. |
 | `experiments/autopilot/reports/` | Daily reports. |
+| `experiments/autopilot/lead/briefing.json` | The last briefing handed to the lead (read-only tool outputs, mode 0600). |
+| `experiments/agents/crew.sqlite3` | Crew and lead memory: tasks, runs, provider cooldowns, append-only notes. |
 | `experiments/quantlab/daily_state.json` | Shared with the API's daily job, so neither repeats the other's completed day. |
 
 Exit codes: `0` ok, `2` configuration error, `3` disabled, `4` another instance holds the lock, `5` refused
@@ -142,8 +153,15 @@ All variables are optional, and every value is bounded.
 | `LAT_AUTOPILOT_USE_AI` | `false` | In-app model review inside session cycles. |
 | `LAT_AUTOPILOT_START_API` | `true` | Start the local API if it is not running. It never restarts a running API. |
 | `LAT_AUTOPILOT_RESEARCH` | `true` | Run the after-close research steps. |
-| `LAT_AUTOPILOT_CREW_TICKS` | `2` | Crew ticks per evening (`python -m services.agents run --once`). |
+| `LAT_AUTOPILOT_CREW_TICKS` | `2` | Crew ticks per evening (`python -m services.agents run --once`), only when the lead agent is off. |
 | `LAT_AUTOPILOT_CREW_TIMEOUT_S` | `3600` | Timeout per crew tick. |
+| `LAT_AUTOPILOT_LEAD` | `true` | Run the lead agent from the pre-open until the research window ends. It replaces the crew ticks. |
+| `LAT_AUTOPILOT_LEAD_MAX_CYCLES` | `10` | Lead turns per trading day. |
+| `LAT_AUTOPILOT_LEAD_MIN_INTERVAL_MIN` | `20` | Minimum gap between lead cycles, even when there is new evidence. |
+| `LAT_AUTOPILOT_LEAD_MAX_INTERVAL_MIN` | `180` | Maximum gap between lead cycles inside the window. |
+| `LAT_AUTOPILOT_LEAD_TIMEOUT_S` | `2700` | Wall clock for one cycle: the lead turn plus its parallel subagents. |
+| `LAT_AUTOPILOT_LEAD_SESSION_ACTIONS` | `true` | Honour the lead's fail-safe requests. |
+| `LAT_AUTOPILOT_LEAD_FAKE` | `false` | Simulated lead and subagents, for disposable workspaces only. |
 | `LAT_AUTOPILOT_HOLDOUT` | `true` | Let a `DEV_PASSED` family take its single protected-holdout look. |
 | `LAT_AUTOPILOT_STEP_TIMEOUT_S` | `7200` | Timeout per QuantLab child. |
 | `LAT_AUTOPILOT_STATE_DIR` | `experiments/autopilot` | State directory. |
@@ -151,7 +169,7 @@ All variables are optional, and every value is bounded.
 
 The autopilot also honours the existing `LAT_QUANTLAB_DAILY_ENABLED`. When that is true, the API runs the daily
 pipeline and the shadow journal, and the autopilot skips both. With a SIMULATED feed it skips the data downloads
-and the holdout. It still runs the crew, which works on development data.
+and the holdout. It still runs the lead agent and its subagents, which work on development data.
 
 ## Verification (offline)
 

@@ -291,3 +291,30 @@ the other's code.
   (`PolicyStore.apply_change`).
 * **Verification (2026-11-25, SIMULATED):** `make test-py` gave 2,469 passed, 28 skipped, plus 20 torch tests.
   `make lint`, `make typecheck` and `make smoke` (29 audit rows) are clean.
+
+## Lead agent (2026-11-25): one autonomous AI lead over the trading day
+
+[Design](../architecture/lead-agent.md). The autopilot's fixed evening crew ticks and the rule-based crew planner are
+replaced by one lead agent. The autopilot launches it as a background child (`python -m services.agents lead`)
+from the pre-open until the evening research window ends. Each turn the lead reads a briefing of read-only tool
+outputs, its own journal and memory, earlier delegation results and the remaining subscription budget. It then
+ranks priorities and delegates work, with roles and questions of its own choosing, to parallel Claude Code and
+Codex subagents (`analysis`, `hypothesis`, `review`, `market_analysis`, `improvement`).
+
+* Reused unchanged: the session manager, risk engine and order path; the quantlab pipeline, shadow and holdout
+  gates; `run_agent_experiment`; the crew store and memory; provider adapters, cooldowns and review exclusion.
+* Subscription limits: a new rolling-window cap (8 runs per provider per 5 h), a run reserve kept for lead
+  turns, per-turn and per-day delegation caps, at most 10 lead turns a day at least 20 min apart, fallback to the
+  other provider on a usage limit, and a cycle deadline.
+* Trading independence: the pre-open is decided before the lead, and the lead child is never awaited inside a
+  tick. A hung or failing lead changes nothing on the trading path, and tests cover this.
+* Authority: the lead's only effect on trading is a validated fail-safe request (`stand_down_today`,
+  `request_halt`), honoured at most once a day each and never against an operator session. The autopilot's
+  `GuardedBackend` now also allows `stop_session` and `request_halt` (field-allowlisted). It still cannot propose
+  or cancel orders, schedule sessions, clear halts or change policy.
+* Verification (2026-11-25, SIMULATED): `make validate` passed. It ran lint, Pyright, contracts (63), the Python
+  suite (2,494 passed, 28 skipped), torch (20), smoke and the dependency audit. LEAN was skipped because it is not
+  built in this worktree, and no LEAN code changed. There are 23 new tests, including an integration run against a
+  real API with a real fake-mode lead child.
+* Not run: real Claude or Codex lead turns (they need subscription quota and operator sign-in), Alpaca paper,
+  and any broker or GUI checks.

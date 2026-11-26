@@ -12,9 +12,15 @@ daily pipeline, summons the Claude Code and Codex research crew for a bounded nu
 prospective shadow journal, and lets the existing deterministic gates promote a strategy where they allow it. It
 then writes a daily report.
 
-The autopilot is a **deterministic supervisor**. It has no language model of its own, and no model output decides
-what it does. Its daily plan is a pure function of the wall clock, the XNYS calendar and its own SQLite store.
-`python -m services.autopilot plan` prints that plan, with reasons, without running anything.
+The autopilot is a **deterministic supervisor**. It has no language model of its own. Its daily plan is a pure
+function of the wall clock, the XNYS calendar and its own SQLite store, and `python -m services.autopilot plan`
+prints that plan, with reasons, without running anything.
+
+The AI work is led by one **lead agent** ([lead-agent.md](lead-agent.md)). The autopilot launches it as a background
+child from the pre-open until the evening research window ends. The lead decides tasks, priorities and subagent
+roles from the evidence and delegates them to parallel Claude Code and Codex subagents. It replaces the fixed
+evening crew ticks. The only lead output the autopilot acts on is a validated fail-safe request (stand down today,
+or request a halt). The pre-open, the session and every deterministic research step run the same without it.
 
 ```mermaid
 flowchart LR
@@ -36,7 +42,8 @@ flowchart LR
 | Pre-open | open − `PREOPEN_LEAD_MIN` (60) to open + `START_GRACE_MIN` (5) | Inspects the API for an existing session or schedule today and adopts it, so it never creates a duplicate. Checks for halts, the kill switch, entries locks, health (broker, reconciliation, database, engine, scheduler) and the feed. If every check passes, it calls `start_paper_session` once. The session ends by the entry cutoff: the full regular session minus the last 30 minutes (`ENTRY_CUTOFF_BEFORE_CLOSE_SECONDS`). On a failed check it records the reason, raises one alert and re-checks at most every `PREOPEN_RECHECK_MIN`. |
 | Regular | open to close | One bounded status check (session status and risk status) per `INTRADAY_INTERVAL_MIN` (15). The autopilot only observes. It never cancels, stops, flattens or proposes. |
 | Post-close | close to close + `SETTLE_MIN` (30) | Waits for the data to settle. |
-| Quiet | close + settle to 90 min before the next open | Runs one research step per tick, in order: the QuantLab daily pipeline (skipped when the API already runs it), the crew ticks, the shadow journal, then at most one holdout look. After that it writes the final report. |
+| Quiet | close + settle to 90 min before the next open | Runs one research step per tick, in order: the QuantLab daily pipeline (skipped when the API already runs it), the crew ticks (only when the lead agent is off), the shadow journal, then at most one holdout look. After that it writes the final report. |
+| Lead (all of the above) | pre-open to 90 min before the next open | One lead-agent cycle at a time, in the background, when due: the first turn of the day, the lead's requested wake time, new evidence or the maximum interval, at least `LEAD_MIN_INTERVAL_MIN` apart and at most `LEAD_MAX_CYCLES` per day. Paused in stand-down. |
 
 Holidays have no session, so nothing trades. Thanksgiving (2026-11-26) is entirely Wednesday's research window.
 Early closes use the real close: on 2026-11-27 the session runs 09:30–12:30 ET (180 minutes) and research starts
@@ -49,10 +56,14 @@ covers it, because the steps are incremental. A day is never replayed on its own
 1. **The autopilot uses only the agent identity.** It reads `var/<ns>/keys/agent.token` through the MCP server's
    own `HttpToolBackend`, with actor `autopilot`, so sessions record `requested_by=agent:autopilot`. It never
    holds, reads or sends the operator token.
-2. **It has one mutating tool.** `GuardedBackend` permits read tools plus `start_paper_session` only. It cannot
-   stop sessions, cancel or propose orders, request or clear halts, schedule, run research experiments or change
-   policy. The registry gives it no way to resume trading or flip the kill switch.
-3. **It never changes risk policy, never clears halts and never touches the kill switch.** Any active halt, of
+2. **One mutating tool can start trading, and two can only reduce it.** `GuardedBackend` permits read tools,
+   `start_paper_session` (called only by the deterministic pre-open step), and the fail-safe `stop_session` and
+   `request_halt`. The fail-safe tools are used only to carry out a validated lead-agent request, at most once each
+   per day, and only for today's autopilot session. Each tool's fields are allowlisted. The autopilot cannot cancel
+   or propose orders, clear halts, schedule, run research experiments or change policy. The registry gives it no
+   way to resume trading or flip the kill switch.
+3. **It never changes risk policy, never clears halts and never touches the kill switch.** It requests a halt only
+   when the lead agent asks for one. Any active halt, of
    ENTRIES or ALL scope, puts it into stand-down: no session request and no research step. It leaves stand-down
    only when a later read-only check shows the operator cleared the halt.
 4. **It never selects Live.** `require_paper_runtime` refuses to run unless the runtime is Paper on the FAKE or
@@ -60,8 +71,9 @@ covers it, because the steps are incremental. A day is never replayed on its own
 5. **It never calls a broker.** It does not import any gateway, the order ledger, positions, the risk engine,
    `policy_store`, `operator_auth`, the API app or runtime, or the crew. Every order still goes through
    RiskEngine.evaluate, the signed intent, the ledger claim, the final gate and the paper gateway inside the API.
-6. **It runs only allowlisted subprocesses:** `services.agents run --once --json`, and `services.quantlab.cli`
-   with one of `fetch-delta`, `build-panel`, `scan`, `shadow` or `holdout --family F`.
+6. **It runs only allowlisted subprocesses:** `services.agents run --once --json`,
+   `services.agents lead --json --budget-s N --briefing <state_dir>/lead/briefing.json [--fake]`, and
+   `services.quantlab.cli` with one of `fetch-delta`, `build-panel`, `scan`, `shadow` or `holdout --family F`.
 7. **It never bypasses a gate.** A family gets a holdout look only if it is `DEV_PASSED` in the registry. The
    autopilot records its attempt *before* the child starts and never tries that family again, and the vault
    independently refuses a second look. SHADOW → PAPER happens only inside the existing `shadow` step's

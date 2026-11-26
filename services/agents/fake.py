@@ -62,6 +62,21 @@ def demo_output(kind: TaskKind, invocation: Invocation) -> dict[str, Any]:
     if kind is TaskKind.MARKET_ANALYSIS:
         return {"regime_summary": "[fake demo] simulated", "observations": [], "hypothesis_seeds": [],
                 "data_gaps": []}
+    if kind is TaskKind.ANALYSIS:
+        return {"answer": "[fake demo] simulated analysis", "findings": [], "confidence": "LOW",
+                "recommendations": [], "follow_ups": [], "data_gaps": []}
+    if kind is TaskKind.LEAD:
+        return {"situation": "[fake demo] simulated lead turn", "priorities": ["[fake demo] review the session"],
+                "delegations": [
+                    {"kind": "analysis", "role": "[fake demo] session analyst",
+                     "objective": "[fake demo] summarize today's session decisions and rejections",
+                     "instructions": "[fake demo] use the attached trading snapshot", "rationale": "[fake demo]",
+                     "priority": 3, "provider": "any", "mechanism": "", "subject_task_id": ""},
+                    {"kind": "hypothesis", "role": "[fake demo] momentum researcher",
+                     "objective": "[fake demo] test one momentum variant", "instructions": "[fake demo]",
+                     "rationale": "[fake demo]", "priority": 2, "provider": "any", "mechanism": "momentum",
+                     "subject_task_id": ""}],
+                "session_actions": [], "memory_notes": [], "next_wake_minutes": 60}
     return {"proposals": []}
 
 

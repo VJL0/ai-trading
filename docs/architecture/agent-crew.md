@@ -71,6 +71,18 @@ flowchart LR
   `ANTHROPIC_API_KEY`, `OPENAI_API_KEY` and similar keys from the child environment so that usage goes to the
   subscription instead of silent API billing. Model output and tool output are treated as data.
 
+## Lead mode (default under the autopilot)
+
+Under the autopilot, the rule-based planner is replaced by the **lead agent** ([lead-agent.md](lead-agent.md)):
+`python -m services.agents lead` runs one model turn, which decides what to work on and writes each subagent's role,
+objective and instructions. Deterministic code validates every delegation, and the same executor runs the
+accepted ones in parallel waves. The executor applies its usual provider choice, cooldowns, review exclusion,
+spec validation and experiment path. Two capabilities were added for this mode: `analysis`, a read-only question
+from the lead that carries the trading snapshot, and `lead`, the lead's own turn. Subscription limits now include a
+rolling-window cap per provider (`LAT_AGENTS_WINDOW_RUNS_PER_PROVIDER` per `LAT_AGENTS_WINDOW_HOURS`) and a reserve
+of runs that only lead turns may use. The standalone `run` loop keeps the rule-based planner unless
+`LAT_AGENTS_PLANNER=lead`.
+
 ## Orca
 
 Orca coordinates the *engineering* of this repository: workers, cross-provider reviews and worktrees. The runtime

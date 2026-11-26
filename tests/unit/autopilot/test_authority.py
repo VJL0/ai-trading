@@ -19,6 +19,7 @@ from packages.contracts.enums import FeedMode
 from packages.core.config import Settings
 from services.autopilot.backend import (
     ALLOWED_TOOLS,
+    FAIL_SAFE_TOOLS,
     MUTATING_TOOLS,
     AuthorityError,
     GuardedBackend,
@@ -26,7 +27,7 @@ from services.autopilot.backend import (
     require_paper_runtime,
 )
 from services.autopilot.checks import halt_state
-from services.autopilot.research import CREW_ARGV, check_argv, holdout_argv, run_child
+from services.autopilot.research import CREW_ARGV, check_argv, holdout_argv, lead_argv, run_child
 from services.tools.handlers import ToolError
 from services.tools.registry import TOOL_REGISTRY
 
@@ -104,9 +105,16 @@ def test_importing_the_autopilot_and_its_lazy_paths_loads_no_privileged_module()
     assert not [m for m in mods if "gateway" in m.lower() and m.startswith(("services", "packages"))]
 
 
-def test_guarded_backend_allows_only_reads_and_the_one_session_start() -> None:
+def test_guarded_backend_allows_only_reads_the_session_start_and_fail_safe_tools() -> None:
     assert set(TOOL_REGISTRY) >= ALLOWED_TOOLS
-    assert {n for n in ALLOWED_TOOLS if TOOL_REGISTRY[n].mutating} == {"start_paper_session"}
+    # start_paper_session (deterministic pre-open only) plus two tools that can only reduce trading, used for
+    # validated lead-agent requests. Nothing that proposes, cancels, schedules, resumes or changes policy.
+    assert {n for n in ALLOWED_TOOLS if TOOL_REGISTRY[n].mutating} == {"start_paper_session", "stop_session",
+                                                                       "request_halt"}
+    assert {"stop_session", "request_halt"} == FAIL_SAFE_TOOLS
+    for name in ("propose_paper_trade", "cancel_paper_order", "schedule_session", "cancel_schedule",
+                 "run_quant_cycle", "run_research_experiment"):
+        assert name in TOOL_REGISTRY and name not in ALLOWED_TOOLS
 
     class Inner:
         calls: list[str] = []
@@ -126,11 +134,29 @@ def test_guarded_backend_allows_only_reads_and_the_one_session_start() -> None:
         asyncio.run(guarded.call("start_paper_session", {"duration_minutes": 60, "mode": "LIVE"}))
     with pytest.raises(AuthorityError):
         asyncio.run(guarded.call("resume_trading", {}))
+    with pytest.raises(AuthorityError):
+        asyncio.run(guarded.call("request_halt", {"reason": "x", "scope": "ALL"}))
+    with pytest.raises(AuthorityError):
+        asyncio.run(guarded.call("stop_session", {"reason": "x", "flatten": True}))
     assert inner.calls == []
+    asyncio.run(guarded.call("request_halt", {"reason": "x"}))
+    asyncio.run(guarded.call("stop_session", {"reason": "x", "session_id": "sess_1"}))
+    assert inner.calls == ["request_halt", "stop_session"]
 
 
 def test_subprocess_allowlist() -> None:
     assert check_argv(CREW_ARGV) == CREW_ARGV
+    briefing = Path("/tmp/ws/experiments/autopilot/lead/briefing.json")
+    assert lead_argv(2700, briefing)[:4] == ("-m", "services.agents", "lead", "--json")
+    assert lead_argv(2700, briefing, fake=True)[-1] == "--fake"
+    for bad_lead in (("--budget-s", "2700"), ("--budget-s", "10", "--briefing", str(briefing)),
+                     ("--budget-s", "2700", "--briefing", "relative/lead/briefing.json"),
+                     ("--budget-s", "2700", "--briefing", "/tmp/ws/../etc/lead/briefing.json"),
+                     ("--budget-s", "2700", "--briefing", "/tmp/ws/agent.token"),
+                     ("--budget-s", "2700", "--briefing", str(briefing), "--store", "/x"),
+                     ("--budget-s", "-1", "--briefing", str(briefing))):
+        with pytest.raises(AuthorityError):
+            check_argv(("-m", "services.agents", "lead", "--json", *bad_lead))
     assert holdout_argv("J_volman")[-1] == "J_volman"
     for bad in (("-m", "services.api"), ("-m", "services.api.cli", "resume", "h1"), ("-m", "services.agents", "run"),
                 ("-m", "services.quantlab.cli", "research", "--force"), ("-c", "print(1)"),

@@ -3,10 +3,13 @@
 * Transport: the same ``HttpToolBackend`` the MCP server uses (loopback HTTP, ``X-LAT-Agent-Token`` read from
   ``var/<ns>/keys/agent.token``, actor ``autopilot`` so sessions record ``requested_by=agent:autopilot``). The
   operator token is never read: the backend is handed the agent token path and nothing else.
-* Authority: ``GuardedBackend`` refuses every tool outside ``ALLOWED_TOOLS``. The one mutating tool is
-  ``start_paper_session`` (a bounded PAPER session whose every order still goes through the risk engine). There is
-  no way through this module to stop a session, cancel or propose orders, halt or resume, schedule, run research
-  experiments, change policy, or reach a broker.
+* Authority: ``GuardedBackend`` refuses every tool outside ``ALLOWED_TOOLS``. The one tool that can start trading
+  is ``start_paper_session`` (a bounded PAPER session whose every order still goes through the risk engine), and
+  only the deterministic pre-open step calls it. The other two mutating tools act only in the fail-safe direction
+  and carry out a validated lead-agent request: ``stop_session`` (today's autopilot session; orders and positions
+  untouched) and ``request_halt`` (new entries halt until the operator lifts it). There is no way through this
+  module to cancel or propose orders, resume or clear a halt, schedule, run research experiments, change policy,
+  or reach a broker.
 * Mode: ``require_paper_runtime`` refuses to build a backend unless the configured runtime is Paper on the FAKE or
   ALPACA_PAPER gateway. The autopilot never selects Live; it never even sets a mode.
 """
@@ -30,9 +33,12 @@ READ_TOOLS: Final = frozenset({
     "get_session_status", "list_schedules", "get_session_report", "get_performance", "get_system_health",
     "get_feed_quality", "get_risk_status", "get_orders", "get_research_results", "explain_decisions",
 })
-MUTATING_TOOLS: Final = frozenset({"start_paper_session"})
+FAIL_SAFE_TOOLS: Final = frozenset({"stop_session", "request_halt"})  # reduce trading only; never resume or enlarge
+MUTATING_TOOLS: Final = frozenset({"start_paper_session"}) | FAIL_SAFE_TOOLS
 ALLOWED_TOOLS: Final = READ_TOOLS | MUTATING_TOOLS
 _START_FIELDS: Final = frozenset({"duration_minutes", "symbols", "cadence_minutes", "use_ai"})
+_FIELDS: Final = {"start_paper_session": _START_FIELDS, "stop_session": frozenset({"reason", "session_id"}),
+                  "request_halt": frozenset({"reason"})}
 
 
 class AuthorityError(PermissionError):
@@ -52,8 +58,9 @@ class GuardedBackend:
         if name not in ALLOWED_TOOLS:
             raise AuthorityError(f"tool {name!r} is outside the autopilot's authority")
         payload = dict(args or {})
-        if name == "start_paper_session" and set(payload) - _START_FIELDS:
-            raise AuthorityError(f"start_paper_session fields outside the contract: {sorted(set(payload) - _START_FIELDS)}")
+        allowed = _FIELDS.get(name)
+        if allowed is not None and set(payload) - allowed:
+            raise AuthorityError(f"{name} fields outside the contract: {sorted(set(payload) - allowed)}")
         if self._token_path is not None:
             try:
                 info = self._token_path.lstat()
